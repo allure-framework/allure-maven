@@ -1,6 +1,6 @@
 ## Allure Maven Plugin 
 
-A tool, which can be used to generate Allure report form test results.
+Use this plugin to generate Allure report from test results during Maven build.
 
 Usage:
 
@@ -16,4 +16,4 @@ Usage:
  </reporting>
 ```
 
-Use ```allure.version``` property to specify allure version.
+Use ```allure.version``` property to specify Allure version.
