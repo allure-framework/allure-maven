@@ -10,11 +10,12 @@ Simply add **allure-maven-plugin** to project reporting section:
     ...
 
     <reporting>
+        <excludeDefaults>true</excludeDefaults>
         <plugins>
             <plugin>
                 <groupId>ru.yandex.qatools.allure</groupId>
                 <artifactId>allure-maven-plugin</artifactId>
-                <version>${latest.version}</version>
+                <version>{latest.version}</version>
             </plugin>
         </plugins>
     </reporting>
