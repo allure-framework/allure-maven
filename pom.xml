@@ -36,14 +36,14 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/allure-framework/allure-core</url>
-        <connection>scm:git@github.com:allure-framework/allure-core.git</connection>
-        <developerConnection>scm:git:git@github.com:allure-framework/allure-core.git</developerConnection>
+        <url>https://github.com/allure-framework/allure-maven-plugin</url>
+        <connection>scm:git@github.com:allure-framework/allure-maven-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:allure-framework/allure-maven-plugin.git</developerConnection>
     </scm>
 
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/allure-framework/allure-core/issues</url>
+        <url>https://github.com/allure-framework/allure-maven-plugin/issues</url>
     </issueManagement>
 
     <ciManagement>
