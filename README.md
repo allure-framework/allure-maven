@@ -23,6 +23,12 @@ Simply add **allure-maven-plugin** to project reporting section:
 ```
 You can find latest version number [here](https://github.com/allure-framework/allure-maven-plugin/releases/latest)
 
+## Usage 
+
+* Run test via maven: `mvn clean test`
+* Build report: `mvn site`
+* Open report `target/site/allure-maven-plugin/index.html`
+
 ## Configuration
 ### Defaults
  * **Report Version**: `1.3.9`
@@ -63,9 +69,3 @@ You can find latest version number [here](https://github.com/allure-framework/al
         </plugins>
     </reporting>
 </project>
-
-## Usage 
-
-* Run test via maven: `mvn clean test`
-* Build report: `mvn site`
-* Open report `target/site/allure-maven-plugin/index.html`
