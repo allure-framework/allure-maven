@@ -5,7 +5,7 @@ This plugin generates Allure report from existing XML files during Maven build.
 Simply add **allure-maven-plugin** to project reporting section: 
 
 ```xml
-<project ... >
+<project>
 
     <reporting>
         <excludeDefaults>true</excludeDefaults>
