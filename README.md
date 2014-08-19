@@ -66,3 +66,6 @@ This plugin allows to select Allure version (1.3.0+) to be generated, Ant patter
 
 ### Maven Projects With Multiple Modules
 When your Maven project contains several modules you need to include reporting section **only to root pom.xml**. In that case a separate report will be generated for every module and one report containing results for all modules will be generated in root build directory.
+
+## Contact us
+Mailing list: [allure@yandex-team.ru](mailto:allure@yandex-team.ru)
