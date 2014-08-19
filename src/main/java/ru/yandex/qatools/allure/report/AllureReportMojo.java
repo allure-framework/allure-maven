@@ -27,13 +27,15 @@ import java.util.Locale;
 @Mojo(name = "report", defaultPhase = LifecyclePhase.SITE)
 public class AllureReportMojo extends AbstractMavenReport {
 
-    @Parameter(property = "allure.report.directory", required = false, defaultValue = "${project.reporting.outputDirectory}/allure-maven-plugin")
+    @Parameter(property = "allure.report.directory", required = false,
+            defaultValue = "${project.reporting.outputDirectory}/allure-maven-plugin")
     private File outputDirectory;
 
-    @Parameter(property = "allure.results.directory", required = false, defaultValue = "${project.build.directory}/allure-results")
+    @Parameter(property = "allure.results.directory", required = false,
+            defaultValue = "${project.build.directory}/allure-results")
     private File allureResultsDirectory;
 
-    @Parameter(property = "allure.version", required = false, defaultValue = "[1.4.0,)")
+    @Parameter(property = "allure.version", required = false, defaultValue = "1.3.9")
     private String version;
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
