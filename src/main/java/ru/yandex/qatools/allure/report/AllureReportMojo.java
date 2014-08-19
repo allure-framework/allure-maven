@@ -10,6 +10,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
+import org.codehaus.plexus.util.DirectoryScanner;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -27,16 +28,20 @@ import java.util.Locale;
 @Mojo(name = "report", defaultPhase = LifecyclePhase.SITE)
 public class AllureReportMojo extends AbstractMavenReport {
 
+    @Parameter(defaultValue = "${project.basedir}", readonly = true)
+    private File projectBaseDirectory;
+
     @Parameter(property = "allure.report.directory", required = false,
             defaultValue = "${project.reporting.outputDirectory}/allure-maven-plugin")
     private File outputDirectory;
 
-    @Parameter(property = "allure.results.directory", required = false,
-            defaultValue = "${project.build.directory}/allure-results")
-    private File allureResultsDirectory;
+    @Parameter(property = "allure.results.pattern", required = false,
+            defaultValue = "**/allure-results")
+    private String resultsPattern;
 
-    @Parameter(property = "allure.version", required = false, defaultValue = "1.3.9")
-    private String version;
+    @Parameter(property = "allure.version", required = false,
+            defaultValue = "1.3.9")
+    private String reportVersion;
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     protected MavenProject project;
@@ -76,14 +81,27 @@ public class AllureReportMojo extends AbstractMavenReport {
 
     @Override
     protected void executeReport(Locale locale) throws MavenReportException {
-        getLog().info("Allure version: " + version);
+        getLog().info("Report Version: " + reportVersion);
+        getLog().info("Results Pattern: " + resultsPattern);
+        File[] reportDirectories = getPathsByGlobs(projectBaseDirectory, resultsPattern);
+        getLog().info(String.format("Found [%s] results directories by pattern [%s]",
+                reportDirectories.length, resultsPattern));
+
+        if (reportDirectories.length == 0) {
+            throw new MavenReportException(String.format("Can't find any results directories by pattern [%s]",
+                    resultsPattern));
+        }
+
         try {
             DependencyResolver resolver = new DependencyResolver(repoSystem, repoSession, projectRepos);
-            AllureReportBuilder builder = new AllureReportBuilder(version, outputDirectory, resolver);
-            getLog().info("Generate report from " + allureResultsDirectory + " to " + outputDirectory);
-            builder.processResults(allureResultsDirectory);
+            AllureReportBuilder builder = new AllureReportBuilder(reportVersion, outputDirectory, resolver);
+
+            getLog().info("Generate report to " + outputDirectory);
+            builder.processResults(reportDirectories);
+
             getLog().info("Report data generated successfully. Unpack report face...");
             builder.unpackFace();
+
             getLog().info("Report unpacked successfully.");
             render(getSink(), getName(locale));
         } catch (AllureReportBuilderException e) {
@@ -94,8 +112,9 @@ public class AllureReportMojo extends AbstractMavenReport {
 
     /**
      * Render allure report page in project-reports.html.
-     * @param sink
-     * @param title
+     *
+     * @param sink  sink
+     * @param title title
      */
     private void render(Sink sink, String title) {
         sink.head();
@@ -146,4 +165,20 @@ public class AllureReportMojo extends AbstractMavenReport {
     public String getDescription(Locale locale) {
         return "Extended report on the test results of the project.";
     }
+
+    private File[] getPathsByGlobs(File baseDir, String globs) {
+        DirectoryScanner scanner = new DirectoryScanner();
+        scanner.setBasedir(baseDir);
+        scanner.setIncludes(new String[]{globs});
+        scanner.setCaseSensitive(false);
+        scanner.scan();
+
+        String[] relativePaths = scanner.getIncludedDirectories();
+        File[] absolutePaths = new File[relativePaths.length];
+        for (int i = 0; i < relativePaths.length; i++) {
+            absolutePaths[i] = new File(baseDir, relativePaths[i]);
+        }
+        return absolutePaths;
+    }
+
 }
