@@ -24,6 +24,7 @@ You can find latest version number [here](https://github.com/allure-framework/al
 
 ## Usage 
 
+* Set up [Allure adapter](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) for test framework of your choice
 * Run tests as usually: 
 ```bash
 $ mvn clean test
