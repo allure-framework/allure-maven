@@ -1,12 +1,12 @@
 # Allure Maven Plugin 
-This plugin generates Allure report from existing XML files during Maven build.
+This plugin generates Allure report [from existing XML files](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) during Maven build.
 
 ## Installation
 Simply add **allure-maven-plugin** to project reporting section: 
 
 ```xml
 <project>
-
+    ...
     <reporting>
         <excludeDefaults>true</excludeDefaults>
         <plugins>
@@ -17,26 +17,13 @@ Simply add **allure-maven-plugin** to project reporting section:
             </plugin>
         </plugins>
     </reporting>
-    
+    ...
 </project>
 ```
-You can find latest version number [here](https://github.com/allure-framework/allure-maven-plugin/releases/latest).
-
-## Usage 
-
-* Set up [Allure adapter](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) for test framework of your choice
-* Run tests as usually: 
-```bash
-$ mvn clean test
-```
-* Build report:
-```bash
-$ mvn site
-```
-* Open report page: `target/site/allure-maven-plugin/index.html`
+You can find the latest version number [here](https://github.com/allure-framework/allure-maven-plugin/releases/latest).
 
 ## Configuration
-This plugin allows to select Allure version (1.3.0+) to be generated, Ant pattern to search for XML files and report output path.
+This plugin allows to select Allure version (1.3.0+) to be generated, [Ant pattern](https://ant.apache.org/manual/dirtasks.html) to search for XML files and report output path.
 ### Default Values
  * **Report Version**: `1.3.9`
  * **Report Path**: `target/site/allure-maven-plugin`
@@ -45,7 +32,7 @@ This plugin allows to select Allure version (1.3.0+) to be generated, Ant patter
 ### Overriding Default Values
 ```xml
 <project>
-
+    ...
     <reporting>
         <plugins>
             <plugin>
@@ -60,12 +47,25 @@ This plugin allows to select Allure version (1.3.0+) to be generated, Ant patter
             </plugin>
         </plugins>
     </reporting>
-    
+    ...
 </project>
 ```
 
 ### Maven Projects With Multiple Modules
 When your Maven project contains several modules you need to include reporting section **only to root pom.xml**. In that case a separate report will be generated for every module and one report containing results for all modules will be generated in root build directory.
+
+## Usage 
+
+* Set up [Allure adapter](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) for test framework of your choice
+* Run tests as usually: 
+```bash
+$ mvn clean test
+```
+* Build report:
+```bash
+$ mvn site
+```
+* Open report page: `target/site/allure-maven-plugin/index.html`
 
 ## Contact us
 Mailing list: [allure@yandex-team.ru](mailto:allure@yandex-team.ru)
