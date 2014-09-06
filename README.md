@@ -22,6 +22,8 @@ Simply add **allure-maven-plugin** to project reporting section:
 ```
 You can find the latest version number [here](https://github.com/allure-framework/allure-maven-plugin/releases/latest).
 
+**NOTE: required maven version 3.1.1 or above**
+
 ## Configuration
 This plugin allows to select Allure version (1.3.0+) to be generated, [Ant pattern](https://ant.apache.org/manual/dirtasks.html) to search for XML files and report output path.
 ### Default Values
