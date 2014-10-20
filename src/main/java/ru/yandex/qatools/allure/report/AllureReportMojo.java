@@ -31,6 +31,9 @@ public class AllureReportMojo extends AbstractMavenReport {
     @Parameter(defaultValue = "${project.basedir}", readonly = true)
     private File projectBaseDirectory;
 
+    @Parameter(defaultValue = "${project.reporting.outputDirectory}", readonly = true)
+    private File reportingDirectory;
+
     @Parameter(property = "allure.report.directory", required = false,
             defaultValue = "${project.reporting.outputDirectory}/allure-maven-plugin")
     private File outputDirectory;
@@ -126,8 +129,13 @@ public class AllureReportMojo extends AbstractMavenReport {
 
         sink.lineBreak();
 
-        sink.rawText("<meta http-equiv=\"refresh\" content=\"0;url=allure-maven-plugin/index.html\" />");
-        sink.link("allure-maven-plugin/index.html");
+        File indexHtmlFile = new File(outputDirectory, "index.html");
+        String relativePath = reportingDirectory.toURI().relativize(indexHtmlFile.toURI()).getPath();
+
+        sink.rawText(String.format("<meta http-equiv=\"refresh\" content=\"0;url=%s\" />",
+                relativePath));
+
+        sink.link(relativePath);
 
         sink.body_();
         sink.flush();
