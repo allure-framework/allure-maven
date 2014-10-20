@@ -83,7 +83,7 @@ public class AllureReportMojo extends AbstractMavenReport {
     protected void executeReport(Locale locale) throws MavenReportException {
         getLog().info("Report Version: " + reportVersion);
         getLog().info("Results Pattern: " + resultsPattern);
-        File[] reportDirectories = getPathsByGlobs(projectBaseDirectory, resultsPattern);
+        File[] reportDirectories = getReportDirectories(projectBaseDirectory, resultsPattern);
         getLog().info(String.format("Found [%s] results directories by pattern [%s]",
                 reportDirectories.length, resultsPattern));
 
@@ -164,6 +164,18 @@ public class AllureReportMojo extends AbstractMavenReport {
     @Override
     public String getDescription(Locale locale) {
         return "Extended report on the test results of the project.";
+    }
+
+    private File[] getReportDirectories(File baseDir, String globs) {
+        if (new File(globs).isAbsolute()) {
+            return getPathsByAbsolute(globs);
+        } else {
+            return getPathsByGlobs(baseDir, globs);
+        }
+    }
+
+    private File[] getPathsByAbsolute(String absolute) {
+        return new File[]{new File(absolute)};
     }
 
     private File[] getPathsByGlobs(File baseDir, String globs) {
