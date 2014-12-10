@@ -1,4 +1,7 @@
 # Allure Maven Plugin 
+
+[![release](http://github-release-version.herokuapp.com/github/allure-framework/allure-maven-plugin/release.svg?style=flat)](https://github.com/allure-framework/allure-maven-plugin/releases/latest) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/ru.yandex.qatools.allure/allure-maven-plugin/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/ru.yandex.qatools.allure/allure-maven-plugin) [![build](https://img.shields.io/teamcity/http/teamcity.qatools.ru/s/allure_maven_plugin_master_deploy.svg?style=flat)](http://teamcity.qatools.ru/viewType.html?buildTypeId=allure_maven_plugin_master_deploy&guest=1)
+
 This plugin generates Allure report [from existing XML files](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) during Maven build.
 
 ## Installation
