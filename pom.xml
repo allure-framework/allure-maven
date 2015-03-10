@@ -121,11 +121,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.sonar</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
-                <version>4.0</version>
-            </plugin>
         </plugins>
     </build>
 
