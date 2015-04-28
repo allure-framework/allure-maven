@@ -128,7 +128,7 @@
         <dependency>
             <groupId>ru.yandex.qatools.allure</groupId>
             <artifactId>allure-report-builder</artifactId>
-            <version>2.0</version>
+            <version>2.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

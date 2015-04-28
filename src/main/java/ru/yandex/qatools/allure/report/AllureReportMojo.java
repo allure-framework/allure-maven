@@ -14,7 +14,7 @@ import org.codehaus.plexus.util.DirectoryScanner;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
-import ru.yandex.qatools.allure.report.utils.DependencyResolver;
+import ru.yandex.qatools.clay.Aether;
 
 import java.io.File;
 import java.util.List;
@@ -93,8 +93,9 @@ public class AllureReportMojo extends AbstractMavenReport {
         }
 
         try {
-            DependencyResolver resolver = new DependencyResolver(repoSystem, repoSession, projectRepos);
-            AllureReportBuilder builder = new AllureReportBuilder(reportVersion, outputDirectory, resolver);
+            Aether aether = Aether.aether(repoSystem, repoSession, projectRepos);
+            AllureReportBuilder builder = new AllureReportBuilder(reportVersion, outputDirectory, aether);
+            builder.setClassLoader(Thread.currentThread().getContextClassLoader());
 
             getLog().info("Generate report to " + outputDirectory);
             builder.processResults(reportDirectories);
