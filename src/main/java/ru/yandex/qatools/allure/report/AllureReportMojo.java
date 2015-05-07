@@ -102,6 +102,7 @@ public class AllureReportMojo extends AbstractMavenReport {
         File[] reportDirectories = getReportDirectories(projectBaseDirectory, resultsPattern);
         getLog().info(String.format("Found [%s] results directories by pattern [%s]",
                 reportDirectories.length, resultsPattern));
+        logDirectories(reportDirectories);
 
         if (reportDirectories.length == 0) {
             throw new MavenReportException(String.format("Can't find any results directories by pattern [%s]",
@@ -116,8 +117,7 @@ public class AllureReportMojo extends AbstractMavenReport {
             builder.processResults(reportDirectories);
 
             if (failReportIfEmpty && isReportEmpty()) {
-                throw new MavenReportException("There are no test cases info in given result" +
-                        " directories found");
+                throw new MavenReportException("There are no allure results found.");
             }
 
             getLog().info("Report data generated successfully. Unpack report face...");
@@ -128,6 +128,15 @@ public class AllureReportMojo extends AbstractMavenReport {
         } catch (AllureReportBuilderException e) {
             getLog().error("Can't generate allure report data", e);
             throw new MavenReportException("Can't generate allure report data", e);
+        }
+    }
+
+    /**
+     * Write an absolute directory path for each given directory to the log.
+     */
+    protected void logDirectories(File[] directories) {
+        for (File directory : directories) {
+            getLog().info(directory.getAbsolutePath());
         }
     }
 
