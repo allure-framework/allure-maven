@@ -112,6 +112,7 @@ public class AllureReportMojo extends AbstractMavenReport {
         try {
             Aether aether = Aether.aether(repoSystem, repoSession, projectRepos);
             AllureReportBuilder builder = new AllureReportBuilder(reportVersion, outputDirectory, aether);
+            builder.setClassLoader(Thread.currentThread().getContextClassLoader());
 
             getLog().info("Generate report to " + outputDirectory);
             builder.processResults(reportDirectories);
