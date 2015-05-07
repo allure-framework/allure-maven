@@ -1,5 +1,8 @@
 package ru.yandex.qatools.allure.report;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FalseFileFilter;
+import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.siterenderer.Renderer;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
@@ -17,6 +20,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 import ru.yandex.qatools.clay.Aether;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,6 +31,9 @@ import java.util.Locale;
 @SuppressWarnings("unused")
 @Mojo(name = "report", defaultPhase = LifecyclePhase.SITE)
 public class AllureReportMojo extends AbstractMavenReport {
+
+    public static final String DATA = "data";
+    public static final String TESTCASE_JSON = ".+-testcase\\.json";
 
     @Parameter(defaultValue = "${project.basedir}", readonly = true)
     private File projectBaseDirectory;
@@ -48,6 +55,12 @@ public class AllureReportMojo extends AbstractMavenReport {
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     protected MavenProject project;
+
+    /**
+     * Fail the report generation if no report data found in given report directories.
+     */
+    @Parameter(defaultValue = "false")
+    protected boolean failReportIfEmpty;
 
     @Component
     protected PluginDescriptor plugin;
@@ -89,6 +102,7 @@ public class AllureReportMojo extends AbstractMavenReport {
         File[] reportDirectories = getReportDirectories(projectBaseDirectory, resultsPattern);
         getLog().info(String.format("Found [%s] results directories by pattern [%s]",
                 reportDirectories.length, resultsPattern));
+        logDirectories(reportDirectories);
 
         if (reportDirectories.length == 0) {
             throw new MavenReportException(String.format("Can't find any results directories by pattern [%s]",
@@ -98,10 +112,13 @@ public class AllureReportMojo extends AbstractMavenReport {
         try {
             Aether aether = Aether.aether(repoSystem, repoSession, projectRepos);
             AllureReportBuilder builder = new AllureReportBuilder(reportVersion, outputDirectory, aether);
-            builder.setClassLoader(Thread.currentThread().getContextClassLoader());
 
             getLog().info("Generate report to " + outputDirectory);
             builder.processResults(reportDirectories);
+
+            if (failReportIfEmpty && isReportEmpty()) {
+                throw new MavenReportException("There are no allure results found.");
+            }
 
             getLog().info("Report data generated successfully. Unpack report face...");
             builder.unpackFace();
@@ -112,6 +129,29 @@ public class AllureReportMojo extends AbstractMavenReport {
             getLog().error("Can't generate allure report data", e);
             throw new MavenReportException("Can't generate allure report data", e);
         }
+    }
+
+    /**
+     * Write an absolute directory path for each given directory to the log.
+     */
+    protected void logDirectories(File[] directories) {
+        for (File directory : directories) {
+            getLog().info(directory.getAbsolutePath());
+        }
+    }
+
+    /**
+     * Find all test cases in data directory. Returns false if there are some
+     * test cases files present true otherwise.
+     */
+    protected boolean isReportEmpty() {
+        File data = new File(outputDirectory, DATA);
+        if (data.isDirectory()) {
+            Collection<File> files = FileUtils.listFiles(data,
+                    new RegexFileFilter(TESTCASE_JSON), FalseFileFilter.INSTANCE);
+            return files.isEmpty();
+        }
+        return true;
     }
 
     /**

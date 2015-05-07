@@ -172,6 +172,9 @@
     <profiles>
         <profile>
             <id>run-its</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <build>
                 <plugins>
                     <plugin>
