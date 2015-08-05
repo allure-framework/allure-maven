@@ -10,4 +10,4 @@ target
 *.project
 *.pydevproject
 
-!*/it/*/target
+!*/it/**/target
