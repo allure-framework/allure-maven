@@ -30,6 +30,9 @@ public abstract class AllureResolveMojo extends AllureBaseMojo {
     @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true)
     protected List<RemoteRepository> projectRepositories;
 
+    /**
+     * The version on Allure report to generate. 
+     */
     @Parameter(property = "allure.version", defaultValue = "LATEST")
     protected String version;
 

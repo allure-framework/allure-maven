@@ -93,6 +93,12 @@
                                 <goal>descriptor</goal>
                             </goals>
                         </execution>
+                        <execution>
+                            <id>generated-helpmojo</id>
+                            <goals>
+                                <goal>helpmojo</goal>
+                            </goals>
+                        </execution>
                     </executions>
                 </plugin>
             </plugins>
@@ -214,6 +220,9 @@
                         <artifactId>maven-invoker-plugin</artifactId>
                         <version>1.9</version>
                         <configuration>
+                            <pomIncludes>
+                                <pomInclude>feature-help/pom.xml</pomInclude>
+                            </pomIncludes>
                             <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                             <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
                             <goals>
