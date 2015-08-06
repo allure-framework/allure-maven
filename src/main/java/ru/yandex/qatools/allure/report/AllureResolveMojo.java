@@ -33,7 +33,7 @@ public abstract class AllureResolveMojo extends AllureBaseMojo {
     /**
      * The version on Allure report to generate. 
      */
-    @Parameter(property = "allure.version", defaultValue = "LATEST")
+    @Parameter(property = "allure.version", defaultValue = "RELEASE")
     protected String version;
 
     /**
