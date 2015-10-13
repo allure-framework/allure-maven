@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static ru.yandex.qatools.allure.report.TestHelper.DirectoryMatcher.isDirectory;
 import static ru.yandex.qatools.allure.report.TestHelper.ExistsMatcher.exists;
@@ -24,7 +23,7 @@ public final class TestHelper {
 
     public static final List<String> FILE_NAMES = Arrays.asList(
             "xunit.json", "behaviors.json", "defects.json",
-            "environment.json", "graph.json", "plugins.json",
+            "graph.json", "plugins.json",
             "report.json", "timeline.json", "widgets.json"
     );
 
