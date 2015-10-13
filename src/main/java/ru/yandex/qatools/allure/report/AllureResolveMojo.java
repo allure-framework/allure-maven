@@ -11,9 +11,10 @@ import org.eclipse.aether.repository.RemoteRepository;
 import ru.qatools.clay.aether.Aether;
 import ru.qatools.clay.aether.AetherException;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Dmitry Baev charlie@yandex-team.ru
@@ -31,7 +32,7 @@ public abstract class AllureResolveMojo extends AllureBaseMojo {
     protected List<RemoteRepository> projectRepositories;
 
     /**
-     * The version on Allure report to generate. 
+     * The version on Allure report to generate.
      */
     @Parameter(property = "allure.version", defaultValue = "RELEASE")
     protected String version;
@@ -50,25 +51,31 @@ public abstract class AllureResolveMojo extends AllureBaseMojo {
     }
 
     /**
-     * Resolve all artifacts {@link #getArtifactsToResolve()}
+     * Resolve all artifacts.
      *
      * @throws AetherException if any occurs.
      */
     protected ClassLoader resolve() throws AetherException {
-        return createAether().resolveAll(getArtifactsToResolve()).getAsClassLoader();
+        Set<Artifact> artifacts = new HashSet<>();
+        Aether aether = createAether();
+        for (Dependency plugin : plugins) {
+            artifacts.addAll(collect(aether, plugin));
+        }
+        artifacts.addAll(collect(aether, getDefaultBundleDependency()));
+        return aether.resolveAll(artifacts.toArray(new Artifact[artifacts.size()])).getAsClassLoader();
     }
 
     /**
-     * Get the list of artifacts to resolve. The list contains all plugins artifacts
-     * and bundle artifact.
+     * Collect all dependencies for given artifact.
      */
-    protected Artifact[] getArtifactsToResolve() {
-        List<Artifact> artifacts = new ArrayList<>();
-        for (Dependency plugin : plugins) {
-            artifacts.add(convert(plugin));
+    protected List<Artifact> collect(Aether aether, Dependency dependency) throws AetherException {
+        List<Artifact> collected = aether.collect(convert(dependency));
+        getLog().debug("Found " + collected.size() + " dependencies for " + dependency);
+        for (Artifact element : collected) {
+            getLog().debug(String.format("%s:%s:%s", element.getGroupId(),
+                    element.getArtifactId(), element.getVersion()));
         }
-        artifacts.add(convert(getDefaultBundleDependency()));
-        return artifacts.toArray(new Artifact[artifacts.size()]);
+        return collected;
     }
 
     /**
