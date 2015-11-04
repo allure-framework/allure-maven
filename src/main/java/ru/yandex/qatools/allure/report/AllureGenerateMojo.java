@@ -60,6 +60,18 @@ public abstract class AllureGenerateMojo extends AllureResolveMojo {
     protected String allureMain;
 
     /**
+     * Path for @Issues
+     */
+    @Parameter
+    protected String issuesPattern;
+
+    /**
+     * Path for @Story
+     */
+    @Parameter
+    protected String testIdPattern;
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -85,6 +97,16 @@ public abstract class AllureGenerateMojo extends AllureResolveMojo {
             if (inputDirectories.isEmpty()) {
                 getLog().warn("Allure report was skipped because there is no results directories found.");
                 return;
+            }
+
+            if (issuesPattern != null){
+                System.setProperty("allure.issues.tracker.pattern" , issuesPattern);
+                getLog().info("allure.issues.tracker.pattern set to: " + issuesPattern);
+            }
+
+            if (testIdPattern != null){
+                System.setProperty("allure.tests.management.pattern" , testIdPattern);
+                getLog().info("allure.tests.management.pattern set to: " + testIdPattern);
             }
 
             List<String> parameters = new ArrayList<>();
