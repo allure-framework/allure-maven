@@ -9,7 +9,7 @@
     <name>Allure Report Test</name>
 
     <properties>
-        <allure.version>1.4.16</allure.version>
+        <allure.version>1.4.19</allure.version>
     </properties>
 
     <reporting>
@@ -20,7 +20,9 @@
                 <artifactId>@project.artifactId@</artifactId>
                 <version>@project.version@</version>
                 <configuration>
-                    <resultsDirectory>my-results</resultsDirectory>
+                    <properties>
+                        <allure.issues.tracker.pattern>http://example.com/%s</allure.issues.tracker.pattern>
+                    </properties>
                 </configuration>
             </plugin>
         </plugins>

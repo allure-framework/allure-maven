@@ -1,16 +1,24 @@
 package ru.yandex.qatools.allure.report;
 
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.reporting.MavenReportException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import static java.lang.String.format;
 
@@ -21,6 +29,10 @@ import static java.lang.String.format;
 public abstract class AllureGenerateMojo extends AllureResolveMojo {
 
     public static final String MAIN = "main";
+
+    public static final String ALLURE_OLD_PROPERTIES = "allure.properties";
+
+    public static final String ALLURE_NEW_PROPERTIES = "report.properties";
 
     /**
      * The project build directory. For maven projects it is usually the
@@ -60,6 +72,18 @@ public abstract class AllureGenerateMojo extends AllureResolveMojo {
     protected String allureMain;
 
     /**
+     * The path to the allure.properties file
+     */
+    @Parameter(defaultValue = "report.properties")
+    protected String propertiesFilePath;
+
+    /**
+     * The additional Allure properties such as issue tracker pattern.
+     */
+    @Parameter
+    protected Map<String, String> properties = new HashMap<>();
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -87,6 +111,11 @@ public abstract class AllureGenerateMojo extends AllureResolveMojo {
                 return;
             }
 
+            readPropertiesFile();
+            readPropertiesFileFromClasspath(ALLURE_OLD_PROPERTIES);
+            readPropertiesFileFromClasspath(ALLURE_NEW_PROPERTIES);
+            readPropertiesFromMap();
+
             List<String> parameters = new ArrayList<>();
             parameters.addAll(inputDirectories);
             parameters.add(reportDirectory);
@@ -97,6 +126,54 @@ public abstract class AllureGenerateMojo extends AllureResolveMojo {
         } catch (Exception e) {
             throw new MavenReportException("Could not generate the report", e);
         }
+    }
+
+    /**
+     * Read system properties from file {@link #propertiesFilePath}.
+     *
+     * @throws IOException if any occurs.
+     */
+    protected void readPropertiesFile() throws IOException {
+        Path path = Paths.get(propertiesFilePath);
+        if (Files.exists(path)) {
+            try (InputStream is = Files.newInputStream(path)) {
+                readPropertiesFromStream(is);
+            }
+        }
+    }
+
+    /**
+     * Read allure.properties from classpath.
+     *
+     * @throws IOException if any occurs.
+     */
+    protected void readPropertiesFileFromClasspath(String propertiesFileName) throws IOException, DependencyResolutionRequiredException {
+        try (InputStream is = createProjectClassLoader().getResourceAsStream(propertiesFileName)) {
+            readPropertiesFromStream(is);
+        }
+    }
+
+    /**
+     * Set properties from {@link #properties}
+     */
+    protected void readPropertiesFromMap() {
+        for (Map.Entry<String, String> property : properties.entrySet()) {
+            if (property.getKey() != null && property.getValue() != null) {
+                System.setProperty(property.getKey(), property.getValue());
+            }
+        }
+    }
+
+    /**
+     * Load Allure properties from given input stream.
+     *
+     * @throws IOException if any occurs.
+     */
+    protected void readPropertiesFromStream(InputStream is) throws IOException {
+        if (is == null) {
+            return;
+        }
+        System.getProperties().load(is);
     }
 
     /**
@@ -124,6 +201,20 @@ public abstract class AllureGenerateMojo extends AllureResolveMojo {
         sink.body_();
         sink.flush();
         sink.close();
+    }
+
+    /**
+     * Return ClassLoader with classpath elements
+     */
+    protected ClassLoader createProjectClassLoader() throws MalformedURLException, DependencyResolutionRequiredException {
+        List<URL> result = new ArrayList<>();
+        for (Object element : project.getTestClasspathElements()) {
+            if (element != null && element instanceof String) {
+                URL url = Paths.get((String) element).toUri().toURL();
+                result.add(url);
+            }
+        }
+        return new URLClassLoader(result.toArray(new URL[result.size()]));
     }
 
     /**
