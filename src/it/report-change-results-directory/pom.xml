@@ -20,7 +20,7 @@
                 <artifactId>@project.artifactId@</artifactId>
                 <version>@project.version@</version>
                 <configuration>
-                    <resultsDirectory>${basedir}/my-results</resultsDirectory>
+                    <resultsDirectory>my-results</resultsDirectory>
                 </configuration>
             </plugin>
         </plugins>
