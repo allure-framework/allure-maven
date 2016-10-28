@@ -6,7 +6,7 @@ This plugin generates Allure report [from existing XML files](https://github.com
 
 ## Getting Started
 
-* [An example report](http://ci.qatools.ru/job/allure-core_master-deploy/lastSuccessfulBuild/Allure_report/)
+* [An example report](http://ci.qatools.ru/job/allure-core_master-deploy/lastSuccessfulBuild/Allure_report/index.html)
 * [Documentation](http://wiki.qatools.ru/display/AL/Allure+Maven+Plugin)
 * [Issue Tracking](https://github.com/allure-framework/allure-maven-plugin/issues?labels=&milestone=&page=1&state=open)
 * [CI](http://ci.qatools.ru/)
