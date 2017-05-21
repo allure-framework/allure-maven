@@ -125,7 +125,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
     private void installAllure() throws MavenReportException{
         try {
-            AllureCommandline commandline = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
+            AllureCommandline commandline
+                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
             if (commandline.notExists()) {
 
                 getLog().info(String.format("Allure installation directory %s", getInstallDirectory()));
@@ -145,7 +146,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
         try {
             Path reportPath = Paths.get(reportDirectory);
 
-            AllureCommandline commandline = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
+            AllureCommandline commandline
+                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
 
             getLog().info("Generate report to " + reportPath);
             commandline.generateReport(resultsPaths, reportPath);
@@ -175,7 +177,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
      *
      * @throws IOException if any occurs.
      */
-    protected void readPropertiesFileFromClasspath(String propertiesFileName) throws IOException, DependencyResolutionRequiredException {
+    protected void readPropertiesFileFromClasspath(String propertiesFileName)
+            throws IOException, DependencyResolutionRequiredException {
         try (InputStream is = createProjectClassLoader().getResourceAsStream(propertiesFileName)) {
             readPropertiesFromStream(is);
         }
@@ -232,7 +235,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     /**
      * Return ClassLoader with classpath elements
      */
-    protected ClassLoader createProjectClassLoader() throws MalformedURLException, DependencyResolutionRequiredException {
+    protected ClassLoader createProjectClassLoader()
+            throws MalformedURLException, DependencyResolutionRequiredException {
         List<URL> result = new ArrayList<>();
         for (Object element : project.getTestClasspathElements()) {
             if (element != null && element instanceof String) {

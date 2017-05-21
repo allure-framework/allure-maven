@@ -81,7 +81,8 @@ public class AllureCommandline {
         Path allureZip = Files.createTempFile("allure", version);
         //Files.write(allureZip, client.download(version).execute().body().bytes());
 
-        URL allureUrl = new URL(allureDownloadRoot + "io/qameta/allure/allure/"+version+"/allure-"+version+".zip");
+        URL allureUrl = new URL(allureDownloadRoot +
+                "io/qameta/allure/allure/" + version + "/allure-" + version+".zip");
 
         FileUtils.copyURLToFile(allureUrl, allureZip.toFile());
         try {
