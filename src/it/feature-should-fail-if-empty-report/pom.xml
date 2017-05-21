@@ -19,6 +19,9 @@
                 <groupId>@project.groupId@</groupId>
                 <artifactId>@project.artifactId@</artifactId>
                 <version>@project.version@</version>
+                <configuration>
+                    <reportVersion>2.0.1</reportVersion>
+                </configuration>
             </plugin>
         </plugins>
     </reporting>

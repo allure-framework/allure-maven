@@ -28,6 +28,7 @@
                         </reports>
                         <configuration>
                             <inputDirectories>first/,second/</inputDirectories>
+                            <reportVersion>2.0.1</reportVersion>
                         </configuration>
                     </reportSet>
                 </reportSets>

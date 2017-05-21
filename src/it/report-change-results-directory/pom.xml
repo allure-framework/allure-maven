@@ -21,6 +21,7 @@
                 <version>@project.version@</version>
                 <configuration>
                     <resultsDirectory>my-results</resultsDirectory>
+                    <reportVersion>2.0.1</reportVersion>
                 </configuration>
             </plugin>
         </plugins>

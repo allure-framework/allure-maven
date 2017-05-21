@@ -19,10 +19,10 @@ import static ru.yandex.qatools.matchers.nio.PathMatchers.isDirectory;
 public final class TestHelper {
 
     public static final List<String> FILE_NAMES = Arrays.asList(
-            "xunit.json", "behaviors.json", "defects.json",
-            "graph.json", "plugins.json",
-            "report.json", "timeline.json", "widgets.json"
-    );
+            "behaviors.json", "categories.json",
+            "graph.json", "packages.json",
+            "timeline.json", "widgets.json" ,"xunit.json"
+            );
 
     TestHelper() {
     }
@@ -40,10 +40,10 @@ public final class TestHelper {
         }
 
         assertThat("There is not enough test case files in " + dataDirectory + " directory.",
-                getTestCases(dataDirectory), hasSize(testCasesCount));
+                getTestCases(dataDirectory.resolve("test-cases")), hasSize(testCasesCount));
     }
 
     public static List<String> getTestCases(Path dataDirectory) {
-        return Arrays.asList(dataDirectory.toFile().list(new WildcardFileFilter("*-testcase.json")));
+        return Arrays.asList(dataDirectory.toFile().list(new WildcardFileFilter("*.json")));
     }
 }
