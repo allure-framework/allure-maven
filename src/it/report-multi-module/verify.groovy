@@ -1,6 +1,6 @@
 import java.nio.file.Paths
 
-import static ru.yandex.qatools.allure.report.TestHelper.checkReportDirectory
+import static io.qameta.allure.maven.TestHelper.checkReportDirectory
 
 def basedirPath = basedir.absolutePath
 def firstOutputDirectory = Paths.get(basedirPath, 'first', 'target', 'site', 'allure-maven-plugin')

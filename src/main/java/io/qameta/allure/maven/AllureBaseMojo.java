@@ -1,4 +1,4 @@
-package ru.yandex.qatools.allure.report;
+package io.qameta.allure.maven;
 
 import org.apache.maven.doxia.siterenderer.Renderer;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;

@@ -1,4 +1,4 @@
-package ru.yandex.qatools.allure.report;
+package io.qameta.allure.maven;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
