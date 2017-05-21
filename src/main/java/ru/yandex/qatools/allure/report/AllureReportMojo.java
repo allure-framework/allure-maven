@@ -20,6 +20,10 @@ public class AllureReportMojo extends AllureGenerateMojo {
             defaultValue = "${project.basedir}/.allure")
     private String installDirectory;
 
+    @Parameter(property = "allure.download.url", required = false,
+            defaultValue = "https://dl.bintray.com/qameta/generic/")
+    private String allureDownloadRoot;
+
     /**
      * {@inheritDoc}
      */
@@ -44,9 +48,13 @@ public class AllureReportMojo extends AllureGenerateMojo {
         return path.isAbsolute() ? path : Paths.get(buildDirectory).resolve(path);
     }
 
-
     @Override
     protected String getInstallDirectory() {
         return this.installDirectory;
+    }
+
+    @Override
+    protected String getAllureDownloadRoot() {
+        return this.allureDownloadRoot;
     }
 }

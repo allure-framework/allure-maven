@@ -24,6 +24,10 @@ public class AlureAggregateMojo extends AllureGenerateMojo {
             defaultValue = "${project.basedir}/.allure")
     private String installDirectory;
 
+    @Parameter(property = "allure.download.url", required = false,
+            defaultValue = "https://dl.bintray.com/qameta/generic/")
+    private String allureDownloadRoot;
+
     /**
      * The projects in the reactor.
      */
@@ -64,6 +68,11 @@ public class AlureAggregateMojo extends AllureGenerateMojo {
     @Override
     protected String getInstallDirectory() {
         return this.installDirectory;
+    }
+
+    @Override
+    protected String getAllureDownloadRoot() {
+        return this.allureDownloadRoot;
     }
 
     @Override

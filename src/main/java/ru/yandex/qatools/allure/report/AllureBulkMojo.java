@@ -30,6 +30,10 @@ public class AllureBulkMojo extends AllureGenerateMojo {
     @Parameter(property = "allure.results.inputDirectories")
     protected String inputDirectories;
 
+    @Parameter(property = "allure.download.url", required = false,
+            defaultValue = "https://dl.bintray.com/qameta/generic/")
+    private String allureDownloadRoot;
+
     @Override
     protected List<Path> getInputDirectories() {
         List<Path> results = new ArrayList<>();
@@ -51,9 +55,13 @@ public class AllureBulkMojo extends AllureGenerateMojo {
         return "bulk";
     }
 
-
     @Override
     protected String getInstallDirectory() {
         return this.installDirectory;
+    }
+
+    @Override
+    protected String getAllureDownloadRoot() {
+        return this.allureDownloadRoot;
     }
 }

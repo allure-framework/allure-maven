@@ -2,6 +2,7 @@ package ru.yandex.qatools.allure.report;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.doxia.sink.Sink;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.reporting.MavenReportException;
 
@@ -98,6 +99,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     protected void executeReport(Locale locale) throws MavenReportException {
         try {
 
+            installAllure();
+
             getLog().info(format("Generate Allure report (%s) with version %s", getMojoName(), reportVersion));
             getLog().info("Generate Allure report to " + reportDirectory);
 
@@ -117,6 +120,24 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             render(getSink(), getName(locale));
         } catch (Exception e) {
             throw new MavenReportException("Could not generate the report", e);
+        }
+    }
+
+    private void installAllure() throws MavenReportException{
+        try {
+            AllureCommandline commandline = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
+            if (commandline.notExists()) {
+
+                getLog().info(String.format("Allure installation directory %s", getInstallDirectory()));
+                getLog().info(String.format("Try to finding out allure %s", reportVersion));
+
+                getLog().info("Downloading allure commandline...");
+                commandline.download(getAllureDownloadRoot(), false);
+                getLog().info("Downloading allure commandline complete");
+            }
+        } catch (Exception e) {
+            getLog().error("Can't install allure", e);
+            throw new MavenReportException("Can't install allure", e);
         }
     }
 
@@ -258,4 +279,9 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
      * Get install allure directory.
      */
     protected abstract String getInstallDirectory();
+
+    /**
+     * Get allure root url.
+     */
+    protected abstract String getAllureDownloadRoot();
 }
