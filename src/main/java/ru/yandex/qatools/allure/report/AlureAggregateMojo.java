@@ -19,6 +19,11 @@ import java.util.List;
         inheritByDefault = false, aggregator = true)
 public class AlureAggregateMojo extends AllureGenerateMojo {
 
+
+    @Parameter(property = "allure.install.directory", required = false,
+            defaultValue = "${project.basedir}/.allure")
+    private String installDirectory;
+
     /**
      * The projects in the reactor.
      */
@@ -29,19 +34,19 @@ public class AlureAggregateMojo extends AllureGenerateMojo {
      * {@inheritDoc}
      */
     @Override
-    protected List<String> getInputDirectories() {
+    protected List<Path> getInputDirectories() {
         Path relative = Paths.get(resultsDirectory);
         if (relative.isAbsolute()) {
             getLog().error("Input directory should be not absolute for aggregate goal.");
             return Collections.emptyList();
         }
 
-        List<String> result = new ArrayList<>();
+        List<Path> result = new ArrayList<>();
         for (MavenProject child : reactorProjects) {
             Path target = Paths.get(child.getBuild().getDirectory());
             Path path = target.resolve(relative).toAbsolutePath();
             if (isDirectoryExists(path)) {
-                result.add(path.toString());
+                result.add(path);
                 getLog().info("Found results directory " + path);
             } else {
                 getLog().warn("Results directory for module " + child.getName() + " not found.");
@@ -57,7 +62,14 @@ public class AlureAggregateMojo extends AllureGenerateMojo {
     }
 
     @Override
+    protected String getInstallDirectory() {
+        return this.installDirectory;
+    }
+
+    @Override
     protected boolean isAggregate() {
         return true;
     }
+
+
 }

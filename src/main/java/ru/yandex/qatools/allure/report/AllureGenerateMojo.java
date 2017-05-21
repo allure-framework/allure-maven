@@ -26,9 +26,8 @@ import static java.lang.String.format;
  * @author Dmitry Baev charlie@yandex-team.ru
  *         Date: 04.08.15
  */
-public abstract class AllureGenerateMojo extends AllureResolveMojo {
 
-    public static final String MAIN = "main";
+public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
     public static final String ALLURE_OLD_PROPERTIES = "allure.properties";
 
@@ -59,17 +58,18 @@ public abstract class AllureGenerateMojo extends AllureResolveMojo {
     protected String resultsDirectory;
 
     /**
+     * The version on Allure report to generate.
+     */
+    @Parameter(property = "allure.version", required = false,
+            defaultValue = "${project.version}")
+    protected String reportVersion;
+
+    /**
      * The directory to generate Allure report into.
      */
     @Parameter(property = "allure.report.directory",
             defaultValue = "${project.reporting.outputDirectory}/allure-maven-plugin")
     protected String reportDirectory;
-
-    /**
-     * The full name of Allure main class to run during report generation.
-     */
-    @Parameter(readonly = true, defaultValue = "ru.yandex.qatools.allure.AllureMain")
-    protected String allureMain;
 
     /**
      * The path to the allure.properties file
@@ -97,15 +97,11 @@ public abstract class AllureGenerateMojo extends AllureResolveMojo {
     @Override
     protected void executeReport(Locale locale) throws MavenReportException {
         try {
-            getLog().info(format("Generate Allure report (%s) with version %s", getMojoName(), version));
 
-            ClassLoader loader = resolve();
-            Class<?> clazz = loader.loadClass(allureMain);
-            Method main = clazz.getMethod(MAIN, String[].class);
-
+            getLog().info(format("Generate Allure report (%s) with version %s", getMojoName(), reportVersion));
             getLog().info("Generate Allure report to " + reportDirectory);
 
-            List<String> inputDirectories = getInputDirectories();
+            List<Path> inputDirectories = getInputDirectories();
             if (inputDirectories.isEmpty()) {
                 getLog().warn("Allure report was skipped because there is no results directories found.");
                 return;
@@ -116,15 +112,26 @@ public abstract class AllureGenerateMojo extends AllureResolveMojo {
             readPropertiesFileFromClasspath(ALLURE_NEW_PROPERTIES);
             readPropertiesFromMap();
 
-            List<String> parameters = new ArrayList<>();
-            parameters.addAll(inputDirectories);
-            parameters.add(reportDirectory);
-
-            main.invoke(null, new Object[]{parameters.toArray(new String[parameters.size()])});
+            generateReport(inputDirectories);
 
             render(getSink(), getName(locale));
         } catch (Exception e) {
             throw new MavenReportException("Could not generate the report", e);
+        }
+    }
+
+    private void generateReport(List<Path> resultsPaths) throws MavenReportException {
+        try {
+            Path reportPath = Paths.get(reportDirectory);
+
+            AllureCommandline commandline = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
+
+            getLog().info("Generate report to " + reportPath);
+            commandline.generateReport(resultsPaths, reportPath);
+            getLog().info("Report generated successfully.");
+        } catch (Exception e) {
+            getLog().error("Can't generate allure report data", e);
+            throw new MavenReportException("Can't generate allure report data", e);
         }
     }
 
@@ -170,10 +177,8 @@ public abstract class AllureGenerateMojo extends AllureResolveMojo {
      * @throws IOException if any occurs.
      */
     protected void readPropertiesFromStream(InputStream is) throws IOException {
-        if (is == null) {
-            return;
-        }
-        System.getProperties().load(is);
+        if (is != null)
+            System.getProperties().load(is);
     }
 
     /**
@@ -242,10 +247,15 @@ public abstract class AllureGenerateMojo extends AllureResolveMojo {
     /**
      * Get list of Allure results directories to generate the report.
      */
-    protected abstract List<String> getInputDirectories();
+    protected abstract List<Path> getInputDirectories();
 
     /**
      * Get the current mojo name.
      */
     protected abstract String getMojoName();
+
+    /**
+     * Get install allure directory.
+     */
+    protected abstract String getInstallDirectory();
 }
