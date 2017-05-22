@@ -50,6 +50,28 @@ public class AllureCommandline {
         return executor.execute(commandLine);
     }
 
+    public int serve(List<Path> resultsPaths, Path reportPath) throws IOException {
+        if (notExists()) {
+            throw new FileNotFoundException("Can't find allure installation");
+        }
+
+        if (Files.exists(reportPath)) {
+            FileUtils.deleteDirectory(reportPath.toFile());
+        }
+
+        CommandLine commandLine = new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
+        commandLine.addArgument("serve");
+        for (Path resultsPath : resultsPaths) {
+            commandLine.addArgument(resultsPath.toAbsolutePath().toString(), true);
+        }
+
+        DefaultExecutor executor = new DefaultExecutor();
+        ExecuteWatchdog watchdog = new ExecuteWatchdog(60000);
+        executor.setWatchdog(watchdog);
+        executor.setExitValue(0);
+        return executor.execute(commandLine);
+    }
+
     private Path getAllureExecutablePath() {
         String allureExecutable = isWindows() ? "allure.bat" : "allure";
         return getAllureHome().resolve("bin").resolve(allureExecutable);
@@ -77,10 +99,7 @@ public class AllureCommandline {
             return;
         }
 
-        //AllureArtifactClient client = newClient(allureDownloadRoot, AllureArtifactClient.class);
         Path allureZip = Files.createTempFile("allure", version);
-        //Files.write(allureZip, client.download(version).execute().body().bytes());
-
         URL allureUrl = new URL(allureDownloadRoot +
                 "io/qameta/allure/allure/" + version + "/allure-" + version+".zip");
 

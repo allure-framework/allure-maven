@@ -16,10 +16,6 @@ import java.util.List;
 @Mojo(name = "bulk", defaultPhase = LifecyclePhase.SITE, inheritByDefault = false)
 public class AllureBulkMojo extends AllureGenerateMojo {
 
-    @Parameter(property = "allure.install.directory", required = false,
-            defaultValue = "${project.basedir}/.allure")
-    private String installDirectory;
-
     /**
      * The comma-separated list of additional input directories. As long as
      * unix path can contains commas it is bad way to specify few input
@@ -28,11 +24,7 @@ public class AllureBulkMojo extends AllureGenerateMojo {
      * in "bulk" mojo.
      */
     @Parameter(property = "allure.results.inputDirectories")
-    protected String inputDirectories;
-
-    @Parameter(property = "allure.download.url", required = false,
-            defaultValue = "https://dl.bintray.com/qameta/generic/")
-    private String allureDownloadRoot;
+    private String inputDirectories;
 
     @Override
     protected List<Path> getInputDirectories() {
@@ -53,15 +45,5 @@ public class AllureBulkMojo extends AllureGenerateMojo {
     @Override
     protected String getMojoName() {
         return "bulk";
-    }
-
-    @Override
-    protected String getInstallDirectory() {
-        return this.installDirectory;
-    }
-
-    @Override
-    protected String getAllureDownloadRoot() {
-        return this.allureDownloadRoot;
     }
 }

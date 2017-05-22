@@ -19,20 +19,11 @@ import java.util.List;
         inheritByDefault = false, aggregator = true)
 public class AlureAggregateMojo extends AllureGenerateMojo {
 
-
-    @Parameter(property = "allure.install.directory", required = false,
-            defaultValue = "${project.basedir}/.allure")
-    private String installDirectory;
-
-    @Parameter(property = "allure.download.url", required = false,
-            defaultValue = "https://dl.bintray.com/qameta/generic/")
-    private String allureDownloadRoot;
-
     /**
      * The projects in the reactor.
      */
     @Parameter(defaultValue = "${reactorProjects}", required = true, readonly = true)
-    protected List<MavenProject> reactorProjects;
+    private List<MavenProject> reactorProjects;
 
     /**
      * {@inheritDoc}
@@ -63,16 +54,6 @@ public class AlureAggregateMojo extends AllureGenerateMojo {
     @Override
     protected String getMojoName() {
         return "aggregate";
-    }
-
-    @Override
-    protected String getInstallDirectory() {
-        return this.installDirectory;
-    }
-
-    @Override
-    protected String getAllureDownloadRoot() {
-        return this.allureDownloadRoot;
     }
 
     @Override

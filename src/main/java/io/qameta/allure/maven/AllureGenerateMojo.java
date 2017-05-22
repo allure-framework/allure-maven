@@ -63,18 +63,23 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             defaultValue = "${project.version}")
     protected String reportVersion;
 
-    /**
-     * The directory to generate Allure report into.
-     */
     @Parameter(property = "allure.report.directory",
             defaultValue = "${project.reporting.outputDirectory}/allure-maven-plugin")
-    protected String reportDirectory;
+    private String reportDirectory;
 
     /**
      * The path to the allure.properties file
      */
     @Parameter(defaultValue = "report.properties")
     protected String propertiesFilePath;
+
+    @Parameter(property = "allure.install.directory", required = false,
+            defaultValue = "${project.basedir}/.allure")
+    private String installDirectory;
+
+    @Parameter(property = "allure.download.url", required = false,
+            defaultValue = "https://dl.bintray.com/qameta/generic/")
+    private String allureDownloadRoot;
 
     /**
      * The additional Allure properties such as issue tracker pattern.
@@ -87,7 +92,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
      */
     @Override
     protected String getOutputDirectory() {
-        return reportDirectory;
+        return getReportDirectory();
     }
 
     /**
@@ -100,7 +105,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             installAllure();
 
             getLog().info(format("Generate Allure report (%s) with version %s", getMojoName(), reportVersion));
-            getLog().info("Generate Allure report to " + reportDirectory);
+            getLog().info("Generate Allure report to " + getReportDirectory());
 
             List<Path> inputDirectories = getInputDirectories();
             if (inputDirectories.isEmpty()) {
@@ -113,7 +118,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             readPropertiesFileFromClasspath(ALLURE_NEW_PROPERTIES);
             readPropertiesFromMap();
 
-            generateReport(inputDirectories);
+            this.generateReport(inputDirectories);
 
             render(getSink(), getName(locale));
         } catch (Exception e) {
@@ -123,15 +128,14 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
     private void installAllure() throws MavenReportException{
         try {
+            getLog().info(String.format("Allure installation directory %s", getInstallDirectory()));
+            getLog().info(String.format("Try to finding out allure %s", reportVersion));
+
             AllureCommandline commandline
                     = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
             if (commandline.notExists()) {
-
-                getLog().info(String.format("Allure installation directory %s", getInstallDirectory()));
-                getLog().info(String.format("Try to finding out allure %s", reportVersion));
-
                 getLog().info("Downloading allure commandline...");
-                commandline.download(getAllureDownloadRoot(), false);
+                commandline.download(allureDownloadRoot, false);
                 getLog().info("Downloading allure commandline complete");
             }
         } catch (Exception e) {
@@ -140,9 +144,9 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
         }
     }
 
-    private void generateReport(List<Path> resultsPaths) throws MavenReportException {
+    protected void generateReport(List<Path> resultsPaths) throws MavenReportException {
         try {
-            Path reportPath = Paths.get(reportDirectory);
+            Path reportPath = Paths.get(getReportDirectory());
 
             AllureCommandline commandline
                     = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
@@ -216,7 +220,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
         sink.lineBreak();
 
-        Path indexHtmlFile = Paths.get(reportDirectory, "index.html");
+        Path indexHtmlFile = Paths.get(getReportDirectory(), "index.html");
         String relativePath = Paths.get(reportingOutputDirectory)
                 .relativize(indexHtmlFile).toString();
 
@@ -277,13 +281,16 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
      */
     protected abstract String getMojoName();
 
-    /**
-     * Get install allure directory.
-     */
-    protected abstract String getInstallDirectory();
 
     /**
-     * Get allure root url.
+     * The directory to generate Allure report into.
      */
-    protected abstract String getAllureDownloadRoot();
+    public String getReportDirectory() {
+        return reportDirectory;
+    }
+
+
+    public String getInstallDirectory() {
+        return installDirectory;
+    }
 }

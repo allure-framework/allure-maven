@@ -2,7 +2,6 @@ package io.qameta.allure.maven;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,14 +14,6 @@ import java.util.List;
  */
 @Mojo(name = "report", defaultPhase = LifecyclePhase.SITE)
 public class AllureReportMojo extends AllureGenerateMojo {
-
-    @Parameter(property = "allure.install.directory", required = false,
-            defaultValue = "${project.basedir}/.allure")
-    private String installDirectory;
-
-    @Parameter(property = "allure.download.url", required = false,
-            defaultValue = "https://dl.bintray.com/qameta/generic/")
-    private String allureDownloadRoot;
 
     /**
      * {@inheritDoc}
@@ -46,15 +37,5 @@ public class AllureReportMojo extends AllureGenerateMojo {
     private Path getInputDirectoryAbsolutePath() {
         Path path = Paths.get(resultsDirectory);
         return path.isAbsolute() ? path : Paths.get(buildDirectory).resolve(path);
-    }
-
-    @Override
-    protected String getInstallDirectory() {
-        return this.installDirectory;
-    }
-
-    @Override
-    protected String getAllureDownloadRoot() {
-        return this.allureDownloadRoot;
     }
 }

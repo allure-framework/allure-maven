@@ -6,6 +6,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.reporting.MavenReportException;
 
 import java.nio.file.Paths;
 
@@ -16,16 +17,13 @@ import java.nio.file.Paths;
 @Mojo(name = "install", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class AllureInstallMojo extends AbstractMojo {
 
-    @Parameter(property = "allure.version", required = false,
-            defaultValue = "${project.version}")
+    @Parameter(property = "allure.version", defaultValue = "${project.version}")
     private String reportVersion;
 
-    @Parameter(property = "allure.download.url", required = false,
-            defaultValue = "https://dl.bintray.com/qameta/generic/")
+    @Parameter(property = "allure.download.url", defaultValue = "https://dl.bintray.com/qameta/generic/")
     private String allureDownloadRoot;
 
-    @Parameter(property = "allure.install.directory", required = false,
-            defaultValue = "${project.basedir}/.allure")
+    @Parameter(property = "allure.install.directory", defaultValue = "${project.basedir}/.allure")
     private String installDirectory;
 
     @Override
@@ -44,6 +42,5 @@ public class AllureInstallMojo extends AbstractMojo {
             getLog().error("Can't install allure", e);
             throw new MojoExecutionException("Can't install allure", e);
         }
-
     }
 }
