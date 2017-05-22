@@ -10,7 +10,7 @@
 
     <groupId>io.qameta.allure</groupId>
     <artifactId>allure-maven</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>2.7-SNAPSHOT</version>
 
     <packaging>maven-plugin</packaging>
 
@@ -18,6 +18,9 @@
 
     <properties>
         <compiler.version>1.7</compiler.version>
+
+        <maven.version>3.3.9</maven.version>
+        <maven-plugin.version>3.2</maven-plugin.version>
     </properties>
 
     <organization>
@@ -81,7 +84,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.2</version>
+                    <version>${maven-plugin.version}</version>
                     <configuration>
                         <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                     </configuration>
@@ -108,7 +111,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.0</version>
+                <version>3.6.1</version>
                 <configuration>
                     <source>${compiler.version}</source>
                     <target>${compiler.version}</target>
@@ -117,7 +120,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
+                <version>3.0.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -130,7 +133,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
+                <version>2.10.4</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -152,12 +155,17 @@
             <artifactId>clay-aether</artifactId>
             <version>2.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.3</version>
+        </dependency>
 
         <!--Maven Plugin API-->
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>3.1.1</version>
+            <version>${maven.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -177,12 +185,12 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
-            <version>3.3.1</version>
+            <version>${maven.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.reporting</groupId>
             <artifactId>maven-reporting-impl</artifactId>
-            <version>2.2</version>
+            <version>2.4</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-beanutils</artifactId>
@@ -199,7 +207,7 @@
         <dependency>
             <artifactId>commons-beanutils</artifactId>
             <groupId>commons-beanutils</groupId>
-            <version>1.9.2</version>
+            <version>1.9.3</version>
         </dependency>
 
         <dependency>
@@ -217,7 +225,7 @@
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.2</version>
+            <version>${maven-plugin.version}</version>
         </dependency>
 
         <dependency>
@@ -282,7 +290,7 @@
                             <dependency>
                                 <groupId>org.codehaus.groovy</groupId>
                                 <artifactId>groovy-all</artifactId>
-                                <version>2.4.7</version>
+                                <version>2.4.8</version>
                             </dependency>
                         </dependencies>
                     </plugin>
