@@ -20,7 +20,7 @@
         <compiler.version>1.7</compiler.version>
 
         <maven.version>3.3.9</maven.version>
-        <maven-plugin.version>3.3</maven-plugin.version>
+        <maven-plugin.version>3.2</maven-plugin.version>
     </properties>
 
     <organization>
