@@ -2,8 +2,11 @@ package io.qameta.allure.maven;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.doxia.sink.Sink;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.reporting.MavenReportException;
+import org.apache.maven.settings.crypto.SettingsDecrypter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,7 +63,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
      * The version on Allure report to generate.
      */
     @Parameter(property = "allure.version", required = false,
-            defaultValue = "${project.version}")
+            defaultValue = "2.0.1")
     protected String reportVersion;
 
     @Parameter(property = "allure.report.directory",
@@ -77,9 +80,14 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             defaultValue = "${project.basedir}/.allure")
     private String installDirectory;
 
-    @Parameter(property = "allure.download.url", required = false,
-            defaultValue = "https://dl.bintray.com/qameta/generic/")
-    private String allureDownloadRoot;
+    @Parameter(property = "allure.download.url", defaultValue = "https://dl.bintray.com/qameta/generic/io/qameta/allure/allure/%s/allure-%s.zip")
+    private String allureDownloadUrl;
+
+    @Parameter(property = "session", defaultValue = "${session}", readonly = true)
+    private MavenSession session;
+
+    @Component(role = SettingsDecrypter.class)
+    private SettingsDecrypter decrypter;
 
     /**
      * The additional Allure properties such as issue tracker pattern.
@@ -135,7 +143,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
                     = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
             if (commandline.notExists()) {
                 getLog().info("Downloading allure commandline...");
-                commandline.download(allureDownloadRoot, false);
+                commandline.download(allureDownloadUrl, ProxyUtils.getProxy(session, decrypter));
                 getLog().info("Downloading allure commandline complete");
             }
         } catch (Exception e) {
@@ -203,8 +211,9 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
      * @throws IOException if any occurs.
      */
     protected void readPropertiesFromStream(InputStream is) throws IOException {
-        if (is != null)
+        if (is != null) {
             System.getProperties().load(is);
+        }
     }
 
     /**

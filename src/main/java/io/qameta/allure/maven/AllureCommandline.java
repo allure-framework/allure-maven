@@ -6,12 +6,17 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.settings.Proxy;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 public class AllureCommandline {
@@ -30,9 +35,7 @@ public class AllureCommandline {
             throw new FileNotFoundException("Can't find allure installation");
         }
 
-        if (Files.exists(reportPath)) {
-            FileUtils.deleteDirectory(reportPath.toFile());
-        }
+        FileUtils.deleteQuietly(reportPath.toFile());
 
         CommandLine commandLine = new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
         commandLine.addArgument("generate");
@@ -55,9 +58,7 @@ public class AllureCommandline {
             throw new FileNotFoundException("Can't find allure installation");
         }
 
-        if (Files.exists(reportPath)) {
-            FileUtils.deleteDirectory(reportPath.toFile());
-        }
+        FileUtils.deleteQuietly(reportPath.toFile());
 
         CommandLine commandLine = new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
         commandLine.addArgument("serve");
@@ -90,20 +91,23 @@ public class AllureCommandline {
         return !exists();
     }
 
-    public void download(String allureDownloadRoot, boolean forceClean) throws IOException {
-        if (forceClean) {
-            Files.delete(getAllureHome());
-        }
+    public void download(String allureDownloadUrl, Proxy mavenProxy) throws IOException {
 
         if (exists()) {
             return;
         }
 
         Path allureZip = Files.createTempFile("allure", version);
-        URL allureUrl = new URL(allureDownloadRoot +
-                "io/qameta/allure/allure/" + version + "/allure-" + version+".zip");
+        URL allureUrl = new URL(String.format(allureDownloadUrl, version, version));
 
-        FileUtils.copyURLToFile(allureUrl, allureZip.toFile());
+        if (mavenProxy != null) {
+            InetSocketAddress proxyAddress = new InetSocketAddress(mavenProxy.getHost(), mavenProxy.getPort());
+            java.net.Proxy proxy = new java.net.Proxy(java.net.Proxy.Type.DIRECT, proxyAddress);
+            InputStream inputStream = allureUrl.openConnection(proxy).getInputStream();
+            Files.copy(inputStream, allureZip, StandardCopyOption.REPLACE_EXISTING);
+        } else {
+            FileUtils.copyURLToFile(allureUrl, allureZip.toFile());
+        }
         try {
             ZipFile zipFile = new ZipFile(allureZip.toFile());
             zipFile.extractAll(getInstallationDirectory().toAbsolutePath().toString());
