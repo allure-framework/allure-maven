@@ -152,20 +152,10 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
         readPropertiesFileFromClasspath(ALLURE_NEW_PROPERTIES, properties);
         readPropertiesFromMap(properties);
         for (Path dir : inputDirectories) {
-            OutputStream outputStream = null;
-            try {
-                outputStream = new FileOutputStream(dir.resolve(ALLURE_OLD_PROPERTIES).toString());
+            try (OutputStream outputStream = new FileOutputStream(dir.resolve(ALLURE_OLD_PROPERTIES).toString())){
                 properties.store(outputStream, null);
             } catch (IOException e) {
                 getLog().info(String.format("Can't store properties in directory %s", dir.toString()), e);
-            } finally {
-                if (outputStream != null) {
-                    try {
-                        outputStream.close();
-                    } catch (IOException e) {
-                        getLog().error(e);
-                    }
-                }
             }
         }
     }
@@ -213,9 +203,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
         Path path = Paths.get(propertiesFilePath);
         if (Files.exists(path)) {
             try (InputStream is = Files.newInputStream(path)) {
-                 if (is != null) {
-                     properties.load(is);
-                 }
+                properties.load(is);
             }
         }
     }
