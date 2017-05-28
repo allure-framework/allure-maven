@@ -8,7 +8,6 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.reporting.MavenReportException;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 
 import java.nio.file.Paths;
@@ -20,7 +19,7 @@ import java.nio.file.Paths;
 @Mojo(name = "install", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class AllureInstallMojo extends AbstractMojo {
 
-    @Parameter(property = "allure.version", defaultValue = "2.0.1")
+    @Parameter(property = "report.version", defaultValue = "2.0.1")
     private String reportVersion;
 
     @Parameter(property = "allure.download.url", defaultValue = "https://dl.bintray.com/qameta/generic/io/qameta/allure/allure/%s/allure-%s.zip")
@@ -42,7 +41,7 @@ public class AllureInstallMojo extends AbstractMojo {
             getLog().info(String.format("Try to finding out allure %s", reportVersion));
 
             AllureCommandline commandline = new AllureCommandline(Paths.get(installDirectory), reportVersion);
-            if (commandline.notExists()) {
+            if (commandline.allureNotExists()) {
                 getLog().info("Downloading allure commandline...");
                 commandline.download(allureDownloadUrl, ProxyUtils.getProxy(session, decrypter));
                 getLog().info("Downloading allure commandline complete");

@@ -12,8 +12,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -31,7 +31,8 @@ public class AllureCommandline {
     }
 
     public int generateReport(List<Path> resultsPaths, Path reportPath) throws IOException {
-        if (notExists()) {
+
+        if (allureNotExists()) {
             throw new FileNotFoundException("Can't find allure installation");
         }
 
@@ -46,15 +47,12 @@ public class AllureCommandline {
         commandLine.addArgument("-o");
         commandLine.addArgument(reportPath.toAbsolutePath().toString(), true);
 
-        DefaultExecutor executor = new DefaultExecutor();
-        ExecuteWatchdog watchdog = new ExecuteWatchdog(60000);
-        executor.setWatchdog(watchdog);
-        executor.setExitValue(0);
-        return executor.execute(commandLine);
+        return execute(commandLine);
     }
 
     public int serve(List<Path> resultsPaths, Path reportPath) throws IOException {
-        if (notExists()) {
+
+        if (allureNotExists()) {
             throw new FileNotFoundException("Can't find allure installation");
         }
 
@@ -66,6 +64,10 @@ public class AllureCommandline {
             commandLine.addArgument(resultsPath.toAbsolutePath().toString(), true);
         }
 
+        return execute(commandLine);
+    }
+
+    private int execute(CommandLine commandLine) throws IOException {
         DefaultExecutor executor = new DefaultExecutor();
         ExecuteWatchdog watchdog = new ExecuteWatchdog(60000);
         executor.setWatchdog(watchdog);
@@ -82,27 +84,28 @@ public class AllureCommandline {
         return installationDirectory.resolve("allure-" + version);
     }
 
-    private boolean exists() {
+    private boolean allureExists() {
         Path allureExecutablePath = getAllureExecutablePath();
         return Files.exists(allureExecutablePath) && Files.isExecutable(allureExecutablePath);
     }
 
-    boolean notExists() {
-        return !exists();
+    boolean allureNotExists() {
+        return !allureExists();
     }
 
     public void download(String allureDownloadUrl, Proxy mavenProxy) throws IOException {
 
-        if (exists()) {
+        if (allureExists()) {
             return;
         }
 
         Path allureZip = Files.createTempFile("allure", version);
         URL allureUrl = new URL(String.format(allureDownloadUrl, version, version));
 
+
         if (mavenProxy != null) {
             InetSocketAddress proxyAddress = new InetSocketAddress(mavenProxy.getHost(), mavenProxy.getPort());
-            java.net.Proxy proxy = new java.net.Proxy(java.net.Proxy.Type.DIRECT, proxyAddress);
+            java.net.Proxy proxy = new java.net.Proxy(java.net.Proxy.Type.HTTP, proxyAddress);
             InputStream inputStream = allureUrl.openConnection(proxy).getInputStream();
             Files.copy(inputStream, allureZip, StandardCopyOption.REPLACE_EXISTING);
         } else {

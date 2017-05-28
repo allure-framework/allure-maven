@@ -62,7 +62,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     /**
      * The version on Allure report to generate.
      */
-    @Parameter(property = "allure.version", required = false,
+    @Parameter(property = "report.version", required = false,
             defaultValue = "2.0.1")
     protected String reportVersion;
 
@@ -141,7 +141,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
             AllureCommandline commandline
                     = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
-            if (commandline.notExists()) {
+            if (commandline.allureNotExists()) {
                 getLog().info("Downloading allure commandline...");
                 commandline.download(allureDownloadUrl, ProxyUtils.getProxy(session, decrypter));
                 getLog().info("Downloading allure commandline complete");
