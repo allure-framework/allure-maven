@@ -2,24 +2,25 @@ import groovy.json.JsonSlurper
 
 import java.nio.file.Paths
 
-import static ru.yandex.qatools.allure.report.TestHelper.checkReportDirectory
-import static ru.yandex.qatools.allure.report.TestHelper.getTestCases
+import static io.qameta.allure.maven.TestHelper.checkReportDirectory
+import static io.qameta.allure.maven.TestHelper.getTestCases
 
 def outputDirectory = Paths.get(basedir.absolutePath, 'target', 'site', 'allure-maven-plugin')
 checkReportDirectory(outputDirectory, 1)
 
 def dataDirectory = outputDirectory.resolve('data')
+def testCasesDirectory = dataDirectory.resolve('test-cases')
 
-def testCasePath = dataDirectory.resolve(getTestCases(dataDirectory).get(0))
+def testCasePath = testCasesDirectory.resolve(getTestCases(testCasesDirectory).get(0))
 
 def jsonSlurper = new JsonSlurper()
 def testCase = jsonSlurper.parseText(testCasePath.text)
 
-assert testCase.issues
-assert testCase.issues.size() == 1
+assert testCase.links
+assert testCase.links.size() == 1
 
-def issue = testCase.issues.get(0)
+def link = testCase.links.get(0)
 
-assert issue
-assert issue.name == "issue-123"
-assert issue.url == "http://example.com/issue-123"
+assert link
+assert link.name == "issue-123"
+assert link.url == "http://example.com/issue-123"
