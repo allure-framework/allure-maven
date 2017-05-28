@@ -8,19 +8,17 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.reporting.MavenReportException;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.String.format;
 
@@ -110,7 +108,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     protected void executeReport(Locale locale) throws MavenReportException {
         try {
 
-            installAllure();
+            this.installAllure();
 
             getLog().info(format("Generate Allure report (%s) with version %s", getMojoName(), reportVersion));
             getLog().info("Generate Allure report to " + getReportDirectory());
@@ -121,16 +119,37 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
                 return;
             }
 
-            readPropertiesFile();
-            readPropertiesFileFromClasspath(ALLURE_OLD_PROPERTIES);
-            readPropertiesFileFromClasspath(ALLURE_NEW_PROPERTIES);
-            readPropertiesFromMap();
-
+            this.loadProperties(inputDirectories);
             this.generateReport(inputDirectories);
 
             render(getSink(), getName(locale));
         } catch (Exception e) {
             throw new MavenReportException("Could not generate the report", e);
+        }
+    }
+
+    private void loadProperties(List<Path> inputDirectories) throws IOException, DependencyResolutionRequiredException {
+        Properties properties = new Properties();
+        readPropertiesFile(properties);
+        readPropertiesFileFromClasspath(ALLURE_OLD_PROPERTIES, properties);
+        readPropertiesFileFromClasspath(ALLURE_NEW_PROPERTIES, properties);
+        readPropertiesFromMap(properties);
+        for (Path dir : inputDirectories) {
+            OutputStream outputStream = null;
+            try {
+                outputStream = new FileOutputStream(dir.resolve(ALLURE_OLD_PROPERTIES).toString());
+                properties.store(outputStream, null);
+            } catch (IOException e) {
+                getLog().info(String.format("Can't store properties in directory %s", dir.toString()), e);
+            } finally {
+                if (outputStream != null) {
+                    try {
+                        outputStream.close();
+                    } catch (IOException e) {
+                        getLog().error(e);
+                    }
+                }
+            }
         }
     }
 
@@ -173,11 +192,13 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
      *
      * @throws IOException if any occurs.
      */
-    protected void readPropertiesFile() throws IOException {
+    protected void readPropertiesFile(Properties properties) throws IOException {
         Path path = Paths.get(propertiesFilePath);
         if (Files.exists(path)) {
             try (InputStream is = Files.newInputStream(path)) {
-                readPropertiesFromStream(is);
+                 if (is != null) {
+                     properties.load(is);
+                 }
             }
         }
     }
@@ -187,32 +208,23 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
      *
      * @throws IOException if any occurs.
      */
-    protected void readPropertiesFileFromClasspath(String propertiesFileName)
+    protected void readPropertiesFileFromClasspath(String propertiesFileName, Properties properties)
             throws IOException, DependencyResolutionRequiredException {
         try (InputStream is = createProjectClassLoader().getResourceAsStream(propertiesFileName)) {
-            readPropertiesFromStream(is);
+            if (is != null) {
+                properties.load(is);
+            }
         }
     }
 
     /**
      * Set properties from {@link #properties}
      */
-    protected void readPropertiesFromMap() {
-        for (Map.Entry<String, String> property : properties.entrySet()) {
+    protected void readPropertiesFromMap(Properties properties) {
+        for (Map.Entry<String, String> property : this.properties.entrySet()) {
             if (property.getKey() != null && property.getValue() != null) {
-                System.setProperty(property.getKey(), property.getValue());
+                properties.setProperty(property.getKey(), property.getValue());
             }
-        }
-    }
-
-    /**
-     * Load Allure properties from given input stream.
-     *
-     * @throws IOException if any occurs.
-     */
-    protected void readPropertiesFromStream(InputStream is) throws IOException {
-        if (is != null) {
-            System.getProperties().load(is);
         }
     }
 
