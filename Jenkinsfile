@@ -1,14 +1,9 @@
 pipeline {
-    agent {
-        label 'java'
-    }
-    tools {
-        maven 'default'
-    }
+    agent { label 'java' }
     stages {
         stage('Build') {
             steps {
-                sh 'mvn -Dmaven.test.failure.ignore=true clean verify'
+                sh './mvnw -Dmaven.test.failure.ignore=true clean verify'
             }
         }
     }
