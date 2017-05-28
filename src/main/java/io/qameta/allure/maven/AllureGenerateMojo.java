@@ -13,11 +13,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 import static io.qameta.allure.maven.AllureCommandline.ALLURE_DEFAULT_VERSION;
@@ -33,6 +35,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     public static final String ALLURE_OLD_PROPERTIES = "allure.properties";
 
     public static final String ALLURE_NEW_PROPERTIES = "report.properties";
+
+    public static final String CATEGORIES_FILE_NAME = "categories.json";
 
     /**
      * The project build directory. For maven projects it is usually the
@@ -120,11 +124,24 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             }
 
             this.loadProperties(inputDirectories);
+            this.loadCategories(inputDirectories);
             this.generateReport(inputDirectories);
 
             render(getSink(), getName(locale));
         } catch (Exception e) {
             throw new MavenReportException("Could not generate the report", e);
+        }
+    }
+
+    private void loadCategories(List<Path> inputDirectories) throws URISyntaxException, IOException, DependencyResolutionRequiredException {
+        URL categoriesUrl = createProjectClassLoader().getResource(CATEGORIES_FILE_NAME);
+        if (categoriesUrl == null) {
+            getLog().info(String.format("Can't find information about categories."));
+            return;
+        }
+        for (Path dir : inputDirectories) {
+            Path categories = Paths.get(categoriesUrl.toURI());
+            Files.copy(categories, dir.resolve(CATEGORIES_FILE_NAME), StandardCopyOption.REPLACE_EXISTING);
         }
     }
 

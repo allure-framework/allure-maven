@@ -277,7 +277,7 @@
                             <postBuildHookScript>verify</postBuildHookScript>
                             <addTestClassPath>true</addTestClassPath>
                             <pomIncludes>
-                                <pomInclude>report-with-bundled-version/pom.xml</pomInclude>
+                                <pomInclude>categories-file-support-test-classpath/pom.xml</pomInclude>
                             </pomIncludes>
                         </configuration>
                         <executions>
