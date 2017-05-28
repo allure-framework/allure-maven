@@ -40,7 +40,7 @@
 
     <ciManagement>
         <system>Jenkins</system>
-        <url>https://ci.qameta.io</url>
+        <url>https://ci.qameta.io/job/allure-maven</url>
     </ciManagement>
 
     <issueManagement>
