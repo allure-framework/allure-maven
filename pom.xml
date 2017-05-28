@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
-    </parent>
 
     <groupId>io.qameta.allure</groupId>
     <artifactId>allure-maven</artifactId>
@@ -17,6 +12,7 @@
     <name>Allure Maven Plugin</name>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <compiler.version>1.7</compiler.version>
 
         <maven.version>3.3.9</maven.version>
@@ -24,7 +20,7 @@
     </properties>
 
     <organization>
-        <name>qameta</name>
+        <name>Qameta.io</name>
         <url>https://qameta.io</url>
     </organization>
 
@@ -37,40 +33,38 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/allure-framework/allure-maven-plugin</url>
-        <connection>scm:git@github.com:allure-framework/allure-maven-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:allure-framework/allure-maven-plugin.git</developerConnection>
+        <url>https://github.com/allure-framework/allure-maven</url>
+        <connection>scm:git@github.com:allure-framework/allure-maven.git</connection>
+        <developerConnection>scm:git:git@github.com:allure-framework/allure-maven.git</developerConnection>
     </scm>
+
+    <ciManagement>
+        <system>Jenkins</system>
+        <url>https://ci.qameta.io</url>
+    </ciManagement>
 
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/allure-framework/allure-maven-plugin/issues</url>
+        <url>https://github.com/allure-framework/allure-maven/issues</url>
     </issueManagement>
-
-    <ciManagement>
-        <system>TeamCity</system>
-        <url>http://teamcity.qatools.ru/</url>
-    </ciManagement>
 
     <developers>
         <developer>
             <id>eroshenkoam</id>
             <name>Artem Eroshenko</name>
-            <email>eroshenkoam@yandex-team.ru</email>
-            <organization>Yandex</organization>
+            <email>eroshenkoam@qameta.io</email>
         </developer>
         <developer>
             <id>charlie</id>
             <name>Dmitry Baev</name>
-            <email>charlie@yandex-team.ru</email>
-            <organization>Yandex</organization>
+            <email>charlie@qameta.io</email>
         </developer>
     </developers>
 
     <mailingLists>
         <mailingList>
             <name>Allure Mailing List</name>
-            <post>allure@yandex-team.ru</post>
+            <post>allure@qameta.io</post>
         </mailingList>
     </mailingLists>
 
@@ -151,9 +145,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>ru.yandex.qatools.clay</groupId>
-            <artifactId>clay-aether</artifactId>
-            <version>2.5</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -197,11 +191,6 @@
                     <groupId>commons-beanutils</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.plugin-tools</groupId>
-            <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.4</version>
         </dependency>
         <!-- fix dependency hell with allure-report-data-->
         <dependency>
@@ -333,5 +322,12 @@
             </build>
         </profile>
     </profiles>
+
+    <distributionManagement>
+        <repository>
+            <id>bintray-generic</id>
+            <url>https://api.bintray.com/maven/qameta/maven/allure-maven/;publish=1</url>
+        </repository>
+    </distributionManagement>
 
 </project>
