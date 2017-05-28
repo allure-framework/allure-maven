@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static io.qameta.allure.maven.AllureCommandline.ALLURE_DEFAULT_VERSION;
 import static java.lang.String.format;
 
 /**
@@ -60,8 +61,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     /**
      * The version on Allure report to generate.
      */
-    @Parameter(property = "report.version", required = false,
-            defaultValue = "2.0.1")
+    @Parameter(property = "report.version")
     protected String reportVersion;
 
     @Parameter(property = "allure.report.directory",
@@ -74,11 +74,11 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     @Parameter(defaultValue = "report.properties")
     protected String propertiesFilePath;
 
-    @Parameter(property = "allure.install.directory", required = false,
-            defaultValue = "${project.basedir}/.allure")
+    @Parameter(property = "allure.install.directory", defaultValue = "${project.basedir}/.allure")
     private String installDirectory;
 
-    @Parameter(property = "allure.download.url", defaultValue = "https://dl.bintray.com/qameta/generic/io/qameta/allure/allure/%s/allure-%s.zip")
+    @Parameter(property = "allure.download.url",
+            defaultValue = "https://dl.bintray.com/qameta/generic/io/qameta/allure/allure/%s/allure-%s.zip")
     private String allureDownloadUrl;
 
     @Parameter(property = "session", defaultValue = "${session}", readonly = true)
@@ -110,7 +110,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
             this.installAllure();
 
-            getLog().info(format("Generate Allure report (%s) with version %s", getMojoName(), reportVersion));
+            getLog().info(format("Generate Allure report (%s) with version %s", getMojoName(), reportVersion != null ? reportVersion : ALLURE_DEFAULT_VERSION));
             getLog().info("Generate Allure report to " + getReportDirectory());
 
             List<Path> inputDirectories = getInputDirectories();
@@ -156,7 +156,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     private void installAllure() throws MavenReportException{
         try {
             getLog().info(String.format("Allure installation directory %s", getInstallDirectory()));
-            getLog().info(String.format("Try to finding out allure %s", reportVersion));
+            getLog().info(String.format("Try to finding out allure %s", reportVersion != null ? reportVersion : ALLURE_DEFAULT_VERSION));
 
             AllureCommandline commandline
                     = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);

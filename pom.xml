@@ -276,6 +276,9 @@
                             <preBuildHookScript>setup</preBuildHookScript>
                             <postBuildHookScript>verify</postBuildHookScript>
                             <addTestClassPath>true</addTestClassPath>
+                            <pomIncludes>
+                                <pomInclude>report-with-bundled-version/pom.xml</pomInclude>
+                            </pomIncludes>
                         </configuration>
                         <executions>
                             <execution>

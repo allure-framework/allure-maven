@@ -12,6 +12,8 @@ import org.apache.maven.settings.crypto.SettingsDecrypter;
 
 import java.nio.file.Paths;
 
+import static io.qameta.allure.maven.AllureCommandline.ALLURE_DEFAULT_VERSION;
+
 /**
  * Install allure tool.
  */
@@ -19,10 +21,11 @@ import java.nio.file.Paths;
 @Mojo(name = "install", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class AllureInstallMojo extends AbstractMojo {
 
-    @Parameter(property = "report.version", defaultValue = "2.0.1")
+    @Parameter(property = "report.version")
     private String reportVersion;
 
-    @Parameter(property = "allure.download.url", defaultValue = "https://dl.bintray.com/qameta/generic/io/qameta/allure/allure/%s/allure-%s.zip")
+    @Parameter(property = "allure.download.url",
+            defaultValue = "https://dl.bintray.com/qameta/generic/io/qameta/allure/allure/%s/allure-%s.zip")
     private String allureDownloadUrl;
 
     @Parameter(property = "allure.install.directory", defaultValue = "${project.basedir}/.allure")
@@ -38,7 +41,7 @@ public class AllureInstallMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             getLog().info(String.format("Allure installation directory %s", installDirectory));
-            getLog().info(String.format("Try to finding out allure %s", reportVersion));
+            getLog().info(String.format("Try to finding out allure %s", reportVersion != null ? reportVersion : ALLURE_DEFAULT_VERSION));
 
             AllureCommandline commandline = new AllureCommandline(Paths.get(installDirectory), reportVersion);
             if (commandline.allureNotExists()) {
