@@ -276,9 +276,6 @@
                             <preBuildHookScript>setup</preBuildHookScript>
                             <postBuildHookScript>verify</postBuildHookScript>
                             <addTestClassPath>true</addTestClassPath>
-                            <pomIncludes>
-                                <pomInclude>categories-file-support-test-classpath/pom.xml</pomInclude>
-                            </pomIncludes>
                         </configuration>
                         <executions>
                             <execution>
