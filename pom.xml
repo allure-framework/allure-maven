@@ -8,7 +8,9 @@
 
     <packaging>maven-plugin</packaging>
 
-    <name>Allure Maven Plugin</name>
+    <name>Allure Maven</name>
+    <description>Maven integration with Allure reporting</description>
+    <url>https://github.com/allure-framework/allure-maven</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
