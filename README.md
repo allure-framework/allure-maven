@@ -1,6 +1,5 @@
 # Allure Maven Plugin 
 
-[![Release](http://github-release-version.herokuapp.com/github/allure-framework/allure-maven/release.svg?style=flat)](https://github.com/allure-framework/allure-maven/releases/latest) 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qameta.allure/allure-maven/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/io.qameta.allure/allure-maven) 
 [![Build Status](https://ci.qameta.io/buildStatus/icon?job=allure-maven/master)](https://ci.qameta.io/job/allure-maven/job/master/)
 
