@@ -24,7 +24,7 @@ This plugin generates Allure report [from existing XML files](https://github.com
 </reporting>
 ```
 * `mvn clean test` - run your tests
-* `mvn sute` - generate report
+* `mvn site` - generate report
 
 Report will be generated tо directory: `target/site/allure-maven/index.html`
 
