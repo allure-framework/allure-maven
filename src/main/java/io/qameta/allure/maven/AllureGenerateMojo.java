@@ -151,6 +151,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
         readPropertiesFileFromClasspath(ALLURE_OLD_PROPERTIES, properties);
         readPropertiesFileFromClasspath(ALLURE_NEW_PROPERTIES, properties);
         readPropertiesFromMap(properties);
+        readMavenProperties(properties);
+        PropertyUtils.prepareProperties(properties);
         for (Path dir : inputDirectories) {
             try (OutputStream outputStream = new FileOutputStream(dir.resolve(ALLURE_OLD_PROPERTIES).toString())){
                 properties.store(outputStream, null);
@@ -231,6 +233,13 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
                 properties.setProperty(property.getKey(), property.getValue());
             }
         }
+    }
+
+    /**
+     * Set properties defined in pom.xml
+     */
+    private void readMavenProperties(Properties properties) {
+        properties.putAll(this.getProject().getProperties());
     }
 
     /**
