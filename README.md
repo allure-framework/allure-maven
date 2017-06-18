@@ -7,8 +7,6 @@ This plugin generates Allure report by [existing XML files](https://github.com/a
 
 ## Getting Started
 
-### Preparation
-
 * Add following lines into your `pom.xml` build section:
 ```
 <plugin>
@@ -20,17 +18,16 @@ This plugin generates Allure report by [existing XML files](https://github.com/a
 
 * `mvn clean test` - run your tests
 
-## Usage
-
 You can generate a report using one of the following command:
+
+* `mvn allure:serve`
+
+Report will be generated into temp folder. Web server with results will start.
 
 * `mvn allure:report`
 
 Report will be generated tо directory: `target/site/allure-maven/index.html`
 
-* `mvn allure:serve`
-
-Report will be generated into temp folder. Web server with results will start.
 
 Additional information can be found [here](https://docs.qameta.io/allure).
 
