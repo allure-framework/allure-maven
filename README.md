@@ -3,29 +3,36 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qameta.allure/allure-maven/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/io.qameta.allure/allure-maven) 
 [![Build Status](https://ci.qameta.io/buildStatus/icon?job=allure-maven/master)](https://ci.qameta.io/job/allure-maven/job/master/)
 
-This plugin generates Allure report [from existing XML files](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) during Maven build.
+This plugin generates Allure report by [existing XML files](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) during Maven build process.
 
 ## Getting Started
 
-### Reporing section
+### Preparation
 
-* add following lines at your `pom.xml`
+* Add following lines into your `pom.xml` build section:
 ```
-<reporting>
-    <excludeDefaults>true</excludeDefaults>
-    <plugins>
-        <plugin>
-            <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-maven</artifactId>
-            <version>2.8</version>
-        </plugin>
-    </plugins>
-</reporting>
+<plugin>
+    <groupId>io.qameta.allure</groupId>
+    <artifactId>allure-maven</artifactId>
+    <version>2.9</version>
+</plugin>
 ```
+
 * `mvn clean test` - run your tests
-* `mvn site` - generate report
+
+## Usage
+
+You can generate a report using one of the following command:
+
+* `mvn allure:report`
 
 Report will be generated tо directory: `target/site/allure-maven/index.html`
+
+* `mvn allure:serve`
+
+Report will be generated into temp folder. Web server with results will start.
+
+Additional information can be found [here](https://docs.qameta.io/allure).
 
 ## Links
 
