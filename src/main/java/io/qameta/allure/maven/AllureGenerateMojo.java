@@ -1,5 +1,6 @@
 package io.qameta.allure.maven;
 
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.execution.MavenSession;
@@ -151,8 +152,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
         readPropertiesFileFromClasspath(ALLURE_OLD_PROPERTIES, properties);
         readPropertiesFileFromClasspath(ALLURE_NEW_PROPERTIES, properties);
         readPropertiesFromMap(properties);
-        readMavenProperties(properties);
-        PropertyUtils.prepareProperties(properties);
+        prepareProperties(properties);
         for (Path dir : inputDirectories) {
             try (OutputStream outputStream = new FileOutputStream(dir.resolve(ALLURE_OLD_PROPERTIES).toString())){
                 properties.store(outputStream, null);
@@ -236,10 +236,20 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     }
 
     /**
-     * Set properties defined in pom.xml
+     * Replaces the placeholders in properties.
+     * You can use properties like:
+     * name1=value1
+     * name2=value2 with ${name1}
+     * You can also use system and maven properties for the placeholder.
      */
-    private void readMavenProperties(Properties properties) {
-        properties.putAll(this.getProject().getProperties());
+    protected void prepareProperties(Properties properties) {
+        Properties allProperties = new Properties();
+        allProperties.putAll(properties);
+        allProperties.putAll(this.getProject().getProperties());
+        allProperties.putAll(System.getProperties());
+        for (String name : properties.stringPropertyNames()) {
+            properties.setProperty(name, StrSubstitutor.replace(properties.getProperty(name), allProperties));
+        }
     }
 
     /**
