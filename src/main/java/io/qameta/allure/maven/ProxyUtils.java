@@ -15,15 +15,15 @@ import java.util.List;
 /**
  * Created by bvo2002 on 25.05.17.
  */
-class ProxyUtils {
+final class ProxyUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyUtils.class);
 
     private ProxyUtils(){
-        throw new IllegalStateException();
+        throw new IllegalStateException("Do not instance");
     }
 
-    static Proxy getProxy(MavenSession mavenSession, SettingsDecrypter decrypter) {
+    /* default */ static Proxy getProxy(MavenSession mavenSession, SettingsDecrypter decrypter) {
         if (mavenSession == null ||
                 mavenSession.getSettings() == null ||
                 mavenSession.getSettings().getProxies() == null ||

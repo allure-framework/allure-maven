@@ -11,7 +11,11 @@ import java.util.regex.Pattern;
 /**
  * Properties util class.
  */
-class PropertyUtils {
+final class PropertyUtils {
+
+    private PropertyUtils(){
+        throw new IllegalStateException("Do not instance");
+    }
 
     /**
      * Replaces the placeholders in properties.
@@ -20,7 +24,7 @@ class PropertyUtils {
      * name2=value2 with ${name1}
      * You can also use system and maven properties for the placeholder.
      */
-    static void prepareProperties(Properties baseProperties) {
+    /* default */ static void prepareProperties(Properties baseProperties) {
         for (String name : baseProperties.stringPropertyNames()) {
             baseProperties.setProperty(name, getPropertyValue(baseProperties.getProperty(name), baseProperties));
         }
@@ -28,7 +32,6 @@ class PropertyUtils {
 
     private static String getPropertyValue(String property, Properties baseProperties ) {
         String result = property;
-        Map<String, Integer> inspector = new HashMap<>();
         Pattern pattern = Pattern.compile("\\$\\{\\s*(.*?)\\s*(?<!\\\\)\\}");
         while (true) {
             Matcher matcher = pattern.matcher(result);
@@ -39,22 +42,15 @@ class PropertyUtils {
             String match = matcher.group(0);
             String name = matcher.group(1);
 
-            if (!inspector.containsKey(name)) {
-                inspector.put(name, Integer.valueOf(1));
-            } else {
-                inspector.put(name, Integer.valueOf(inspector.get(name).intValue() + 1));
-            }
-
             String value = baseProperties.getProperty(name);
             if(value == null && !StringUtils.isEmpty(value)) {
                 value = System.getProperty(name);
             }
 
-            if (inspector.get(name).intValue() > 25) {
-                value = "...";
-            }
             if (value != null) {
                 result = result.replace(match, value);
+            } else {
+                result = result.replace(match, "NOT_FOUND");
             }
         }
         return result;
