@@ -1,7 +1,13 @@
-# Allure Maven Plugin 
+[build]: https://ci.qameta.io/job/allure-maven/job/master "Build"
+[build-badge]: https://ci.qameta.io/buildStatus/icon?job=allure-maven/master
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qameta.allure/allure-maven/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/io.qameta.allure/allure-maven) 
-[![Build Status](https://ci.qameta.io/buildStatus/icon?job=allure-maven/master)](https://ci.qameta.io/job/allure-maven/job/master/)
+[release]: https://github.com/allure-framework/allure-maven/releases/latest "Release"
+[release-badge]: https://img.shields.io/github/release/allure-framework/allure-maven.svg
+
+[bintray]: https://bintray.com/qameta/maven/allure-maven "Bintray"
+[bintray-badge]: https://img.shields.io/bintray/v/qameta/maven/allure-maven.svg?style=flat
+
+# Allure Maven Plugin [![build-badge][]][build] [![release-badge][]][release] [![bintray-badge][]][bintray]
 
 This plugin generates Allure report by [existing XML files](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) during Maven build process.
 
@@ -12,7 +18,7 @@ This plugin generates Allure report by [existing XML files](https://github.com/a
 <plugin>
     <groupId>io.qameta.allure</groupId>
     <artifactId>allure-maven</artifactId>
-    <version>2.9</version>
+    <version>2.8</version>
 </plugin>
 ```
 
