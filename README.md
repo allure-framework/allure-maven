@@ -34,6 +34,19 @@ Report will be generated into temp folder. Web server with results will start.
 
 Report will be generated tо directory: `target/site/allure-maven/index.html`
 
+## Configuration 
+
+You cant configurate allure version like here: 
+```
+<plugin>
+    <groupId>io.qameta.allure</groupId>
+    <artifactId>allure-maven</artifactId>
+    <version>2.8</version>
+    <configuration>
+        <reportVersion>2.3.1</reportVersion>
+    </configuration>
+</plugin>
+```
 
 Additional information can be found [here](https://docs.qameta.io/allure).
 
