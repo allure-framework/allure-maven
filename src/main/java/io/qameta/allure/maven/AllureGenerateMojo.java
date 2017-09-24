@@ -1,5 +1,6 @@
 package io.qameta.allure.maven;
 
+import net.sf.json.JSONObject;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.doxia.sink.Sink;
@@ -13,10 +14,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -126,11 +129,29 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
             this.loadProperties(inputDirectories);
             this.loadCategories(inputDirectories);
+            this.copyExecutorInfo(inputDirectories);
             this.generateReport(inputDirectories);
 
             render(getSink(), getName(locale));
         } catch (Exception e) {
             throw new MavenReportException("Could not generate the report", e);
+        }
+    }
+
+    private void copyExecutorInfo(List<Path> inputDirectories) throws IOException, DependencyResolutionRequiredException {
+
+        Map<String, Object> executorInfo = new HashMap<>();
+        executorInfo.put("name", "Maven");
+        executorInfo.put("type", "maven");
+        executorInfo.put("buildName", getProject().getName());
+
+        for (Path dir : inputDirectories) {
+            Path executorInfoFile = dir.resolve("executor.json");
+            try (Writer writer = Files.newBufferedWriter(executorInfoFile, StandardCharsets.UTF_8)) {
+                JSONObject.fromObject(executorInfo)
+                        .write(writer)
+                        .flush();
+            }
         }
     }
 
