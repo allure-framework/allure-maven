@@ -174,7 +174,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             getLog().info(String.format("Try to finding out allure %s", reportVersion != null ? reportVersion : ALLURE_DEFAULT_VERSION));
 
             AllureCommandline commandline
-                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion, null);
+                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
             if (commandline.allureNotExists()) {
                 getLog().info("Downloading allure commandline...");
                 commandline.download(allureDownloadUrl, ProxyUtils.getProxy(session, decrypter));
@@ -191,7 +191,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             Path reportPath = Paths.get(getReportDirectory());
 
             AllureCommandline commandline
-                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion, null);
+                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
 
             getLog().info("Generate report to " + reportPath);
             commandline.generateReport(resultsPaths, reportPath);
