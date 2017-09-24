@@ -147,11 +147,6 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             Path executorInfoFile = dir.resolve("executor.json");
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(executorInfoFile.toFile(), executorInfo);
-            /*try (Writer writer = Files.newBufferedWriter(executorInfoFile, StandardCharsets.UTF_8)) {
-                JSONObject.fromObject(executorInfo)
-                        .write(writer)
-                        .flush();
-            }*/
         }
     }
 
