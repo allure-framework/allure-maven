@@ -24,11 +24,16 @@ public class AllureCommandline {
 
     private final String version;
 
+    private static final int SERVE_DEFAULT_TIMEOUT = 3600;
+
+    private final String serveTimeout;
+
     private final Path installationDirectory;
 
-    public AllureCommandline(final Path installationDirectory, final String version) {
+    public AllureCommandline(final Path installationDirectory, final String version, final String serveTimeout) {
         this.installationDirectory = installationDirectory;
         this.version = version;
+        this.serveTimeout = serveTimeout;
     }
 
     public int generateReport(List<Path> resultsPaths, Path reportPath) throws IOException {
@@ -46,7 +51,7 @@ public class AllureCommandline {
         commandLine.addArgument("-o");
         commandLine.addArgument(reportPath.toAbsolutePath().toString(), true);
 
-        return execute(commandLine);
+        return execute(commandLine, 60);
     }
 
     public int serve(List<Path> resultsPaths, Path reportPath) throws IOException {
@@ -61,7 +66,7 @@ public class AllureCommandline {
             commandLine.addArgument(resultsPath.toAbsolutePath().toString(), true);
         }
 
-        return execute(commandLine);
+        return execute(commandLine, serveTimeout == null ? SERVE_DEFAULT_TIMEOUT : Integer.valueOf(serveTimeout));
     }
 
     private void checkAllureExists() throws FileNotFoundException {
@@ -71,9 +76,9 @@ public class AllureCommandline {
         }
     }
 
-    private int execute(CommandLine commandLine) throws IOException {
+    private int execute(CommandLine commandLine, int timeout) throws IOException {
         DefaultExecutor executor = new DefaultExecutor();
-        ExecuteWatchdog watchdog = new ExecuteWatchdog(60000);
+        ExecuteWatchdog watchdog = new ExecuteWatchdog(timeout * 1000);
         executor.setWatchdog(watchdog);
         executor.setExitValue(0);
         return executor.execute(commandLine);

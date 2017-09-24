@@ -74,6 +74,12 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     private String reportDirectory;
 
     /**
+     * Serve timeout parameter in seconds.
+     */
+    @Parameter(property = "server.timeout")
+    protected String serveTimeout;
+
+    /**
      * The path to the allure.properties file
      */
     @Parameter(defaultValue = "report.properties")
@@ -168,7 +174,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             getLog().info(String.format("Try to finding out allure %s", reportVersion != null ? reportVersion : ALLURE_DEFAULT_VERSION));
 
             AllureCommandline commandline
-                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
+                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion, null);
             if (commandline.allureNotExists()) {
                 getLog().info("Downloading allure commandline...");
                 commandline.download(allureDownloadUrl, ProxyUtils.getProxy(session, decrypter));
@@ -185,7 +191,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             Path reportPath = Paths.get(getReportDirectory());
 
             AllureCommandline commandline
-                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
+                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion, null);
 
             getLog().info("Generate report to " + reportPath);
             commandline.generateReport(resultsPaths, reportPath);

@@ -36,7 +36,7 @@ Report will be generated tо directory: `target/site/allure-maven/index.html`
 
 ## Configuration 
 
-You cant configurate allure version like here: 
+You can configurate allure version like here: 
 ```
 <plugin>
     <groupId>io.qameta.allure</groupId>
