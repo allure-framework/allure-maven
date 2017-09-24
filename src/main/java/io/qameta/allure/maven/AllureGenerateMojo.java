@@ -76,7 +76,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     /**
      * Serve timeout parameter in seconds.
      */
-    @Parameter(property = "server.timeout")
+    @Parameter(property = "allure.serve.timeout")
     protected String serveTimeout;
 
     /**
