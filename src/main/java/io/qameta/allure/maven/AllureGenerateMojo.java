@@ -1,6 +1,6 @@
 package io.qameta.allure.maven;
 
-import net.sf.json.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.doxia.sink.Sink;
@@ -14,12 +14,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -147,11 +145,13 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
         for (Path dir : inputDirectories) {
             Path executorInfoFile = dir.resolve("executor.json");
-            try (Writer writer = Files.newBufferedWriter(executorInfoFile, StandardCharsets.UTF_8)) {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(executorInfoFile.toFile(), executorInfo);
+            /*try (Writer writer = Files.newBufferedWriter(executorInfoFile, StandardCharsets.UTF_8)) {
                 JSONObject.fromObject(executorInfo)
                         .write(writer)
                         .flush();
-            }
+            }*/
         }
     }
 
