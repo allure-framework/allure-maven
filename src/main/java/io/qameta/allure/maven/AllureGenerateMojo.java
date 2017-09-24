@@ -1,5 +1,6 @@
 package io.qameta.allure.maven;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.doxia.sink.Sink;
@@ -126,11 +127,26 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
             this.loadProperties(inputDirectories);
             this.loadCategories(inputDirectories);
+            this.copyExecutorInfo(inputDirectories);
             this.generateReport(inputDirectories);
 
             render(getSink(), getName(locale));
         } catch (Exception e) {
             throw new MavenReportException("Could not generate the report", e);
+        }
+    }
+
+    private void copyExecutorInfo(List<Path> inputDirectories) throws IOException, DependencyResolutionRequiredException {
+
+        Map<String, Object> executorInfo = new HashMap<>();
+        executorInfo.put("name", "Maven");
+        executorInfo.put("type", "maven");
+        executorInfo.put("buildName", getProject().getName());
+
+        for (Path dir : inputDirectories) {
+            Path executorInfoFile = dir.resolve("executor.json");
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(executorInfoFile.toFile(), executorInfo);
         }
     }
 
