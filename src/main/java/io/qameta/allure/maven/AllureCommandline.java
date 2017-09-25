@@ -32,9 +32,7 @@ public class AllureCommandline {
     private final Path installationDirectory;
 
     public AllureCommandline(final Path installationDirectory, final String version) {
-        this.installationDirectory = installationDirectory;
-        this.version = version;
-        this.serveTimeout = SERVE_DEFAULT_TIMEOUT;
+        this(installationDirectory, version, SERVE_DEFAULT_TIMEOUT);
     }
 
     public AllureCommandline(final Path installationDirectory, final String version, final String serveTimeout) {
