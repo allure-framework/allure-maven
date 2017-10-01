@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class AllureCommandline {
 
@@ -24,11 +25,20 @@ public class AllureCommandline {
 
     private final String version;
 
+    private static final String SERVE_DEFAULT_TIMEOUT = "3600";
+
+    private final String serveTimeout;
+
     private final Path installationDirectory;
 
     public AllureCommandline(final Path installationDirectory, final String version) {
+        this(installationDirectory, version, SERVE_DEFAULT_TIMEOUT);
+    }
+
+    public AllureCommandline(final Path installationDirectory, final String version, final String serveTimeout) {
         this.installationDirectory = installationDirectory;
         this.version = version;
+        this.serveTimeout = serveTimeout == null ? SERVE_DEFAULT_TIMEOUT : serveTimeout;
     }
 
     public int generateReport(List<Path> resultsPaths, Path reportPath) throws IOException {
@@ -46,7 +56,7 @@ public class AllureCommandline {
         commandLine.addArgument("-o");
         commandLine.addArgument(reportPath.toAbsolutePath().toString(), true);
 
-        return execute(commandLine);
+        return execute(commandLine, 60);
     }
 
     public int serve(List<Path> resultsPaths, Path reportPath) throws IOException {
@@ -60,8 +70,7 @@ public class AllureCommandline {
         for (Path resultsPath : resultsPaths) {
             commandLine.addArgument(resultsPath.toAbsolutePath().toString(), true);
         }
-
-        return execute(commandLine);
+        return execute(commandLine, Integer.valueOf(this.serveTimeout));
     }
 
     private void checkAllureExists() throws FileNotFoundException {
@@ -71,9 +80,9 @@ public class AllureCommandline {
         }
     }
 
-    private int execute(CommandLine commandLine) throws IOException {
+    private int execute(CommandLine commandLine, int timeout) throws IOException {
         DefaultExecutor executor = new DefaultExecutor();
-        ExecuteWatchdog watchdog = new ExecuteWatchdog(60000);
+        ExecuteWatchdog watchdog = new ExecuteWatchdog(TimeUnit.SECONDS.toMillis(timeout));
         executor.setWatchdog(watchdog);
         executor.setExitValue(0);
         return executor.execute(commandLine);

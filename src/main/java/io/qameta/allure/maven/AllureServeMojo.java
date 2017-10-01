@@ -46,7 +46,7 @@ public class AllureServeMojo extends AllureGenerateMojo {
             Path reportPath = Paths.get(getReportDirectory());
 
             AllureCommandline commandline
-                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
+                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion, this.serveTimeout);
 
             getLog().info("Generate report to " + reportPath);
             commandline.serve(resultsPaths, reportPath);

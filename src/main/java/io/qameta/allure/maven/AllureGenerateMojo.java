@@ -75,6 +75,12 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     private String reportDirectory;
 
     /**
+     * Serve timeout parameter in seconds.
+     */
+    @Parameter(property = "allure.serve.timeout")
+    protected String serveTimeout;
+
+    /**
      * The path to the allure.properties file
      */
     @Parameter(defaultValue = "report.properties")
