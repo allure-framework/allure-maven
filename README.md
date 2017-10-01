@@ -18,7 +18,7 @@ This plugin generates Allure report by [existing XML files](https://github.com/a
 <plugin>
     <groupId>io.qameta.allure</groupId>
     <artifactId>allure-maven</artifactId>
-    <version>2.8</version>
+    <version>2.9</version>
 </plugin>
 ```
 
