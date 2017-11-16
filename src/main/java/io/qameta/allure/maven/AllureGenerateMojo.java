@@ -81,6 +81,18 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     protected String serveTimeout;
 
     /**
+     * Serve host parameter.
+     */
+    @Parameter(property = "allure.serve.host")
+    protected String serveHost;
+
+    /**
+     * Serve port parameter.
+     */
+    @Parameter(property = "allure.serve.port", defaultValue = "0")
+    protected Integer servePort;
+
+    /**
      * The path to the allure.properties file
      */
     @Parameter(defaultValue = "report.properties")

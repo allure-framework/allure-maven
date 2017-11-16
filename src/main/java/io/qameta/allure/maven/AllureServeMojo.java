@@ -49,7 +49,7 @@ public class AllureServeMojo extends AllureGenerateMojo {
                     = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion, this.serveTimeout);
 
             getLog().info("Generate report to " + reportPath);
-            commandline.serve(resultsPaths, reportPath);
+            commandline.serve(resultsPaths, reportPath, this.serveHost, this.servePort);
             getLog().info("Report generated successfully.");
         } catch (Exception e) {
             getLog().error("Can't generate allure report data", e);
