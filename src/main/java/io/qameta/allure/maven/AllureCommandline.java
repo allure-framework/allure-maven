@@ -59,7 +59,7 @@ public class AllureCommandline {
         return execute(commandLine, 60);
     }
 
-    public int serve(List<Path> resultsPaths, Path reportPath) throws IOException {
+    public int serve(List<Path> resultsPaths, Path reportPath, String serveHost, Integer servePort) throws IOException {
 
         this.checkAllureExists();
 
@@ -67,6 +67,14 @@ public class AllureCommandline {
 
         CommandLine commandLine = new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
         commandLine.addArgument("serve");
+        if (serveHost != null && serveHost.matches("(\\d{1,3}\\.){3}\\d{1,3}")) {
+            commandLine.addArgument("--host");
+            commandLine.addArgument(serveHost);
+        }
+        if (servePort > 0) {
+            commandLine.addArgument("--port");
+            commandLine.addArgument("" + servePort);
+        }
         for (Path resultsPath : resultsPaths) {
             commandLine.addArgument(resultsPath.toAbsolutePath().toString(), true);
         }
