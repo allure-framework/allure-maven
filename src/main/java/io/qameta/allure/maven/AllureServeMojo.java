@@ -26,7 +26,7 @@ public class AllureServeMojo extends AllureGenerateMojo {
      * Serve timeout parameter in seconds.
      */
     @Parameter(property = "allure.serve.timeout", defaultValue = "3600")
-    private String serveTimeout;
+    private int serveTimeout;
 
     /**
      * Serve host parameter.

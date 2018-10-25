@@ -32,13 +32,13 @@ public class AllureCommandline {
     private final Path installationDirectory;
 
     public AllureCommandline(final Path installationDirectory, final String version) {
-        this(installationDirectory, version, null);
+        this(installationDirectory, version, DEFAULT_TIMEOUT);
     }
 
-    public AllureCommandline(final Path installationDirectory, final String version, final String timeout) {
+    public AllureCommandline(final Path installationDirectory, final String version, int timeout) {
         this.installationDirectory = installationDirectory;
         this.version = version;
-        this.timeout = timeout == null ? DEFAULT_TIMEOUT : Integer.valueOf(timeout);
+        this.timeout = timeout;
     }
 
     public int generateReport(List<Path> resultsPaths, Path reportPath) throws IOException {

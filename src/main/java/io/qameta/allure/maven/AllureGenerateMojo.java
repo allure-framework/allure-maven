@@ -78,7 +78,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
      * Report timeout parameter in seconds.
      */
     @Parameter(property = "allure.report.timeout", defaultValue = "60")
-    protected String reportTimeout;
+    protected int reportTimeout;
 
     /**
      * The path to the allure.properties file
