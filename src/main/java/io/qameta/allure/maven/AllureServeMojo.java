@@ -23,6 +23,24 @@ import static java.lang.String.format;
 public class AllureServeMojo extends AllureGenerateMojo {
 
     /**
+     * Serve timeout parameter in seconds.
+     */
+    @Parameter(property = "allure.serve.timeout", defaultValue = "3600")
+    private int serveTimeout;
+
+    /**
+     * Serve host parameter.
+     */
+    @Parameter(property = "allure.serve.host")
+    private String serveHost;
+
+    /**
+     * Serve port parameter.
+     */
+    @Parameter(property = "allure.serve.port", defaultValue = "0")
+    private Integer servePort;
+
+    /**
      * {@inheritDoc}
      */
     @Override

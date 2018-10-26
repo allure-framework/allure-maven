@@ -75,22 +75,10 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     private String reportDirectory;
 
     /**
-     * Serve timeout parameter in seconds.
+     * Report timeout parameter in seconds.
      */
-    @Parameter(property = "allure.serve.timeout")
-    protected String serveTimeout;
-
-    /**
-     * Serve host parameter.
-     */
-    @Parameter(property = "allure.serve.host")
-    protected String serveHost;
-
-    /**
-     * Serve port parameter.
-     */
-    @Parameter(property = "allure.serve.port", defaultValue = "0")
-    protected Integer servePort;
+    @Parameter(property = "allure.report.timeout", defaultValue = "60")
+    protected int reportTimeout;
 
     /**
      * The path to the allure.properties file
@@ -219,7 +207,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             Path reportPath = Paths.get(getReportDirectory());
 
             AllureCommandline commandline
-                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
+                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion, reportTimeout);
 
             getLog().info("Generate report to " + reportPath);
             commandline.generateReport(resultsPaths, reportPath);

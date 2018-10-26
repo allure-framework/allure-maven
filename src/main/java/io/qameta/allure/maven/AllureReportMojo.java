@@ -2,6 +2,7 @@ package io.qameta.allure.maven;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
