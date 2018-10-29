@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 public class AllureCommandline {
 
-    public static final String ALLURE_DEFAULT_VERSION = "2.0.1";
+    public static final String ALLURE_DEFAULT_VERSION = "2.7.0";
 
     private static final int DEFAULT_TIMEOUT = 3600;
 
