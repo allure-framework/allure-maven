@@ -81,6 +81,14 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     protected int reportTimeout;
 
     /**
+    * This is key-value map which defines executor.json file content.
+    * Default content:
+    * {"buildName":"${project.name}","name":"Maven","type":"maven"}
+    */
+    @Parameter
+    private Map<String, String> executorInfo = new HashMap<>();
+
+    /**
      * The path to the allure.properties file
      */
     @Parameter(defaultValue = "report.properties")
@@ -143,16 +151,20 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     }
 
     private void copyExecutorInfo(List<Path> inputDirectories) throws IOException, DependencyResolutionRequiredException {
-
-        Map<String, Object> executorInfo = new HashMap<>();
-        executorInfo.put("name", "Maven");
-        executorInfo.put("type", "maven");
-        executorInfo.put("buildName", getProject().getName());
+        addPropertyIfAbsent("name", "Maven");
+        addPropertyIfAbsent("type", "maven");
+        addPropertyIfAbsent("buildName", getProject().getName());
 
         for (Path dir : inputDirectories) {
             Path executorInfoFile = dir.resolve("executor.json");
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(executorInfoFile.toFile(), executorInfo);
+        }
+    }
+
+    private void addPropertyIfAbsent(String key, String value){
+        if(!executorInfo.containsKey(key)){
+            executorInfo.put(key, value);
         }
     }
 
