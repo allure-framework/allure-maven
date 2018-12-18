@@ -25,6 +25,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 import static io.qameta.allure.maven.AllureCommandline.ALLURE_DEFAULT_VERSION;
+import static io.qameta.allure.maven.DownloadUtils.getAllureDownloadUrl;
 import static java.lang.String.format;
 
 /**
@@ -97,8 +98,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     @Parameter(property = "allure.install.directory", defaultValue = "${project.basedir}/.allure")
     private String installDirectory;
 
-    @Parameter(property = "allure.download.url",
-            defaultValue = "https://dl.bintray.com/qameta/generic/io/qameta/allure/allure/%s/allure-%s.zip")
+    @Parameter(property = "allure.download.url")
     private String allureDownloadUrl;
 
     @Parameter(property = "session", defaultValue = "${session}", readonly = true)
@@ -198,14 +198,15 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
     private void installAllure() throws MavenReportException{
         try {
-            getLog().info(String.format("Allure installation directory %s", getInstallDirectory()));
-            getLog().info(String.format("Try to finding out allure %s", reportVersion != null ? reportVersion : ALLURE_DEFAULT_VERSION));
+            final String version = reportVersion != null ? reportVersion : ALLURE_DEFAULT_VERSION;
+            getLog().info(String.format("Allure installation directory %s", installDirectory));
+            getLog().info(String.format("Try to finding out allure %s", version));
 
-            AllureCommandline commandline
-                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion);
+            AllureCommandline commandline = new AllureCommandline(Paths.get(installDirectory), reportVersion);
             if (commandline.allureNotExists()) {
+                final String url = getAllureDownloadUrl(version, allureDownloadUrl);
                 getLog().info("Downloading allure commandline...");
-                commandline.download(allureDownloadUrl, ProxyUtils.getProxy(session, decrypter));
+                commandline.download(url, ProxyUtils.getProxy(session, decrypter));
                 getLog().info("Downloading allure commandline complete");
             }
         } catch (Exception e) {

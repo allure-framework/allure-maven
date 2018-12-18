@@ -14,5 +14,4 @@ def cateforiesPath = dataDirectory.resolve("categories.json")
 def jsonSlurper = new JsonSlurper()
 def categories = jsonSlurper.parseText(cateforiesPath.text)
 
-assert categories.statistic
-assert categories.statistic.failed == 1
+assert categories.children.size == 1
