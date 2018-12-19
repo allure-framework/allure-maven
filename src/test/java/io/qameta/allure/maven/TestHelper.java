@@ -13,16 +13,15 @@ import static ru.yandex.qatools.matchers.nio.PathMatchers.isDirectory;
 
 /**
  * @author Dmitry Baev charlie@yandex-team.ru
- *         Date: 05.08.15
+ * Date: 05.08.15
  */
 @SuppressWarnings("unused")
 public final class TestHelper {
 
     public static final List<String> FILE_NAMES = Arrays.asList(
-            "behaviors.json", "categories.json",
-            "graph.json", "packages.json",
-            "timeline.json", "widgets.json" ,"xunit.json"
-            );
+            "behaviors.json", "categories.json", "packages.json",
+            "timeline.json", "suites.json"
+    );
 
     TestHelper() {
     }

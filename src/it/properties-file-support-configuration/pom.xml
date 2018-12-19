@@ -23,7 +23,7 @@
                     <properties>
                         <allure.issues.tracker.pattern>http://example.com/%s</allure.issues.tracker.pattern>
                     </properties>
-                    <reportVersion>2.0.1</reportVersion>
+                    <reportVersion>2.8.1</reportVersion>
                 </configuration>
             </plugin>
         </plugins>

@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 public class AllureCommandline {
 
-    public static final String ALLURE_DEFAULT_VERSION = "2.7.0";
+    public static final String ALLURE_DEFAULT_VERSION = "2.8.1";
 
     private static final int DEFAULT_TIMEOUT = 3600;
 
@@ -130,7 +130,7 @@ public class AllureCommandline {
             url = new URL(allureUrl);
         } else {
             allureZip = Files.createTempFile("allure", ALLURE_DEFAULT_VERSION);
-            allureUrl = String.format("/allure-%s.zip", ALLURE_DEFAULT_VERSION);
+            allureUrl = String.format("/allure-commandline-%s.zip", ALLURE_DEFAULT_VERSION);
             url = AllureCommandline.class.getResource(allureUrl);
         }
 
