@@ -6,6 +6,7 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.settings.Proxy;
 
 import java.io.FileNotFoundException;
@@ -31,14 +32,24 @@ public class AllureCommandline {
 
     private final Path installationDirectory;
 
-    public AllureCommandline(final Path installationDirectory, final String version) {
-        this(installationDirectory, version, DEFAULT_TIMEOUT);
+    private String profile;
+    private final Log log;
+
+    public AllureCommandline(final Path installationDirectory, final String version,  Log log) {
+        this(installationDirectory, version, DEFAULT_TIMEOUT, log);
     }
 
-    public AllureCommandline(final Path installationDirectory, final String version, int timeout) {
+    public AllureCommandline(final Path installationDirectory, final String version, int timeout, Log log) {
         this.installationDirectory = installationDirectory;
         this.version = version;
         this.timeout = timeout;
+        this.log = log;
+    }
+
+    public AllureCommandline(final Path path, final String reportVersion, int reportTimeout, final String profile, final
+            Log log) {
+        this(path, reportVersion, reportTimeout, log);
+        this.profile = profile;
     }
 
     public int generateReport(List<Path> resultsPaths, Path reportPath) throws IOException {
@@ -53,9 +64,14 @@ public class AllureCommandline {
         for (Path resultsPath : resultsPaths) {
             commandLine.addArgument(resultsPath.toAbsolutePath().toString(), true);
         }
+        if(profile != null){
+            commandLine.addArgument("--profile");
+            commandLine.addArgument(profile);
+        }
         commandLine.addArgument("-o");
         commandLine.addArgument(reportPath.toAbsolutePath().toString(), true);
 
+        log.info(String.format(" Generating report with command [%s]", buildCommand(commandLine)));
         return execute(commandLine, timeout);
     }
 
@@ -75,9 +91,18 @@ public class AllureCommandline {
             commandLine.addArgument("--port");
             commandLine.addArgument("" + servePort);
         }
+
+        if(profile != null){
+            commandLine.addArgument("--profile");
+            commandLine.addArgument(profile);
+        }
+
         for (Path resultsPath : resultsPaths) {
             commandLine.addArgument(resultsPath.toAbsolutePath().toString(), true);
         }
+
+        log.info(String.format(" Serving report with command [%s]", buildCommand(commandLine)));
+
         return execute(commandLine, timeout);
     }
 
@@ -166,5 +191,14 @@ public class AllureCommandline {
 
     private boolean isWindows() {
         return System.getProperty("os.name").toLowerCase().contains("win");
+    }
+
+    private String buildCommand(CommandLine commandLine) {
+        StringBuilder sb = new StringBuilder();
+        for (String commandPart : commandLine.toStrings()) {
+            sb.append(commandPart);
+            sb.append(" ");
+        }
+        return sb.toString();
     }
 }

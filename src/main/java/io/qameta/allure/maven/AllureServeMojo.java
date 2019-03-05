@@ -1,8 +1,5 @@
 package io.qameta.allure.maven;
 
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -12,8 +9,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-
-import static java.lang.String.format;
 
 /**
  * Calls allure serve command.
@@ -63,8 +58,9 @@ public class AllureServeMojo extends AllureGenerateMojo {
         try {
             Path reportPath = Paths.get(getReportDirectory());
 
-            AllureCommandline commandline
-                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion, this.serveTimeout);
+            AllureCommandline commandline =
+                    new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion,
+                            this.serveTimeout, profile, getLog());
 
             getLog().info("Generate report to " + reportPath);
             commandline.serve(resultsPaths, reportPath, this.serveHost, this.servePort);

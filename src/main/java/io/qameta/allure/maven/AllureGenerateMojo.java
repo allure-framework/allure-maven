@@ -1,6 +1,7 @@
 package io.qameta.allure.maven;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.doxia.sink.Sink;
@@ -22,7 +23,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 
 import static io.qameta.allure.maven.AllureCommandline.ALLURE_DEFAULT_VERSION;
 import static io.qameta.allure.maven.DownloadUtils.getAllureDownloadUrl;
@@ -101,6 +107,9 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     @Parameter(property = "allure.download.url")
     private String allureDownloadUrl;
 
+    @Parameter(property = "allure.profile")
+    protected String profile;
+
     @Parameter(property = "session", defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
@@ -132,6 +141,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
             getLog().info(format("Generate Allure report (%s) with version %s", getMojoName(), reportVersion != null ? reportVersion : ALLURE_DEFAULT_VERSION));
             getLog().info("Generate Allure report to " + getReportDirectory());
+            getLog().info("Using Allure profile: " + (profile == null ? "default" : profile));
 
             List<Path> inputDirectories = getInputDirectories();
             if (inputDirectories.isEmpty()) {
@@ -202,7 +212,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             getLog().info(String.format("Allure installation directory %s", installDirectory));
             getLog().info(String.format("Try to finding out allure %s", version));
 
-            AllureCommandline commandline = new AllureCommandline(Paths.get(installDirectory), reportVersion);
+            AllureCommandline commandline = new AllureCommandline(Paths.get(installDirectory), reportVersion, getLog());
             if (commandline.allureNotExists()) {
                 final String url = getAllureDownloadUrl(version, allureDownloadUrl);
                 getLog().info("Downloading allure commandline...");
@@ -220,7 +230,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             Path reportPath = Paths.get(getReportDirectory());
 
             AllureCommandline commandline
-                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion, reportTimeout);
+                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion, reportTimeout,
+                    profile, getLog());
 
             getLog().info("Generate report to " + reportPath);
             commandline.generateReport(resultsPaths, reportPath);

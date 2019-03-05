@@ -43,7 +43,7 @@ public class AllureInstallMojo extends AbstractMojo {
             getLog().info(String.format("Allure installation directory %s", installDirectory));
             getLog().info(String.format("Try to finding out allure %s", version));
 
-            AllureCommandline commandline = new AllureCommandline(Paths.get(installDirectory), reportVersion);
+            AllureCommandline commandline = new AllureCommandline(Paths.get(installDirectory), reportVersion, getLog());
             if (commandline.allureNotExists()) {
                 final String url = getAllureDownloadUrl(version, allureDownloadUrl);
                 getLog().info("Downloading allure commandline from " + url);
