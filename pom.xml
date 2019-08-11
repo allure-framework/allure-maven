@@ -253,7 +253,7 @@
         <dependency>
             <groupId>ru.yandex.qatools.matchers</groupId>
             <artifactId>nio-matchers</artifactId>
-            <version>1.3</version>
+            <version>1.4.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
