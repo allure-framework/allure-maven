@@ -17,7 +17,7 @@
         <compiler.version>1.7</compiler.version>
 
         <maven.version>3.6.2</maven.version>
-        <maven-plugin.version>3.2</maven-plugin.version>
+        <maven-plugin.version>3.6.0</maven-plugin.version>
     </properties>
 
     <organization>
