@@ -43,7 +43,7 @@ You can configurate allure version like here:
     <artifactId>allure-maven</artifactId>
     <version>2.10.0</version>
     <configuration>
-        <reportVersion>2.4.1</reportVersion>
+        <reportVersion>2.13.3</reportVersion>
     </configuration>
 </plugin>
 ```
