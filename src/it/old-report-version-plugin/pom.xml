@@ -8,10 +8,6 @@
     <version>1.0-SNAPSHOT</version>
     <name>Allure Report Test</name>
 
-    <properties>
-        <allure.version>1.4.19</allure.version>
-    </properties>
-    
     <build>
         <plugins>
             <plugin>
@@ -40,7 +36,7 @@
                 <artifactId>@project.artifactId@</artifactId>
                 <version>@project.version@</version>
                 <configuration>
-                    <reportVersion>2.8.1</reportVersion>
+                    <reportVersion>2.7.0</reportVersion>
                 </configuration>
             </plugin>
         </plugins>
