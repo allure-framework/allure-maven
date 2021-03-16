@@ -10,8 +10,13 @@ categories:
   - title: '🐞 Bug Fixes'
     labels:
       - 'type:bug'
+  - title: '⬆️ Dependency Updates'
+    labels:
+      - 'type:dependencies'
 
 change-template: '* $TITLE (via #$NUMBER) - @$AUTHOR'
+exclude-labels:
+  - 'type:internal'
 template: |
   $CHANGES
 

@@ -10,4 +10,4 @@ jobs:
     steps:
       - uses: zwaldowski/match-label-action@v2
         with:
-          allowed: 'type:bug, type:improvement, type:internal, type:invalid, type:new feature'
+          allowed: 'type:bug, type:improvement, type:internal, type:invalid, type:new feature, type:dependencies'
