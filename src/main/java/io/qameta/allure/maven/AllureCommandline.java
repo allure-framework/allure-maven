@@ -11,7 +11,9 @@ import org.apache.maven.settings.Proxy;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Authenticator;
 import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -136,6 +138,22 @@ public class AllureCommandline {
 
         if (mavenProxy != null && version != null) {
             InetSocketAddress proxyAddress = new InetSocketAddress(mavenProxy.getHost(), mavenProxy.getPort());
+
+            if ((mavenProxy.getUsername() != null) && (mavenProxy.getPassword() != null)) {
+                final String proxyUser = mavenProxy.getUsername();
+                final String proxyPassword = mavenProxy.getPassword();
+
+                Authenticator.setDefault(
+                        new Authenticator() {
+                            @Override
+                            public PasswordAuthentication getPasswordAuthentication() {
+                                return new PasswordAuthentication(
+                                        proxyUser, proxyPassword.toCharArray());
+                            }
+                        }
+                );
+            }
+
             java.net.Proxy proxy = new java.net.Proxy(java.net.Proxy.Type.HTTP, proxyAddress);
             InputStream inputStream = url.openConnection(proxy).getInputStream();
             Files.copy(inputStream, allureZip, StandardCopyOption.REPLACE_EXISTING);
