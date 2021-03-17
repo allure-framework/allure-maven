@@ -4,11 +4,13 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    labels: "type:dependencies"
+    labels: 
+      - "type:dependencies"
 
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
       interval: "daily"
-    labels: "type:dependencies"
+    labels: 
+      - "type:dependencies"
 
