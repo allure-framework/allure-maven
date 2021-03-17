@@ -1,6 +1,7 @@
 #IDEA Files
-.idea
-target
+.idea/*
+!.idea/vcs.xml
+!.idea/icon.png
 *.iml
 *.ipr
 
@@ -10,4 +11,5 @@ target
 *.project
 *.pydevproject
 
+target
 !*/it/**/target

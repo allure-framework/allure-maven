@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <compiler.version>1.7</compiler.version>
 
-        <maven.version>3.6.2</maven.version>
+        <maven.version>3.6.3</maven.version>
         <maven-plugin.version>3.2</maven-plugin.version>
     </properties>
 
@@ -115,6 +115,18 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Automatic-Module-Name>io.qameta.allure.maven</Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
@@ -138,6 +150,8 @@
                         </goals>
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
+                            <source>8</source>
+                            <detectJavaApiLink>false</detectJavaApiLink>
                         </configuration>
                     </execution>
                 </executions>
