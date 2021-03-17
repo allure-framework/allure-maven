@@ -16,9 +16,9 @@ This plugin generates Allure report by [existing XML files](https://github.com/a
 * Add following lines into your `pom.xml` build section:
 ```
 <plugin>
-    <groupId>io.qameta.allure</groupId>
-    <artifactId>allure-maven</artifactId>
-    <version>2.9</version>
+	<groupId>io.qameta.allure</groupId>
+	<artifactId>allure-maven</artifactId>
+	<version>2.9</version>
 </plugin>
 ```
 
@@ -34,17 +34,17 @@ Report will be generated into temp folder. Web server with results will start.
 
 Report will be generated tо directory: `target/site/allure-maven/index.html`
 
-## Configuration 
+## Configuration
 
-You can configurate allure version like here: 
+You can configurate allure version like here:
 ```
 <plugin>
-    <groupId>io.qameta.allure</groupId>
-    <artifactId>allure-maven</artifactId>
-    <version>2.8</version>
-    <configuration>
-        <reportVersion>2.3.1</reportVersion>
-    </configuration>
+	<groupId>io.qameta.allure</groupId>
+	<artifactId>allure-maven</artifactId>
+	<version>2.8</version>
+	<configuration>
+		<reportVersion>2.3.1</reportVersion>
+	</configuration>
 </plugin>
 ```
 

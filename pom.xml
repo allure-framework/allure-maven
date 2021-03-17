@@ -14,10 +14,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <compiler.version>1.7</compiler.version>
+        <compiler.version>1.8</compiler.version>
 
         <maven.version>3.6.3</maven.version>
-        <maven-plugin.version>3.2</maven-plugin.version>
+        <maven-plugin.version>3.6.0</maven-plugin.version>
     </properties>
 
     <organization>
@@ -57,9 +57,9 @@
             <email>eroshenkoam@qameta.io</email>
         </developer>
         <developer>
-            <id>charlie</id>
+            <id>baev</id>
             <name>Dmitry Baev</name>
-            <email>charlie@qameta.io</email>
+            <email>dmitry.baev@qameta.io</email>
         </developer>
     </developers>
 
@@ -100,6 +100,16 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.9.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -128,7 +138,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -141,7 +151,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -164,6 +174,28 @@
                     <tagNameFormat>@{project.version}</tagNameFormat>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.9.0</version>
+                <configuration>
+                    <java>
+                        <removeUnusedImports />
+                        <trimTrailingWhitespace/>
+                        <endWithNewline/>
+                        <licenseHeader>
+                            <file>${project.basedir}/maven/quality-configs/spotless/header.java</file>
+                        </licenseHeader>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -181,7 +213,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.7</version>
+            <version>2.12.2</version>
         </dependency>
 
         <!--Maven Plugin API-->
@@ -189,7 +221,7 @@
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
             <version>${maven.version}</version>
-            <scope>provided</scope>
+<!--            <scope>provided</scope>-->
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.maven</groupId>
@@ -249,7 +281,7 @@
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jxr-plugin</artifactId>
-            <version>2.5</version>
+            <version>3.0.0</version>
         </dependency>
 
         <dependency>
