@@ -14,7 +14,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <compiler.version>1.7</compiler.version>
+        <compiler.version>1.8</compiler.version>
 
         <maven.version>3.6.3</maven.version>
         <maven-plugin.version>3.2</maven-plugin.version>
@@ -203,7 +203,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.7</version>
+            <version>2.12.2</version>
         </dependency>
 
         <!--Maven Plugin API-->
