@@ -1,13 +1,12 @@
-[build]: https://ci.qameta.io/job/allure-maven/job/master "Build"
-[build-badge]: https://ci.qameta.io/buildStatus/icon?job=allure-maven/master
-
 [release]: https://github.com/allure-framework/allure-maven/releases/latest "Release"
 [release-badge]: https://img.shields.io/github/release/allure-framework/allure-maven.svg
 
 [bintray]: https://bintray.com/qameta/maven/allure-maven "Bintray"
 [bintray-badge]: https://img.shields.io/bintray/v/qameta/maven/allure-maven.svg?style=flat
 
-# Allure Maven Plugin [![build-badge][]][build] [![release-badge][]][release] [![bintray-badge][]][bintray]
+# Allure Maven Plugin 
+
+[![Build](https://github.com/allure-framework/allure-maven/actions/workflows/build.yml/badge.svg)](https://github.com/allure-framework/allure-maven/actions/workflows/build.yml) [![release-badge][]][release] [![bintray-badge][]][bintray]
 
 This plugin generates Allure report by [existing XML files](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) during Maven build process.
 
