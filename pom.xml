@@ -386,8 +386,9 @@
 
     <distributionManagement>
         <repository>
-            <id>bintray-generic</id>
-            <url>https://api.bintray.com/maven/qameta/maven/allure-maven/;publish=1</url>
+            <id>ossrh</id>
+            <name>Central Repository OSSRH</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
 
