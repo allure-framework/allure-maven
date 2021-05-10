@@ -24,6 +24,7 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.reporting.MavenReportException;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -40,7 +41,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 import static io.qameta.allure.maven.AllureCommandline.ALLURE_DEFAULT_VERSION;
-import static io.qameta.allure.maven.DownloadUtils.getAllureDownloadUrl;
 import static java.lang.String.format;
 
 /**
@@ -121,6 +121,9 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
     @Component(role = SettingsDecrypter.class)
     private SettingsDecrypter decrypter;
+
+    @Component
+    private DependencyResolver dependencyResolver;
 
     /**
      * The additional Allure properties such as issue tracker pattern.
@@ -213,18 +216,21 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
     private void installAllure() throws MavenReportException{
         try {
-            final String version = reportVersion != null ? reportVersion : ALLURE_DEFAULT_VERSION;
-            getLog().info(String.format("Allure installation directory %s", installDirectory));
-            getLog().info(String.format("Try to finding out allure %s", version));
-
             AllureCommandline commandline = new AllureCommandline(Paths.get(installDirectory), reportVersion);
+            getLog().info(String.format("Allure installation directory %s", installDirectory));
+            getLog().info(String.format("Try to finding out allure %s", commandline.getVersion()));
+
             if (commandline.allureNotExists()) {
-                final String url = getAllureDownloadUrl(version, allureDownloadUrl);
-                getLog().info("Downloading allure commandline...");
-                commandline.download(url, ProxyUtils.getProxy(session, decrypter));
-                getLog().info("Downloading allure commandline complete");
+                String downloadUrl = DownloadUtils.getAllureDownloadUrl(commandline.getVersion (), allureDownloadUrl);
+                if (downloadUrl == null) {
+                    commandline.downloadWithMaven(session, dependencyResolver);
+                } else {
+                    getLog().info("Downloading allure commandline from " + downloadUrl);
+                    commandline.download(downloadUrl, ProxyUtils.getProxy(session, decrypter));
+                    getLog().info("Downloading allure commandline complete");
+                }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             getLog().error("Can't install allure", e);
             throw new MavenReportException("Can't install allure", e);
         }

@@ -21,8 +21,16 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.settings.Proxy;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +41,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -54,7 +63,7 @@ public class AllureCommandline {
 
     public AllureCommandline(final Path installationDirectory, final String version, int timeout) {
         this.installationDirectory = installationDirectory;
-        this.version = version;
+        this.version = version != null ? version : ALLURE_DEFAULT_VERSION;
         this.timeout = timeout;
     }
 
@@ -119,7 +128,7 @@ public class AllureCommandline {
     }
 
     private Path getAllureHome() {
-        return installationDirectory.resolve(String.format("allure-%s", version != null ? version : ALLURE_DEFAULT_VERSION));
+        return installationDirectory.resolve(String.format("allure-%s", version));
     }
 
     private boolean allureExists() {
@@ -129,6 +138,27 @@ public class AllureCommandline {
 
     boolean allureNotExists() {
         return !allureExists();
+    }
+
+    public void downloadWithMaven(MavenSession session, DependencyResolver dependencyResolver) throws IOException {
+        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest (session.getProjectBuildingRequest ());
+        buildingRequest.setResolveDependencies (false);
+
+        Dependency cliDep = new Dependency();
+        cliDep.setGroupId ("io.qameta.allure");
+        cliDep.setArtifactId ("allure-commandline");
+        cliDep.setVersion (version);
+        cliDep.setType ("zip");
+
+        try {
+            for (ArtifactResult cliArtifact: dependencyResolver.resolveDependencies (buildingRequest, Collections.singletonList (cliDep), null, null)) {
+              unpack(cliArtifact.getArtifact ().getFile ());
+              return;
+            }
+            throw new  IOException("No allure commandline artifact found.");
+        } catch (DependencyResolverException e) {
+            throw new IOException ("Cannot resolve allure commandline dependencies.", e);
+        }
     }
 
     public void download(String allureDownloadUrl, Proxy mavenProxy) throws IOException {
@@ -141,15 +171,9 @@ public class AllureCommandline {
             return;
         }
 
-        if (version != null) {
-            allureZip = Files.createTempFile("allure", version);
-            allureUrl = String.format(allureDownloadUrl, version, version);
-            url = new URL(allureUrl);
-        } else {
-            allureZip = Files.createTempFile("allure", ALLURE_DEFAULT_VERSION);
-            allureUrl = String.format("/allure-commandline-%s.zip", ALLURE_DEFAULT_VERSION);
-            url = AllureCommandline.class.getResource(allureUrl);
-        }
+        allureZip = Files.createTempFile("allure", version);
+        allureUrl = String.format(allureDownloadUrl, version, version);
+        url = new URL(allureUrl);
 
         if (mavenProxy != null && version != null) {
             InetSocketAddress proxyAddress = new InetSocketAddress(mavenProxy.getHost(), mavenProxy.getPort());
@@ -176,8 +200,12 @@ public class AllureCommandline {
             FileUtils.copyURLToFile(url, allureZip.toFile());
         }
 
+        unpack (allureZip.toFile ());
+    }
+
+    private void unpack (File file) throws IOException {
         try {
-            ZipFile zipFile = new ZipFile(allureZip.toFile());
+            ZipFile zipFile = new ZipFile(file);
             zipFile.extractAll(getInstallationDirectory().toAbsolutePath().toString());
         } catch (ZipException e) {
             throw new IOException(e);

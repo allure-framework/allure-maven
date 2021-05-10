@@ -25,17 +25,18 @@ public final class DownloadUtils {
 
     private static final String BINTRAY_TEMPLATE = "https://dl.bintray.com/qameta/generic/io/qameta/allure/allure/%s/allure-%s.zip";
 
-    private static final String CENTRAL_TEMPLATE = "https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/%s/allure-commandline-%s.zip";
-
+    /**
+     * This helper returns the canonical download URL for the allure CLI if none was specified.
+     * It returns null if the version is new enough to be available from Maven Central.
+     */
     public static String getAllureDownloadUrl(final String version, final String downloadUrl) {
         if (downloadUrl != null) {
             return downloadUrl;
         }
         if (versionCompare(version, "2.8.0") < 0) {
             return BINTRAY_TEMPLATE;
-        } else {
-            return CENTRAL_TEMPLATE;
         }
+        return null;
     }
 
     private static Integer versionCompare(String first, String second) {
