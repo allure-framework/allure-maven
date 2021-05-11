@@ -18,6 +18,8 @@
 
         <maven.version>3.8.1</maven.version>
         <maven-plugin.version>3.6.1</maven-plugin.version>
+
+        <pmd.version>6.34.0</pmd.version>
     </properties>
 
     <organization>
@@ -159,7 +161,7 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalJOption>-Xdoclint:none</additionalJOption>
                             <source>8</source>
                             <detectJavaApiLink>false</detectJavaApiLink>
                         </configuration>
@@ -180,6 +182,9 @@
                 <version>2.11.0</version>
                 <configuration>
                     <java>
+                        <eclipse>
+                            <file>${project.basedir}/maven/quality-configs/format.xml</file>
+                        </eclipse>
                         <removeUnusedImports />
                         <trimTrailingWhitespace/>
                         <endWithNewline/>
@@ -190,6 +195,72 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <configLocation>${project.basedir}/maven/quality-configs/checkstyle/checkstyle.xml</configLocation>
+                    <suppressionsLocation>${project.basedir}/maven/quality-configs/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+                    <encoding>UTF-8</encoding>
+                    <consoleOutput>true</consoleOutput>
+                    <failsOnError>true</failsOnError>
+                    <linkXRef>false</linkXRef>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>8.42</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.14.0</version>
+                <configuration>
+                    <rulesets>
+                        <ruleset>${project.basedir}/maven/quality-configs/pmd/pmd.xml</ruleset>
+                    </rulesets>
+                    <linkXRef>false</linkXRef>
+                    <printFailingErrors>true</printFailingErrors>
+                    <excludeRoots>
+                        <excludeRoot>target/generated-sources</excludeRoot>
+                    </excludeRoots>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.sourceforge.pmd</groupId>
+                        <artifactId>pmd-core</artifactId>
+                        <version>${pmd.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>net.sourceforge.pmd</groupId>
+                        <artifactId>pmd-java</artifactId>
+                        <version>${pmd.version}</version>
+                    </dependency>
+
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>

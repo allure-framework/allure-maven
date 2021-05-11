@@ -21,7 +21,7 @@
                 <version>@project.version@</version>
                 <configuration>
                     <propertiesFilePath>allure.properties</propertiesFilePath>
-                    <reportVersion>2.8.1</reportVersion>
+                    <reportVersion>2.13.9</reportVersion>
                 </configuration>
             </plugin>
         </plugins>

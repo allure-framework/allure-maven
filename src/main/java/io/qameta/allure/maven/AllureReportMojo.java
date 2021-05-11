@@ -24,8 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Dmitry Baev charlie@yandex-team.ru
- *         Date: 30.07.15
+ * @author Dmitry Baev dmitry.baev@qameta.io Date: 30.07.15
  */
 @Mojo(name = "report", defaultPhase = LifecyclePhase.SITE)
 public class AllureReportMojo extends AllureGenerateMojo {
@@ -35,7 +34,7 @@ public class AllureReportMojo extends AllureGenerateMojo {
      */
     @Override
     protected List<Path> getInputDirectories() {
-        Path path = getInputDirectoryAbsolutePath();
+        final Path path = getInputDirectoryAbsolutePath();
         if (isDirectoryExists(path)) {
             getLog().info("Found results directory " + path);
             return Collections.singletonList(path);
@@ -50,7 +49,7 @@ public class AllureReportMojo extends AllureGenerateMojo {
     }
 
     private Path getInputDirectoryAbsolutePath() {
-        Path path = Paths.get(resultsDirectory);
+        final Path path = Paths.get(resultsDirectory);
         return path.isAbsolute() ? path : Paths.get(buildDirectory).resolve(path);
     }
 }

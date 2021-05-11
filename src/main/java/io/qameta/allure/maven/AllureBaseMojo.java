@@ -25,12 +25,11 @@ import org.apache.maven.reporting.AbstractMavenReport;
 import java.util.Locale;
 
 /**
- * @author Dmitry Baev charlie@yandex-team.ru
- *         Date: 30.07.15
+ * @author Dmitry Baev dmitry.baev@qameta.io Date: 30.07.15
  */
 public abstract class AllureBaseMojo extends AbstractMavenReport {
 
-    @Component
+    @Parameter(defaultValue = "${plugin}", readonly = true)
     protected PluginDescriptor pluginDescriptor;
 
     @Component
@@ -67,7 +66,7 @@ public abstract class AllureBaseMojo extends AbstractMavenReport {
      * {@inheritDoc}
      */
     @Override
-    public String getName(Locale locale) {
+    public String getName(final Locale locale) {
         return "Allure";
     }
 
@@ -75,7 +74,7 @@ public abstract class AllureBaseMojo extends AbstractMavenReport {
      * {@inheritDoc}
      */
     @Override
-    public String getDescription(Locale locale) {
+    public String getDescription(final Locale locale) {
         return "Extended report on the test results of the project.";
     }
 }

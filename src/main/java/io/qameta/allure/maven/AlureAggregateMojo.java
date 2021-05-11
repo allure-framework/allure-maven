@@ -27,34 +27,33 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Dmitry Baev charlie@yandex-team.ru
- *         Date: 04.08.15
+ * @author Dmitry Baev dmitry.baev@qameta.io Date: 04.08.15
  */
-@Mojo(name = "aggregate", defaultPhase = LifecyclePhase.SITE,
-        inheritByDefault = false, aggregator = true)
+@Mojo(name = "aggregate", defaultPhase = LifecyclePhase.SITE, inheritByDefault = false,
+        aggregator = true)
 public class AlureAggregateMojo extends AllureGenerateMojo {
 
     /**
      * The projects in the reactor.
      */
     @Parameter(defaultValue = "${reactorProjects}", required = true, readonly = true)
-    private List<MavenProject> reactorProjects;
+    protected List<MavenProject> reactorProjects;
 
     /**
      * {@inheritDoc}
      */
     @Override
     protected List<Path> getInputDirectories() {
-        Path relative = Paths.get(resultsDirectory);
+        final Path relative = Paths.get(resultsDirectory);
         if (relative.isAbsolute()) {
             getLog().error("Input directory should be not absolute for aggregate goal.");
             return Collections.emptyList();
         }
 
-        List<Path> result = new ArrayList<>();
+        final List<Path> result = new ArrayList<>();
         for (MavenProject child : reactorProjects) {
-            Path target = Paths.get(child.getBuild().getDirectory());
-            Path path = target.resolve(relative).toAbsolutePath();
+            final Path target = Paths.get(child.getBuild().getDirectory());
+            final Path path = target.resolve(relative).toAbsolutePath();
             if (isDirectoryExists(path)) {
                 result.add(path);
                 getLog().info("Found results directory " + path);
@@ -75,6 +74,5 @@ public class AlureAggregateMojo extends AllureGenerateMojo {
     protected boolean isAggregate() {
         return true;
     }
-
 
 }

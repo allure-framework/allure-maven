@@ -1,25 +1,60 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: "The release version in <MAJOR>.<MINOR>.<PATCH> format"
+        required: true
+      nextVersion:
+        description: "The next version in <MAJOR>.<MINOR> format WITHOUT SNAPSHOT SUFFIX"
+        required: true
 
 jobs:
-  build:
+  triage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK
-        uses: actions/setup-java@v1
+      - name: "Check release version"
+        run: |
+          expr "${{ github.event.inputs.releaseVersion }}" : '[[:digit:]][[:digit:]]*\.[[:digit:]][[:digit:]]*\.[[:digit:]][[:digit:]]*$'
+
+      - name: "Check next version"
+        run: |
+          expr "${{ github.event.inputs.nextVersion }}" : '[[:digit:]][[:digit:]]*\.[[:digit:]][[:digit:]]*$'
+
+      - uses: actions/checkout@v2.3.4
         with:
-          java-version: 1.8
-          server-id: ossrh
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
-      - name: Update Version
-        run: ./mvnw versions:set -DnewVersion=${GITHUB_REF:10}
-      - name: Release
-        run: ./mvnw deploy
+          token: ${{ secrets.QAMETA_CI }}
+
+      - name: "Configure CI Git User"
+        run: |
+          git config --global user.name qameta-ci
+          git config --global user.email qameta-ci@qameta.io
+
+      - name: "Set release version"
+        run: |
+          ./mvnw versions:set -DnewVersion=${{ github.event.inputs.releaseVersion }}
+
+      - name: "Commit release version and create tag"
+        run: |
+          git commit -am "release ${{ github.event.inputs.releaseVersion }}"
+          git tag ${{ github.event.inputs.releaseVersion }}
+          git push origin ${{ github.event.inputs.releaseVersion }}
+
+      - name: "Set next development version"
+        run: |
+          ./mvnw versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
+
+      - name: "Commit next development version and push it"
+        run: |
+          git commit -am "set next development version ${{ github.event.inputs.nextVersion }}"
+          git push origin ${GITHUB_REF}
+
+      - name: "Publish Github Release"
+        uses: toolmantim/release-drafter@v5.15.0
+        with:
+          tag: ${{ github.event.inputs.releaseVersion }}
+          publish: "true"
+          version: ${{ github.event.inputs.releaseVersion }}
         env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.QAMETA_CI }}

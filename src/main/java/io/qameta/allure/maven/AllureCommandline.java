@@ -42,12 +42,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+@SuppressWarnings({"ClassDataAbstractionCoupling", "ClassFanOutComplexity",
+        "MultipleStringLiterals"})
 public class AllureCommandline {
 
-    public static final String ALLURE_DEFAULT_VERSION = "2.8.1";
+    public static final String ALLURE_DEFAULT_VERSION = "2.13.9";
 
     private static final int DEFAULT_TIMEOUT = 3600;
 
@@ -61,19 +65,21 @@ public class AllureCommandline {
         this(installationDirectory, version, DEFAULT_TIMEOUT);
     }
 
-    public AllureCommandline(final Path installationDirectory, final String version, int timeout) {
+    public AllureCommandline(final Path installationDirectory, final String version, final int timeout) {
         this.installationDirectory = installationDirectory;
         this.version = version != null ? version : ALLURE_DEFAULT_VERSION;
         this.timeout = timeout;
     }
 
-    public int generateReport(List<Path> resultsPaths, Path reportPath) throws IOException {
+    public int generateReport(final List<Path> resultsPaths, final Path reportPath)
+            throws IOException {
 
         this.checkAllureExists();
 
         FileUtils.deleteQuietly(reportPath.toFile());
 
-        CommandLine commandLine = new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
+        final CommandLine commandLine =
+                new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
         commandLine.addArgument("generate");
         commandLine.addArgument("--clean");
         for (Path resultsPath : resultsPaths) {
@@ -85,13 +91,15 @@ public class AllureCommandline {
         return execute(commandLine, timeout);
     }
 
-    public int serve(List<Path> resultsPaths, Path reportPath, String serveHost, Integer servePort) throws IOException {
+    public int serve(final List<Path> resultsPaths, final Path reportPath, final String serveHost,
+                     final Integer servePort) throws IOException {
 
         this.checkAllureExists();
 
         FileUtils.deleteQuietly(reportPath.toFile());
 
-        CommandLine commandLine = new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
+        final CommandLine commandLine =
+                new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
         commandLine.addArgument("serve");
         if (serveHost != null && serveHost.matches("(\\d{1,3}\\.){3}\\d{1,3}")) {
             commandLine.addArgument("--host");
@@ -99,7 +107,7 @@ public class AllureCommandline {
         }
         if (servePort > 0) {
             commandLine.addArgument("--port");
-            commandLine.addArgument("" + servePort);
+            commandLine.addArgument(Objects.toString(servePort));
         }
         for (Path resultsPath : resultsPaths) {
             commandLine.addArgument(resultsPath.toAbsolutePath().toString(), true);
@@ -109,21 +117,21 @@ public class AllureCommandline {
 
     private void checkAllureExists() throws FileNotFoundException {
         if (allureNotExists()) {
-            throw new FileNotFoundException("There is no valid allure installation." +
-                    " Make sure you're using allure version not less then 2.x.");
+            throw new FileNotFoundException("There is no valid allure installation."
+                    + " Make sure you're using allure version not less then 2.x.");
         }
     }
 
-    private int execute(CommandLine commandLine, int timeout) throws IOException {
-        DefaultExecutor executor = new DefaultExecutor();
-        ExecuteWatchdog watchdog = new ExecuteWatchdog(TimeUnit.SECONDS.toMillis(timeout));
+    private int execute(final CommandLine commandLine, final int timeout) throws IOException {
+        final DefaultExecutor executor = new DefaultExecutor();
+        final ExecuteWatchdog watchdog = new ExecuteWatchdog(TimeUnit.SECONDS.toMillis(timeout));
         executor.setWatchdog(watchdog);
         executor.setExitValue(0);
         return executor.execute(commandLine);
     }
 
     private Path getAllureExecutablePath() {
-        String allureExecutable = isWindows() ? "allure.bat" : "allure";
+        final String allureExecutable = isWindows() ? "allure.bat" : "allure";
         return getAllureHome().resolve("bin").resolve(allureExecutable);
     }
 
@@ -131,87 +139,87 @@ public class AllureCommandline {
         return installationDirectory.resolve(String.format("allure-%s", version));
     }
 
-    private boolean allureExists() {
-        Path allureExecutablePath = getAllureExecutablePath();
+    public boolean allureExists() {
+        final Path allureExecutablePath = getAllureExecutablePath();
         return Files.exists(allureExecutablePath) && Files.isExecutable(allureExecutablePath);
     }
 
-    boolean allureNotExists() {
+    public boolean allureNotExists() {
         return !allureExists();
     }
 
-    public void downloadWithMaven(MavenSession session, DependencyResolver dependencyResolver) throws IOException {
-        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest (session.getProjectBuildingRequest ());
-        buildingRequest.setResolveDependencies (false);
+    public void downloadWithMaven(final MavenSession session, final DependencyResolver dependencyResolver)
+            throws IOException {
+        final ProjectBuildingRequest buildingRequest =
+                new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+        buildingRequest.setResolveDependencies(false);
 
-        Dependency cliDep = new Dependency();
-        cliDep.setGroupId ("io.qameta.allure");
-        cliDep.setArtifactId ("allure-commandline");
-        cliDep.setVersion (version);
-        cliDep.setType ("zip");
+        final Dependency cliDep = new Dependency();
+        cliDep.setGroupId("io.qameta.allure");
+        cliDep.setArtifactId("allure-commandline");
+        cliDep.setVersion(version);
+        cliDep.setType("zip");
 
         try {
-            for (ArtifactResult cliArtifact: dependencyResolver.resolveDependencies (buildingRequest, Collections.singletonList (cliDep), null, null)) {
-              unpack(cliArtifact.getArtifact ().getFile ());
-              return;
+            final Iterator<ArtifactResult> resolved = dependencyResolver.resolveDependencies(
+                    buildingRequest, Collections.singletonList(cliDep), null, null)
+                    .iterator();
+
+            if (resolved.hasNext()) {
+                unpack(resolved.next().getArtifact().getFile());
+            } else {
+                throw new IOException("No allure commandline artifact found.");
+
             }
-            throw new  IOException("No allure commandline artifact found.");
         } catch (DependencyResolverException e) {
-            throw new IOException ("Cannot resolve allure commandline dependencies.", e);
+            throw new IOException("Cannot resolve allure commandline dependencies.", e);
         }
     }
 
-    public void download(String allureDownloadUrl, Proxy mavenProxy) throws IOException {
-
-        Path allureZip;
-        String allureUrl;
-        URL url;
-
+    public void download(final String allureDownloadUrl, final Proxy mavenProxy) throws IOException {
         if (allureExists()) {
             return;
         }
 
-        allureZip = Files.createTempFile("allure", version);
-        allureUrl = String.format(allureDownloadUrl, version, version);
-        url = new URL(allureUrl);
+        final Path allureZip = Files.createTempFile("allure", version);
+        final String allureUrl = String.format(allureDownloadUrl, version, version);
+        final URL url = new URL(allureUrl);
 
         if (mavenProxy != null && version != null) {
-            InetSocketAddress proxyAddress = new InetSocketAddress(mavenProxy.getHost(), mavenProxy.getPort());
+            final InetSocketAddress proxyAddress =
+                    new InetSocketAddress(mavenProxy.getHost(), mavenProxy.getPort());
 
-            if ((mavenProxy.getUsername() != null) && (mavenProxy.getPassword() != null)) {
+            if (mavenProxy.getUsername() != null && mavenProxy.getPassword() != null) {
                 final String proxyUser = mavenProxy.getUsername();
                 final String proxyPassword = mavenProxy.getPassword();
 
-                Authenticator.setDefault(
-                        new Authenticator() {
-                            @Override
-                            public PasswordAuthentication getPasswordAuthentication() {
-                                return new PasswordAuthentication(
-                                        proxyUser, proxyPassword.toCharArray());
-                            }
-                        }
-                );
+                Authenticator.setDefault(new Authenticator() {
+                    @Override
+                    public PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(proxyUser, proxyPassword.toCharArray());
+                    }
+                });
             }
 
-            java.net.Proxy proxy = new java.net.Proxy(java.net.Proxy.Type.HTTP, proxyAddress);
-            InputStream inputStream = url.openConnection(proxy).getInputStream();
+            final java.net.Proxy proxy = new java.net.Proxy(java.net.Proxy.Type.HTTP, proxyAddress);
+            final InputStream inputStream = url.openConnection(proxy).getInputStream();
             Files.copy(inputStream, allureZip, StandardCopyOption.REPLACE_EXISTING);
         } else {
             FileUtils.copyURLToFile(url, allureZip.toFile());
         }
 
-        unpack (allureZip.toFile ());
+        unpack(allureZip.toFile());
     }
 
-    private void unpack (File file) throws IOException {
+    private void unpack(final File file) throws IOException {
         try {
-            ZipFile zipFile = new ZipFile(file);
+            final ZipFile zipFile = new ZipFile(file);
             zipFile.extractAll(getInstallationDirectory().toAbsolutePath().toString());
         } catch (ZipException e) {
             throw new IOException(e);
         }
 
-        Path allureExecutable = getAllureExecutablePath();
+        final Path allureExecutable = getAllureExecutablePath();
         if (Files.exists(allureExecutable)) {
             allureExecutable.toFile().setExecutable(true);
         }

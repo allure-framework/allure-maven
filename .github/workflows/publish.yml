@@ -1,0 +1,38 @@
+name: Publish
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 8.0.x
+
+      - name: Set up GPG
+        run: echo -n "${GPG_PRIVATE_KEY}" | base64 --decode > ${GITHUB_WORKSPACE}/${GPG_KEY_ID}.gpg
+        env:
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+
+      - name: "Gradle Build"
+        run: ./mvnw install
+
+      - name: "Gradle Publish"
+        run: |
+          ./mvnw deploy \
+                    -Dsigning.keyId=${GPG_KEY_ID} \
+                    -Dsigning.password=${GPG_PASSPHRASE} \
+                    -Dsigning.secretKeyRingFile=${GITHUB_WORKSPACE}/${GPG_KEY_ID}.gpg
+        env:
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.OSSRH_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.OSSRH_PASSWORD }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

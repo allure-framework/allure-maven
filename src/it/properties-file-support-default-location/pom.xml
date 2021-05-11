@@ -20,7 +20,7 @@
                 <artifactId>@project.artifactId@</artifactId>
                 <version>@project.version@</version>
                 <configuration>
-                    <reportVersion>2.8.1</reportVersion>
+                    <reportVersion>2.13.9</reportVersion>
                 </configuration>
             </plugin>
         </plugins>

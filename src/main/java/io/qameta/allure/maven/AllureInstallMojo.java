@@ -56,12 +56,14 @@ public class AllureInstallMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException {
         try {
-            AllureCommandline commandline = new AllureCommandline(Paths.get(installDirectory), reportVersion);
+            final AllureCommandline commandline =
+                    new AllureCommandline(Paths.get(installDirectory), reportVersion);
             getLog().info(String.format("Allure installation directory %s", installDirectory));
             getLog().info(String.format("Try to finding out allure %s", commandline.getVersion()));
 
             if (commandline.allureNotExists()) {
-                String downloadUrl = DownloadUtils.getAllureDownloadUrl(commandline.getVersion (), allureDownloadUrl);
+                final String downloadUrl = DownloadUtils
+                        .getAllureDownloadUrl(commandline.getVersion(), allureDownloadUrl);
                 if (downloadUrl == null) {
                     commandline.downloadWithMaven(session, dependencyResolver);
                 } else {
@@ -71,7 +73,7 @@ public class AllureInstallMojo extends AbstractMojo {
                 }
             }
         } catch (IOException e) {
-            getLog().error("Can't install allure", e);
+            getLog().error("Installation error", e);
             throw new MojoExecutionException("Can't install allure", e);
         }
     }

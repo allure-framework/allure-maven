@@ -25,7 +25,6 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
-
 /**
  * Calls allure serve command.
  */
@@ -56,7 +55,7 @@ public class AllureServeMojo extends AllureGenerateMojo {
      */
     @Override
     protected List<Path> getInputDirectories() {
-        Path path = getInputDirectoryAbsolutePath();
+        final Path path = getInputDirectoryAbsolutePath();
         if (isDirectoryExists(path)) {
             getLog().info("Found results directory " + path);
             return Collections.singletonList(path);
@@ -66,23 +65,24 @@ public class AllureServeMojo extends AllureGenerateMojo {
     }
 
     private Path getInputDirectoryAbsolutePath() {
-        Path path = Paths.get(resultsDirectory);
+        final Path path = Paths.get(resultsDirectory);
         return path.isAbsolute() ? path : Paths.get(buildDirectory).resolve(path);
     }
 
-    protected void generateReport(List<Path> resultsPaths) throws MavenReportException {
+    @Override
+    protected void generateReport(final List<Path> resultsPaths) throws MavenReportException {
         try {
-            Path reportPath = Paths.get(getReportDirectory());
+            final Path reportPath = Paths.get(getReportDirectory());
 
-            AllureCommandline commandline
-                    = new AllureCommandline(Paths.get(getInstallDirectory()), reportVersion, this.serveTimeout);
+            final AllureCommandline commandline = new AllureCommandline(
+                    Paths.get(getInstallDirectory()), reportVersion, this.serveTimeout);
 
             getLog().info("Generate report to " + reportPath);
             commandline.serve(resultsPaths, reportPath, this.serveHost, this.servePort);
             getLog().info("Report generated successfully.");
         } catch (Exception e) {
-            getLog().error("Can't generate allure report data", e);
-            throw new MavenReportException("Can't generate allure report data", e);
+            getLog().error("Generate error", e);
+            throw new MavenReportException("Can't generate allure report", e);
         }
     }
 

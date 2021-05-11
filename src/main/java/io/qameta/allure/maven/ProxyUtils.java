@@ -34,39 +34,42 @@ final class ProxyUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyUtils.class);
 
-    private ProxyUtils(){
+    private ProxyUtils() {
         throw new IllegalStateException("Do not instance");
     }
 
-    /* default */ static Proxy getProxy(MavenSession mavenSession, SettingsDecrypter decrypter) {
-        if (mavenSession == null ||
-                mavenSession.getSettings() == null ||
-                mavenSession.getSettings().getProxies() == null ||
-                mavenSession.getSettings().getProxies().isEmpty()) {
+    @SuppressWarnings({"ModifiedControlVariable", "EmptyBlock", "PMD.AvoidInstantiatingObjectsInLoops"})
+    public static Proxy getProxy(final MavenSession mavenSession, final SettingsDecrypter decrypter) {
+        if (mavenSession == null || mavenSession.getSettings() == null
+                || mavenSession.getSettings().getProxies() == null
+                || mavenSession.getSettings().getProxies().isEmpty()) {
             LOGGER.info("Proxy is not specified.");
-            return null;
         } else {
             final List<Proxy> mavenProxies = mavenSession.getSettings().getProxies();
             for (Proxy proxy : mavenProxies) {
                 if (proxy.isActive()) {
-                    proxy = decryptProxy(proxy, decrypter);
-                    try (Socket socket = new Socket(proxy.getHost(), proxy.getPort())) {
+                    final Proxy decrypted = decryptProxy(proxy, decrypter);
+                    try (Socket socket = new Socket(decrypted.getHost(), decrypted.getPort())) {
+                        // do nothing
                     } catch (IOException e) {
-                        LOGGER.info(String.format("Proxy: %s:%s is not available", proxy.getHost(), proxy.getPort()));
+                        LOGGER.info(String.format("Proxy: %s:%s is not available", decrypted.getHost(),
+                                decrypted.getPort()));
                         continue;
                     }
-                    LOGGER.info(String.format("Found proxy: %s:%s", proxy.getHost(), proxy.getPort()));
+                    LOGGER.info(
+                            String.format("Found proxy: %s:%s", decrypted.getHost(), decrypted.getPort()));
                     return proxy;
                 }
             }
             LOGGER.info("No active proxies found.");
-            return null;
         }
+        return null;
     }
 
-    private static Proxy decryptProxy(Proxy proxy, SettingsDecrypter decrypter) {
-        final DefaultSettingsDecryptionRequest decryptionRequest = new DefaultSettingsDecryptionRequest(proxy);
-        SettingsDecryptionResult decryptedResult = decrypter.decrypt(decryptionRequest);
+    private static Proxy decryptProxy(final Proxy proxy, final SettingsDecrypter decrypter) {
+        final DefaultSettingsDecryptionRequest decryptionRequest =
+                new DefaultSettingsDecryptionRequest(proxy);
+        final SettingsDecryptionResult decryptedResult = decrypter.decrypt(decryptionRequest);
         return decryptedResult.getProxy();
     }
 }

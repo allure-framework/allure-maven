@@ -27,7 +27,7 @@
                             <version>${allure.version}</version>
                         </plugin>
                     </plugins>
-                    <reportVersion>2.8.1</reportVersion>
+                    <reportVersion>2.13.9</reportVersion>
                 </configuration>
             </plugin>
             <plugin>
