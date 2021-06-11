@@ -65,7 +65,8 @@ public class AllureCommandline {
         this(installationDirectory, version, DEFAULT_TIMEOUT);
     }
 
-    public AllureCommandline(final Path installationDirectory, final String version, final int timeout) {
+    public AllureCommandline(final Path installationDirectory, final String version,
+            final int timeout) {
         this.installationDirectory = installationDirectory;
         this.version = version != null ? version : ALLURE_DEFAULT_VERSION;
         this.timeout = timeout;
@@ -92,7 +93,7 @@ public class AllureCommandline {
     }
 
     public int serve(final List<Path> resultsPaths, final Path reportPath, final String serveHost,
-                     final Integer servePort) throws IOException {
+            final Integer servePort) throws IOException {
 
         this.checkAllureExists();
 
@@ -148,8 +149,8 @@ public class AllureCommandline {
         return !allureExists();
     }
 
-    public void downloadWithMaven(final MavenSession session, final DependencyResolver dependencyResolver)
-            throws IOException {
+    public void downloadWithMaven(final MavenSession session,
+            final DependencyResolver dependencyResolver) throws IOException {
         final ProjectBuildingRequest buildingRequest =
                 new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
         buildingRequest.setResolveDependencies(false);
@@ -161,9 +162,9 @@ public class AllureCommandline {
         cliDep.setType("zip");
 
         try {
-            final Iterator<ArtifactResult> resolved = dependencyResolver.resolveDependencies(
-                    buildingRequest, Collections.singletonList(cliDep), null, null)
-                    .iterator();
+            final Iterator<ArtifactResult> resolved =
+                    dependencyResolver.resolveDependencies(buildingRequest,
+                            Collections.singletonList(cliDep), null, null).iterator();
 
             if (resolved.hasNext()) {
                 unpack(resolved.next().getArtifact().getFile());
@@ -176,7 +177,8 @@ public class AllureCommandline {
         }
     }
 
-    public void download(final String allureDownloadUrl, final Proxy mavenProxy) throws IOException {
+    public void download(final String allureDownloadUrl, final Proxy mavenProxy)
+            throws IOException {
         if (allureExists()) {
             return;
         }

@@ -38,8 +38,10 @@ final class ProxyUtils {
         throw new IllegalStateException("Do not instance");
     }
 
-    @SuppressWarnings({"ModifiedControlVariable", "EmptyBlock", "PMD.AvoidInstantiatingObjectsInLoops"})
-    public static Proxy getProxy(final MavenSession mavenSession, final SettingsDecrypter decrypter) {
+    @SuppressWarnings({"ModifiedControlVariable", "EmptyBlock",
+            "PMD.AvoidInstantiatingObjectsInLoops"})
+    public static Proxy getProxy(final MavenSession mavenSession,
+            final SettingsDecrypter decrypter) {
         if (mavenSession == null || mavenSession.getSettings() == null
                 || mavenSession.getSettings().getProxies() == null
                 || mavenSession.getSettings().getProxies().isEmpty()) {
@@ -52,12 +54,12 @@ final class ProxyUtils {
                     try (Socket socket = new Socket(decrypted.getHost(), decrypted.getPort())) {
                         // do nothing
                     } catch (IOException e) {
-                        LOGGER.info(String.format("Proxy: %s:%s is not available", decrypted.getHost(),
-                                decrypted.getPort()));
+                        LOGGER.info(String.format("Proxy: %s:%s is not available",
+                                decrypted.getHost(), decrypted.getPort()));
                         continue;
                     }
-                    LOGGER.info(
-                            String.format("Found proxy: %s:%s", decrypted.getHost(), decrypted.getPort()));
+                    LOGGER.info(String.format("Found proxy: %s:%s", decrypted.getHost(),
+                            decrypted.getPort()));
                     return proxy;
                 }
             }
