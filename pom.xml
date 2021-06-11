@@ -19,7 +19,7 @@
         <maven.version>3.8.1</maven.version>
         <maven-plugin.version>3.6.1</maven-plugin.version>
 
-        <pmd.version>6.34.0</pmd.version>
+        <pmd.version>6.35.0</pmd.version>
     </properties>
 
     <organization>
@@ -179,7 +179,7 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.11.0</version>
+                <version>2.12.0</version>
                 <configuration>
                     <java>
                         <eclipse>
