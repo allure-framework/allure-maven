@@ -147,8 +147,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
             this.installAllure();
 
-            getLog().info(String.format("Generate Allure report (%s) with version %s", getMojoName(),
-                    reportVersion != null ? reportVersion : ALLURE_DEFAULT_VERSION));
+            getLog().info(String.format("Generate Allure report (%s) with version %s",
+                    getMojoName(), reportVersion != null ? reportVersion : ALLURE_DEFAULT_VERSION));
             getLog().info("Generate Allure report to " + getReportDirectory());
 
             final List<Path> inputDirectories = getInputDirectories();
@@ -169,8 +169,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
         }
     }
 
-    private void copyExecutorInfo(final List<Path> inputDirectories)
-            throws IOException {
+    private void copyExecutorInfo(final List<Path> inputDirectories) throws IOException {
         addPropertyIfAbsent("name", "Maven");
         addPropertyIfAbsent("type", "maven");
         addPropertyIfAbsent("buildName", getProject().getName());
@@ -279,8 +278,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
      *
      * @throws IOException if any occurs.
      */
-    protected void readPropertiesFileFromClasspath(final String propertiesFileName, final Properties properties)
-            throws IOException, DependencyResolutionRequiredException {
+    protected void readPropertiesFileFromClasspath(final String propertiesFileName,
+            final Properties properties) throws IOException, DependencyResolutionRequiredException {
         try (InputStream is = createProjectClassLoader().getResourceAsStream(propertiesFileName)) {
             if (is != null) {
                 properties.load(is);
@@ -331,7 +330,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
         final String relativePath =
                 Paths.get(reportingOutputDirectory).relativize(indexHtmlFile).toString();
 
-        sink.rawText(String.format("<meta http-equiv=\"refresh\" content=\"0;url=%s\" />", relativePath));
+        sink.rawText(String.format("<meta http-equiv=\"refresh\" content=\"0;url=%s\" />",
+                relativePath));
 
         sink.link(relativePath);
 
