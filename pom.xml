@@ -19,7 +19,7 @@
         <maven.version>3.8.1</maven.version>
         <maven-plugin.version>3.6.1</maven-plugin.version>
 
-        <pmd.version>6.35.0</pmd.version>
+        <pmd.version>6.37.0</pmd.version>
     </properties>
 
     <organization>
@@ -217,7 +217,7 @@
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>8.43</version>
+                        <version>8.45.1</version>
                     </dependency>
                 </dependencies>
                 <executions>
