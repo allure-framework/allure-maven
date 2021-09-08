@@ -1,12 +1,9 @@
 [release]: https://github.com/allure-framework/allure-maven/releases/latest "Release"
 [release-badge]: https://img.shields.io/github/release/allure-framework/allure-maven.svg
 
-[bintray]: https://bintray.com/qameta/maven/allure-maven "Bintray"
-[bintray-badge]: https://img.shields.io/bintray/v/qameta/maven/allure-maven.svg?style=flat
-
 # Allure Maven Plugin 
 
-[![Build](https://github.com/allure-framework/allure-maven/actions/workflows/build.yml/badge.svg)](https://github.com/allure-framework/allure-maven/actions/workflows/build.yml) [![release-badge][]][release] [![bintray-badge][]][bintray]
+[![Build](https://github.com/allure-framework/allure-maven/actions/workflows/build.yml/badge.svg)](https://github.com/allure-framework/allure-maven/actions/workflows/build.yml) [![release-badge][]][release]
 
 This plugin generates Allure report by [existing XML files](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) during Maven build process.
 
@@ -52,7 +49,6 @@ Additional information can be found [here](https://docs.qameta.io/allure).
 ## Links
 
 * [Issues](https://github.com/allure-framework/allure-maven/issues)
-* [Jenkins](https://ci.qameta.io/job/allure-maven/)
 * [Releases](https://github.com/allure-framework/allure-maven/releases)
 
 ## Contacts
