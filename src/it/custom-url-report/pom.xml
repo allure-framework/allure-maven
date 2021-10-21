@@ -11,7 +11,7 @@
     <properties>
         <allure.version>1.4.19</allure.version>
     </properties>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -25,8 +25,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <reportVersion>2.8.0</reportVersion>
-                    <allureDownloadUrl>https://dl.bintray.com/qameta/maven/io/qameta/allure/allure-commandline/2.8.0/allure-commandline-2.8.0.zip</allureDownloadUrl>
+                    <reportVersion>2.15.0</reportVersion>
+                    <allureDownloadUrl>https://github.com/allure-framework/allure2/releases/download/2.15.0/allure-2.15.0.zip</allureDownloadUrl>
                 </configuration>
             </plugin>
         </plugins>

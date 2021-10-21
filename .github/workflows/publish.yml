@@ -22,12 +22,12 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
-      - name: "Gradle Build"
-        run: ./mvnw install
+      - name: "Maven Build"
+        run: ./mvnw -Dinvoker.skip=true install
 
-      - name: "Gradle Publish"
+      - name: "Maven Publish"
         run: |
-          ./mvnw deploy \
+          ./mvnw -Dinvoker.skip=true deploy \
                     -Dsigning.keyId=${GPG_KEY_ID} \
                     -Dsigning.password=${GPG_PASSPHRASE} \
                     -Dsigning.secretKeyRingFile=${GITHUB_WORKSPACE}/${GPG_KEY_ID}.gpg
