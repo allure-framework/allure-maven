@@ -22,6 +22,11 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
+      - name: Set up Maven
+        uses: s4u/maven-settings-action@v2.4.1
+        with:
+          servers: '[{"id": "ossrh", "username": "${{secrets.OSSRH_USERNAME}}", "password": "${{secrets.OSSRH_PASSWORD}}"}]'
+
       - name: "Maven Build"
         run: ./mvnw -Dinvoker.skip=true install
 
@@ -32,7 +37,5 @@ jobs:
                     -Dsigning.password=${GPG_PASSPHRASE} \
                     -Dsigning.secretKeyRingFile=${GITHUB_WORKSPACE}/${GPG_KEY_ID}.gpg
         env:
-          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.OSSRH_USERNAME }}
-          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.OSSRH_PASSWORD }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
