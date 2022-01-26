@@ -1,11 +1,8 @@
 name: Publish Release
 
 on:
-  push:
-    branches:
-      - 'fix-release'
-#  release:
-#    types: [ published ]
+  release:
+    types: [ published ]
 
 jobs:
   build:
