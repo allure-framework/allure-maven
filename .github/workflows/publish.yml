@@ -25,7 +25,9 @@ jobs:
           servers: '[{"id": "ossrh", "username": "${{secrets.OSSRH_USERNAME}}", "password": "${{secrets.OSSRH_PASSWORD}}"}]'
 
       - name: Set up GPG
-        run: echo -n "${GPG_PRIVATE_KEY}" | base64 --decode | gpg --import
+        run: |
+          export GPG_TTY=$(tty)
+          echo -n "${GPG_PRIVATE_KEY}" | base64 --decode | gpg --import
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
