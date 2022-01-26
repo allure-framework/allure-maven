@@ -19,16 +19,15 @@ jobs:
           distribution: 'zulu'
           java-version: 8.0.x
 
-      - name: Set up GPG
-        run: echo -n "${GPG_PRIVATE_KEY}" | base64 --decode > ${GITHUB_WORKSPACE}/${GPG_KEY_ID}.gpg
-        env:
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-
       - name: Set up Maven
         uses: s4u/maven-settings-action@v2.4.1
         with:
           servers: '[{"id": "ossrh", "username": "${{secrets.OSSRH_USERNAME}}", "password": "${{secrets.OSSRH_PASSWORD}}"}]'
+
+      - name: Set up GPG
+        run: echo -n "${GPG_PRIVATE_KEY}" | base64 --decode | gpg --import
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
       - name: "Maven Build"
         run: ./mvnw -Dinvoker.skip=true install
