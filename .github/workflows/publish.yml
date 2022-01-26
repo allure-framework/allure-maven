@@ -35,7 +35,7 @@ jobs:
 
       - name: "Maven Publish"
         run: |
-          ./mvnw -Dinvoker.skip=true gpg:sign deploy \
+          ./mvnw -Dinvoker.skip=true package gpg:sign deploy \
                  -Dsigning.keyId=${GPG_KEY_ID} \
                  -Dsigning.password=${GPG_PASSPHRASE} \
                  -Dsigning.secretKeyRingFile=${GITHUB_WORKSPACE}/${GPG_KEY_ID}.gpg
