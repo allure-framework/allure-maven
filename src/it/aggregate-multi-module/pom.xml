@@ -14,6 +14,10 @@
         <module>second</module>
     </modules>
 
+    <properties>
+        <allure.version>1.4.16</allure.version>
+    </properties>
+
     <reporting>
         <excludeDefaults>true</excludeDefaults>
         <plugins>
