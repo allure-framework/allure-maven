@@ -36,7 +36,7 @@ jobs:
 
       - name: "Maven Publish"
         run: |
-          ./mvnw -Dinvoker.skip=true deploy gpg:sign-and-deploy-file  \
+          ./mvnw -Dinvoker.skip=true deploy \
                  -Dgpg.keyname=${GPG_KEY_ID} \
                  -Dgpg.passphrase=${GPG_PASSPHRASE} \
         env:
