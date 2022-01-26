@@ -1,8 +1,11 @@
 name: Publish Release
 
 on:
-  release:
-    types: [ published ]
+  push:
+    branches:
+      - 'fix-release'
+#  release:
+#    types: [ published ]
 
 jobs:
   build:
@@ -32,7 +35,7 @@ jobs:
 
       - name: "Maven Publish"
         run: |
-          ./mvnw -Dinvoker.skip=true deploy \
+          ./mvnw -Dinvoker.skip=true gpg:sign deploy \
                  -Dsigning.keyId=${GPG_KEY_ID} \
                  -Dsigning.password=${GPG_PASSPHRASE} \
                  -Dsigning.secretKeyRingFile=${GITHUB_WORKSPACE}/${GPG_KEY_ID}.gpg
