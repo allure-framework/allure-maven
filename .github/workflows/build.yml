@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    name: "Build JDK 1.8"
+    name: "Build"
     runs-on: ubuntu-latest
     strategy:
       matrix:

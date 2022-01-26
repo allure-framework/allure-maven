@@ -1,4 +1,4 @@
-name: Publish
+name: Publish Release
 
 on:
   release:
@@ -16,26 +16,26 @@ jobs:
           distribution: 'zulu'
           java-version: 8.0.x
 
-      - name: Set up GPG
-        run: echo -n "${GPG_PRIVATE_KEY}" | base64 --decode > ${GITHUB_WORKSPACE}/${GPG_KEY_ID}.gpg
-        env:
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-
       - name: Set up Maven
         uses: s4u/maven-settings-action@v2.4.1
         with:
           servers: '[{"id": "ossrh", "username": "${{secrets.OSSRH_USERNAME}}", "password": "${{secrets.OSSRH_PASSWORD}}"}]'
+
+      - name: Set up GPG
+        run: |
+          export GPG_TTY=$(tty)
+          echo -n "${GPG_PRIVATE_KEY}" | base64 --decode | gpg --batch --import
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
       - name: "Maven Build"
         run: ./mvnw -Dinvoker.skip=true install
 
       - name: "Maven Publish"
         run: |
-          ./mvnw -Dinvoker.skip=true deploy \
-                    -Dsigning.keyId=${GPG_KEY_ID} \
-                    -Dsigning.password=${GPG_PASSPHRASE} \
-                    -Dsigning.secretKeyRingFile=${GITHUB_WORKSPACE}/${GPG_KEY_ID}.gpg
+          ./mvnw -Dinvoker.skip=true -Pgpg deploy \
+                 -Dgpg.keyname=${GPG_KEY_ID} \
+                 -Dgpg.passphrase=${GPG_PASSPHRASE} \
         env:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
