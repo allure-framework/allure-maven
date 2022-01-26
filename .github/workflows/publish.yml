@@ -27,8 +27,7 @@ jobs:
       - name: Set up GPG
         run: |
           export GPG_TTY=$(tty)
-          gpg --list-public-keys
-          echo -n "${GPG_PRIVATE_KEY}" | base64 --decode | gpg --import
+          echo -n "${GPG_PRIVATE_KEY}" | base64 --decode | gpg --batch --import
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
