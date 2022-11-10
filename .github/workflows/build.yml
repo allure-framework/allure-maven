@@ -6,7 +6,7 @@ on:
       - '*'
   push:
     branches:
-      - 'master'
+      - 'main'
       - 'hotfix-*'
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java-version: [ '8.0.x', '11.0.x' ]
+        java-version: [ '8.0.x', '11.0.x', '17.0.x' ]
     steps:
       - uses: actions/checkout@v3.1.0
       - name: Set up JDK ${{ matrix.java-version }}
