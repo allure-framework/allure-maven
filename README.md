@@ -44,7 +44,7 @@ You can configurate allure version like here:
 </plugin>
 ```
 
-Additional information can be found [here](https://docs.qameta.io/allure).
+Additional information can be found [here](https://allurereport.org/).
 
 ## Links
 
