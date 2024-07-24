@@ -18,6 +18,7 @@ package io.qameta.allure.maven;
 import java.io.IOException;
 import java.nio.file.Paths;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -62,14 +63,13 @@ public class AllureInstallMojo extends AbstractMojo {
             getLog().info(String.format("Try to finding out allure %s", commandline.getVersion()));
 
             if (commandline.allureNotExists()) {
-                final String downloadUrl = DownloadUtils
-                        .getAllureDownloadUrl(commandline.getVersion(), allureDownloadUrl);
-                if (downloadUrl == null) {
-                    commandline.downloadWithMaven(session, dependencyResolver);
-                } else {
-                    getLog().info("Downloading allure commandline from " + downloadUrl);
-                    commandline.download(downloadUrl, ProxyUtils.getProxy(session, decrypter));
+                if (StringUtils.isNotBlank(allureDownloadUrl)) {
+                    getLog().info("Downloading allure commandline from " + allureDownloadUrl);
+                    commandline.download(allureDownloadUrl,
+                            ProxyUtils.getProxy(session, decrypter));
                     getLog().info("Downloading allure commandline complete");
+                } else {
+                    commandline.downloadWithMaven(session, dependencyResolver);
                 }
             }
         } catch (IOException e) {

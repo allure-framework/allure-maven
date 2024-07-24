@@ -15,12 +15,13 @@
  */
 package io.qameta.allure.maven;
 
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
@@ -41,17 +42,20 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static io.qameta.allure.maven.VersionUtils.versionCompare;
+
 @SuppressWarnings({"ClassDataAbstractionCoupling", "ClassFanOutComplexity",
         "MultipleStringLiterals"})
 public class AllureCommandline {
 
-    public static final String ALLURE_DEFAULT_VERSION = "2.20.1";
+    public static final String ALLURE_DEFAULT_VERSION = "2.30.0";
 
     private static final int DEFAULT_TIMEOUT = 3600;
 
@@ -68,7 +72,9 @@ public class AllureCommandline {
     public AllureCommandline(final Path installationDirectory, final String version,
             final int timeout) {
         this.installationDirectory = installationDirectory;
-        this.version = version != null ? version : ALLURE_DEFAULT_VERSION;
+        this.version = StringUtils.isBlank(version) || versionCompare(version, "2.8.0") < 0
+                ? ALLURE_DEFAULT_VERSION
+                : version;
         this.timeout = timeout;
     }
 
@@ -124,8 +130,9 @@ public class AllureCommandline {
     }
 
     private int execute(final CommandLine commandLine, final int timeout) throws IOException {
-        final DefaultExecutor executor = new DefaultExecutor();
-        final ExecuteWatchdog watchdog = new ExecuteWatchdog(TimeUnit.SECONDS.toMillis(timeout));
+        final DefaultExecutor executor = DefaultExecutor.builder().get();
+        final ExecuteWatchdog watchdog = ExecuteWatchdog.builder()
+                .setTimeout(Duration.ofMillis(TimeUnit.SECONDS.toMillis(timeout))).get();
         executor.setWatchdog(watchdog);
         executor.setExitValue(0);
         return executor.execute(commandLine);
@@ -214,8 +221,7 @@ public class AllureCommandline {
     }
 
     private void unpack(final File file) throws IOException {
-        try {
-            final ZipFile zipFile = new ZipFile(file);
+        try (ZipFile zipFile = new ZipFile(file)) {
             zipFile.extractAll(getInstallationDirectory().toAbsolutePath().toString());
         } catch (ZipException e) {
             throw new IOException(e);
