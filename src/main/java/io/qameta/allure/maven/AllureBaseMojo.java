@@ -17,7 +17,6 @@ package io.qameta.allure.maven;
 
 import org.apache.maven.doxia.siterenderer.Renderer;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
@@ -31,12 +30,6 @@ public abstract class AllureBaseMojo extends AbstractMavenReport {
 
     @Parameter(defaultValue = "${plugin}", readonly = true)
     protected PluginDescriptor pluginDescriptor;
-
-    @Component
-    protected Renderer siteRenderer;
-
-    @Parameter(defaultValue = "${project}", required = true, readonly = true)
-    protected MavenProject project;
 
     /**
      * {@inheritDoc}

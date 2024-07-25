@@ -8,30 +8,6 @@
     <version>1.0-SNAPSHOT</version>
     <name>Allure Report Test</name>
 
-    <properties>
-        <allure.version>1.4.19</allure.version>
-    </properties>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>@project.groupId@</groupId>
-                <artifactId>@project.artifactId@</artifactId>
-                <version>@project.version@</version>
-                <executions>
-                    <execution>
-                        <phase>site</phase>
-                        <goals><goal>report</goal></goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <reportVersion>2.15.0</reportVersion>
-                    <allureDownloadUrl>https://github.com/allure-framework/allure2/releases/download/2.15.0/allure-2.15.0.zip</allureDownloadUrl>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <reporting>
         <excludeDefaults>true</excludeDefaults>
         <plugins>
@@ -40,7 +16,8 @@
                 <artifactId>@project.artifactId@</artifactId>
                 <version>@project.version@</version>
                 <configuration>
-                    <reportVersion>2.13.9</reportVersion>
+                    <reportVersion>2.30.0</reportVersion>
+                    <allureDownloadUrl>https://github.com/allure-framework/allure2/releases/download/2.30.0/allure-2.30.0.zip</allureDownloadUrl>
                 </configuration>
             </plugin>
         </plugins>

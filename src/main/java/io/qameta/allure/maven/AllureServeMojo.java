@@ -29,7 +29,7 @@ import java.util.List;
  * Calls allure serve command.
  */
 @SuppressWarnings("unused")
-@Mojo(name = "serve", defaultPhase = LifecyclePhase.SITE)
+@Mojo(name = "serve", defaultPhase = LifecyclePhase.SITE, inheritByDefault = false)
 public class AllureServeMojo extends AllureGenerateMojo {
 
     /**

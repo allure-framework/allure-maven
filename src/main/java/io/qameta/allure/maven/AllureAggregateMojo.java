@@ -18,44 +18,61 @@ package io.qameta.allure.maven;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Dmitry Baev dmitry.baev@qameta.io Date: 04.08.15
  */
-@Mojo(name = "bulk", defaultPhase = LifecyclePhase.SITE, inheritByDefault = false)
-public class AllureBulkMojo extends AllureGenerateMojo {
+@Mojo(name = "aggregate", defaultPhase = LifecyclePhase.SITE, inheritByDefault = false,
+        aggregator = true)
+public class AllureAggregateMojo extends AllureGenerateMojo {
 
     /**
-     * The comma-separated list of additional input directories. As long as unix path can contains
-     * commas it is bad way to specify few input directories. The main usage of this parameter is
-     * some scripts to generate aggregated report. This parameter will be used only in "bulk" mojo.
+     * The projects in the reactor.
      */
-    @Parameter(property = "allure.results.inputDirectories")
-    protected String inputDirectories;
+    @Parameter(defaultValue = "${reactorProjects}", required = true, readonly = true)
+    protected List<MavenProject> reactorProjects;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected List<Path> getInputDirectories() {
-        final List<Path> results = new ArrayList<>();
-        for (String dir : inputDirectories.split(",")) {
-            final Path path = Paths.get(dir).toAbsolutePath();
+        final Path relative = Paths.get(resultsDirectory);
+        if (relative.isAbsolute()) {
+            getLog().error("Input directory should be not absolute for aggregate goal.");
+            return Collections.emptyList();
+        }
+
+        final List<Path> result = new ArrayList<>();
+        for (MavenProject child : reactorProjects) {
+            final Path target = Paths.get(child.getBuild().getDirectory());
+            final Path path = target.resolve(relative).toAbsolutePath();
             if (isDirectoryExists(path)) {
-                results.add(path);
+                result.add(path);
                 getLog().info("Found results directory " + path);
             } else {
-                getLog().warn("Directory " + path + " not found.");
+                getLog().warn("Results directory for module " + child.getName() + " not found.");
             }
         }
 
-        return results;
+        return result;
     }
 
     @Override
     protected String getMojoName() {
-        return "bulk";
+        return "aggregate";
     }
+
+    @Override
+    protected boolean isAggregate() {
+        return true;
+    }
+
 }

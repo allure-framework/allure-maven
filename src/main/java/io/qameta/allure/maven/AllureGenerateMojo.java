@@ -16,7 +16,8 @@
 package io.qameta.allure.maven;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringSubstitutor;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.execution.MavenSession;
@@ -38,6 +39,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -152,6 +154,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             getLog().info("Generate Allure report to " + getReportDirectory());
 
             final List<Path> inputDirectories = getInputDirectories();
+
             if (inputDirectories.isEmpty()) {
                 getLog().warn(
                         "Allure report was skipped because there is no results directories found.");
@@ -164,6 +167,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             this.generateReport(inputDirectories);
 
             render(getSink(), getName(locale));
+
         } catch (Exception e) {
             throw new MavenReportException("Could not generate the report", e);
         }
@@ -172,7 +176,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     private void copyExecutorInfo(final List<Path> inputDirectories) throws IOException {
         addPropertyIfAbsent("name", "Maven");
         addPropertyIfAbsent("type", "maven");
-        addPropertyIfAbsent("buildName", getProject().getName());
+        addPropertyIfAbsent("buildName", getProject() == null ? "N/A" : getProject().getName());
 
         final ObjectMapper mapper = new ObjectMapper();
         for (Path dir : inputDirectories) {
@@ -227,14 +231,13 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             getLog().info(String.format("Try to finding out allure %s", commandline.getVersion()));
 
             if (commandline.allureNotExists()) {
-                final String downloadUrl = DownloadUtils
-                        .getAllureDownloadUrl(commandline.getVersion(), allureDownloadUrl);
-                if (downloadUrl == null) {
-                    commandline.downloadWithMaven(session, dependencyResolver);
-                } else {
-                    getLog().info("Downloading allure commandline from " + downloadUrl);
-                    commandline.download(downloadUrl, ProxyUtils.getProxy(session, decrypter));
+                if (StringUtils.isNotBlank(allureDownloadUrl)) {
+                    getLog().info("Downloading allure commandline from " + allureDownloadUrl);
+                    commandline.download(allureDownloadUrl,
+                            ProxyUtils.getProxy(session, decrypter));
                     getLog().info("Downloading allure commandline complete");
+                } else {
+                    commandline.downloadWithMaven(session, dependencyResolver);
                 }
             }
         } catch (IOException e) {
@@ -305,11 +308,12 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     protected void prepareProperties(final Properties properties) {
         final Properties allProperties = new Properties();
         allProperties.putAll(properties);
-        allProperties.putAll(this.getProject().getProperties());
+        allProperties.putAll(
+                getProject() == null ? Collections.emptyMap() : getProject().getProperties());
         allProperties.putAll(System.getProperties());
         for (String name : properties.stringPropertyNames()) {
             properties.setProperty(name,
-                    StrSubstitutor.replace(properties.getProperty(name), allProperties));
+                    StringSubstitutor.replace(properties.getProperty(name), allProperties));
         }
     }
 
@@ -346,9 +350,9 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     protected ClassLoader createProjectClassLoader()
             throws MalformedURLException, DependencyResolutionRequiredException {
         final List<URL> result = new ArrayList<>();
-        for (Object element : project.getTestClasspathElements()) {
-            if (element instanceof String) {
-                final URL url = Paths.get((String) element).toUri().toURL();
+        for (String element : project.getTestClasspathElements()) {
+            if (element != null) {
+                final URL url = Paths.get(element).toUri().toURL();
                 result.add(url);
             }
         }

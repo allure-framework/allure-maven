@@ -15,13 +15,18 @@
  */
 package io.qameta.allure.maven;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static java.lang.String.format;
 
 /**
  * @author Dmitry Baev dmitry.baev@qameta.io Date: 30.07.15
@@ -29,18 +34,48 @@ import java.util.List;
 @Mojo(name = "report", defaultPhase = LifecyclePhase.SITE)
 public class AllureReportMojo extends AllureGenerateMojo {
 
+    private static final String FOUND_DIRECTORY = "Found results directory %s";
+    private static final String DIRECTORY_NOT_FOUND = "Directory %s not found";
+
+    /**
+     * The comma-separated list of additional input directories. As long as unix path can contains
+     * commas it is bad way to specify few input directories. The main usage of this parameter is
+     * some scripts to generate aggregated report. This parameter will be used only in "bulk" mojo.
+     */
+    @Parameter(property = "allure.results.inputDirectories")
+    protected String inputDirectories;
+
     /**
      * {@inheritDoc}
      */
     @Override
     protected List<Path> getInputDirectories() {
+
+        if (StringUtils.isNotBlank(inputDirectories)) {
+            return fromInputDirectories();
+        }
+
         final Path path = getInputDirectoryAbsolutePath();
         if (isDirectoryExists(path)) {
-            getLog().info("Found results directory " + path);
+            getLog().info(format(FOUND_DIRECTORY, path));
             return Collections.singletonList(path);
         }
-        getLog().error("Directory " + path + " not found.");
+        getLog().error(format(DIRECTORY_NOT_FOUND, path));
         return Collections.emptyList();
+    }
+
+    private List<Path> fromInputDirectories() {
+        final List<Path> results = new ArrayList<>();
+        for (String dir : inputDirectories.split(",")) {
+            final Path path = Paths.get(dir).toAbsolutePath();
+            if (isDirectoryExists(path)) {
+                results.add(path);
+                getLog().info(format(FOUND_DIRECTORY, path));
+            } else {
+                getLog().error(format(DIRECTORY_NOT_FOUND, path));
+            }
+        }
+        return results;
     }
 
     @Override

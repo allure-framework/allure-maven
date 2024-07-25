@@ -5,7 +5,7 @@
 
 [![Build](https://github.com/allure-framework/allure-maven/actions/workflows/build.yml/badge.svg)](https://github.com/allure-framework/allure-maven/actions/workflows/build.yml) [![release-badge][]][release]
 
-This plugin generates Allure report by [existing XML files](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) during Maven build process.
+This plugin generates Allure report by [existing XML](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) or [JSON files](https://github.com/allure-framework/allure2) during Maven build process.
 
 ## Getting Started
 

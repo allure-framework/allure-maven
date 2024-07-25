@@ -18,32 +18,15 @@ package io.qameta.allure.maven;
 /**
  * @author eroshenkoam (Artem Eroshenko).
  */
-public final class DownloadUtils {
-
-    private static final String BINTRAY_TEMPLATE =
-            "https://dl.bintray.com/qameta/generic/io/qameta/allure/allure/%s/allure-%s.zip";
+public final class VersionUtils {
 
     private static final String BY_DOT = "\\.";
 
-    private DownloadUtils() {
+    private VersionUtils() {
         throw new IllegalStateException("do not instance");
     }
 
-    /**
-     * This helper returns the canonical download URL for the allure CLI if none was specified. It
-     * returns null if the version is new enough to be available from Maven Central.
-     */
-    public static String getAllureDownloadUrl(final String version, final String downloadUrl) {
-        if (downloadUrl != null) {
-            return downloadUrl;
-        }
-        if (versionCompare(version, "2.8.0") < 0) {
-            return BINTRAY_TEMPLATE;
-        }
-        return null;
-    }
-
-    private static Integer versionCompare(final String first, final String second) {
+    public static Integer versionCompare(final String first, final String second) {
         final String[] firstVersions = first.split(BY_DOT);
         final String[] secondVersions = second.split(BY_DOT);
         int i = 0;
