@@ -1,11 +1,21 @@
 [release]: https://github.com/allure-framework/allure-maven/releases/latest "Release"
 [release-badge]: https://img.shields.io/github/release/allure-framework/allure-maven.svg
 
-# Allure Maven Plugin 
+# Allure Maven Plugin
 
 [![Build](https://github.com/allure-framework/allure-maven/actions/workflows/build.yml/badge.svg)](https://github.com/allure-framework/allure-maven/actions/workflows/build.yml) [![release-badge][]][release]
 
-This plugin generates Allure report by [existing XML](https://github.com/allure-framework/allure-core/wiki#gathering-information-about-tests) or [JSON files](https://github.com/allure-framework/allure2) during Maven build process.
+> This plugin generates Allure Report from [allure-results](https://allurereport.org/docs/how-it-works/).
+
+[<img src="https://allurereport.org/public/img/allure-report.svg" height="85px" alt="Allure Report logo" align="right" />](https://allurereport.org "Allure Report")
+
+- Learn more about Allure Report at https://allurereport.org
+- 📚 [Documentation](https://allurereport.org/docs/) – discover official documentation for Allure Report
+- ❓ [Questions and Support](https://github.com/orgs/allure-framework/discussions/categories/questions-support) – get help from the team and community
+- 📢 [Official annoucements](https://github.com/orgs/allure-framework/discussions/categories/announcements) – be in touch with the latest updates
+- 💬 [General Discussion ](https://github.com/orgs/allure-framework/discussions/categories/general-discussion) – engage in casual conversations, share insights and ideas with the community
+
+---
 
 ## Getting Started
 
@@ -14,7 +24,7 @@ This plugin generates Allure report by [existing XML](https://github.com/allure-
 <plugin>
 	<groupId>io.qameta.allure</groupId>
 	<artifactId>allure-maven</artifactId>
-	<version>2.10.0</version>
+	<version>2.12.0</version>
 </plugin>
 ```
 
@@ -32,26 +42,16 @@ Report will be generated tо directory: `target/site/allure-maven/index.html`
 
 ## Configuration
 
-You can configurate allure version like here:
+You can configure Allure Report version by using `reportVersion` property:
 ```
 <plugin>
 	<groupId>io.qameta.allure</groupId>
 	<artifactId>allure-maven</artifactId>
-	<version>2.10.0</version>
+	<version>2.12.0</version>
 	<configuration>
-		<reportVersion>2.14.0</reportVersion>
+		<reportVersion>2.30.0</reportVersion>
 	</configuration>
 </plugin>
 ```
 
-Additional information can be found [here](https://allurereport.org/).
-
-## Links
-
-* [Issues](https://github.com/allure-framework/allure-maven/issues)
-* [Releases](https://github.com/allure-framework/allure-maven/releases)
-
-## Contacts
-* Mailing list: [allure@qameta.io](mailto:allure@qameta.io)
-* Gitter chat room: [https://gitter.im/allure-framework/allure-core](https://gitter.im/allure-framework/allure-core)
-* StackOverflow tag: [Allure](http://stackoverflow.com/questions/tagged/allure)
+Additional information can be found [on official website](https://allurereport.org/).
