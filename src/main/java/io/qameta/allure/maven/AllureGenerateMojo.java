@@ -51,7 +51,7 @@ import static io.qameta.allure.maven.AllureCommandline.ALLURE_DEFAULT_VERSION;
 /**
  * @author Dmitry Baev dmitry.baev@qameta.io Date: 04.08.15
  */
-@SuppressWarnings("ClassFanOutComplexity")
+@SuppressWarnings({"PMD.GodClass", "ClassFanOutComplexity"})
 public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
     public static final String ALLURE_OLD_PROPERTIES = "allure.properties";

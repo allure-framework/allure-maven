@@ -51,7 +51,7 @@ import java.util.concurrent.TimeUnit;
 
 import static io.qameta.allure.maven.VersionUtils.versionCompare;
 
-@SuppressWarnings({"ClassDataAbstractionCoupling", "ClassFanOutComplexity",
+@SuppressWarnings({"PMD.GodClass", "ClassDataAbstractionCoupling", "ClassFanOutComplexity",
         "MultipleStringLiterals"})
 public class AllureCommandline {
 
