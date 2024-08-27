@@ -133,6 +133,12 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     protected Map<String, String> properties = new HashMap<>();
 
     /**
+     * The report generation mode.
+     */
+    @Parameter
+    protected Boolean singleFile;
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -254,7 +260,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
                     Paths.get(getInstallDirectory()), reportVersion, reportTimeout);
 
             getLog().info("Generate report to " + reportPath);
-            commandline.generateReport(resultsPaths, reportPath);
+            commandline.generateReport(resultsPaths, reportPath, Boolean.TRUE.equals(singleFile));
             getLog().info("Report generated successfully.");
         } catch (Exception e) {
             getLog().error("Generation error", e);

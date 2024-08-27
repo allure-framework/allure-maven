@@ -53,6 +53,11 @@ public final class TestHelper {
                 getTestCases(dataDirectory.resolve("test-cases")), hasSize(testCasesCount));
     }
 
+    public static void checkIndexHtml(Path outputDirectory) {
+        Path index = outputDirectory.resolve("index.html");
+        assertThat(index, exists());
+    }
+
     public static List<String> getTestCases(Path dataDirectory) {
         return Arrays.asList(dataDirectory.toFile().list(new WildcardFileFilter("*.json")));
     }
