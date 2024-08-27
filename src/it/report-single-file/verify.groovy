@@ -1,7 +1,7 @@
 import java.nio.file.Paths
 
-import static io.qameta.allure.maven.TestHelper.checkIndexHtml
+import static io.qameta.allure.maven.TestHelper.checkSingleFile
 
 def base = Paths.get(basedir.absolutePath, 'target', 'site')
 
-checkIndexHtml(base.resolve('allure-maven-plugin'))
+checkSingleFile(base.resolve('allure-maven-plugin'))

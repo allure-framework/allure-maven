@@ -26,7 +26,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <signleFile>true</signleFile>
+                    <singleFile>true</singleFile>
                 </configuration>
             </plugin>
         </plugins>
