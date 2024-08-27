@@ -288,8 +288,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
      * @throws IOException if any occurs.
      */
     protected void readPropertiesFileFromClasspath(final String propertiesFileName,
-                                                   final Properties properties)
-            throws IOException, DependencyResolutionRequiredException {
+            final Properties properties) throws IOException, DependencyResolutionRequiredException {
         try (InputStream is = createProjectClassLoader().getResourceAsStream(propertiesFileName)) {
             if (is != null) {
                 properties.load(is);

@@ -78,8 +78,8 @@ public class AllureCommandline {
         this.timeout = timeout;
     }
 
-    public int generateReport(final List<Path> resultsPaths, final Path reportPath, final boolean singleFile)
-            throws IOException {
+    public int generateReport(final List<Path> resultsPaths, final Path reportPath,
+            final boolean singleFile) throws IOException {
 
         this.checkAllureExists();
 
