@@ -78,8 +78,8 @@ public class AllureCommandline {
         this.timeout = timeout;
     }
 
-    public int generateReport(final List<Path> resultsPaths, final Path reportPath)
-            throws IOException {
+    public int generateReport(final List<Path> resultsPaths, final Path reportPath,
+            final boolean singleFile) throws IOException {
 
         this.checkAllureExists();
 
@@ -89,6 +89,10 @@ public class AllureCommandline {
                 new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
         commandLine.addArgument("generate");
         commandLine.addArgument("--clean");
+        if (singleFile) {
+            commandLine.addArgument("--single-file");
+        }
+
         for (Path resultsPath : resultsPaths) {
             commandLine.addArgument(resultsPath.toAbsolutePath().toString(), true);
         }

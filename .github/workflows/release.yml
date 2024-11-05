@@ -1,4 +1,5 @@
-name: Perform Release
+name: Release
+run-name: Release ${{ inputs.releaseVersion }} (next ${{ inputs.nextVersion }}) by ${{ github.actor }}
 
 on:
   workflow_dispatch:
@@ -22,7 +23,7 @@ jobs:
         run: |
           expr "${{ github.event.inputs.nextVersion }}" : '[[:digit:]][[:digit:]]*\.[[:digit:]][[:digit:]]*$'
 
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4.2.2
         with:
           token: ${{ secrets.QAMETA_CI }}
 

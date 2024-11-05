@@ -21,8 +21,9 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.not;
 import static ru.yandex.qatools.matchers.nio.PathMatchers.exists;
 import static ru.yandex.qatools.matchers.nio.PathMatchers.isDirectory;
 
@@ -51,6 +52,18 @@ public final class TestHelper {
 
         assertThat("There is not enough test case files in " + dataDirectory + " directory.",
                 getTestCases(dataDirectory.resolve("test-cases")), hasSize(testCasesCount));
+    }
+
+    public static void checkSingleFile(Path outputDirectory) {
+        Path index = outputDirectory.resolve("index.html");
+        assertThat(index, exists());
+
+        Path dataDirectory = outputDirectory.resolve("data");
+        assertThat(dataDirectory, not(exists()));
+
+        for (String fileName : FILE_NAMES) {
+            assertThat(dataDirectory.resolve(fileName), not(exists()));
+        }
     }
 
     public static List<String> getTestCases(Path dataDirectory) {
