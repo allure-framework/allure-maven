@@ -14,7 +14,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <compiler.version>11</compiler.version>
+        <compiler.version>1.8</compiler.version>
 
         <maven.version>3.9.9</maven.version>
         <maven-plugin.version>3.15.1</maven-plugin.version>
@@ -180,7 +180,7 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.43.0</version>
+                <version>2.29.0</version>
                 <configuration>
                     <java>
                         <eclipse>
@@ -218,7 +218,7 @@
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>10.20.0</version>
+                        <version>9.3</version>
                     </dependency>
                 </dependencies>
                 <executions>
