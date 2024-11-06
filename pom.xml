@@ -16,10 +16,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <compiler.version>1.8</compiler.version>
 
-        <maven.version>3.9.8</maven.version>
-        <maven-plugin.version>3.7.0</maven-plugin.version>
+        <maven.version>3.9.9</maven.version>
+        <maven-plugin.version>3.15.1</maven-plugin.version>
 
-        <pmd.version>6.41.0</pmd.version>
+        <pmd.version>7.7.0</pmd.version>
     </properties>
 
     <organization>
@@ -73,7 +73,7 @@
     </mailingLists>
 
     <prerequisites>
-        <maven>3.1.1</maven>
+        <maven>3.9.9</maven>
     </prerequisites>
 
     <build>
@@ -84,6 +84,7 @@
                     <artifactId>maven-plugin-plugin</artifactId>
                     <version>${maven-plugin.version}</version>
                     <configuration>
+                        <goalPrefix>prefix</goalPrefix>
                         <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                     </configuration>
                     <executions>
@@ -105,12 +106,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.12.1</version>
+                    <version>3.21.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>3.6.2</version>
+                    <version>3.8.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -179,7 +180,7 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.27.2</version>
+                <version>2.29.0</version>
                 <configuration>
                     <java>
                         <eclipse>
@@ -204,7 +205,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.6.0</version>
                 <configuration>
                     <configLocation>${project.basedir}/maven/quality-configs/checkstyle/checkstyle.xml</configLocation>
                     <suppressionsLocation>${project.basedir}/maven/quality-configs/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
@@ -217,7 +218,7 @@
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>9.1</version>
+                        <version>9.3</version>
                     </dependency>
                 </dependencies>
                 <executions>
@@ -233,7 +234,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.15.0</version>
+                <version>3.26.0</version>
                 <configuration>
                     <rulesets>
                         <ruleset>${project.basedir}/maven/quality-configs/pmd/pmd.xml</ruleset>
@@ -255,7 +256,11 @@
                         <artifactId>pmd-java</artifactId>
                         <version>${pmd.version}</version>
                     </dependency>
-
+                    <dependency>
+                        <groupId>org.apache.maven</groupId>
+                        <artifactId>maven-core</artifactId>
+                        <version>${maven.version}</version>
+                    </dependency>
                 </dependencies>
                 <executions>
                     <execution>
@@ -277,14 +282,14 @@
             <version>2.0.16</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.14</version>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.4.1</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.17.2</version>
+            <version>2.18.1</version>
         </dependency>
 
         <!--Maven Plugin API-->
@@ -292,21 +297,7 @@
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
             <version>${maven.version}</version>
-<!--            <scope>provided</scope>-->
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.maven</groupId>
-                    <artifactId>maven-model</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.maven</groupId>
-                    <artifactId>maven-artifact</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.eclipse.sisu</groupId>
-                    <artifactId>org.eclipse.sisu.plexus</artifactId>
-                </exclusion>
-            </exclusions>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -316,11 +307,11 @@
         <dependency>
             <groupId>org.apache.maven.reporting</groupId>
             <artifactId>maven-reporting-impl</artifactId>
-            <version>3.2.0</version>
+            <version>4.0.0</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>commons-beanutils</artifactId>
-                    <groupId>commons-beanutils</groupId>
+                    <groupId>org.iq80.snappy</groupId>
+                    <artifactId>snappy</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -335,37 +326,31 @@
             <groupId>commons-beanutils</groupId>
             <version>1.9.4</version>
         </dependency>
-
         <dependency>
             <groupId>net.lingala.zip4j</groupId>
             <artifactId>zip4j</artifactId>
             <version>2.11.5</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-exec</artifactId>
             <version>1.4.0</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
             <version>1.12.0</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
             <version>${maven-plugin.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jxr-plugin</artifactId>
             <version>3.6.0</version>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -374,8 +359,8 @@
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
-            <version>1.3</version>
+            <artifactId>hamcrest</artifactId>
+            <version>3.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -397,7 +382,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.4</version>
+                        <version>3.2.7</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -421,7 +406,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-invoker-plugin</artifactId>
-                        <version>3.7.0</version>
+                        <version>3.8.1</version>
                         <configuration>
                             <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                             <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
