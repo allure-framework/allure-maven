@@ -19,7 +19,7 @@
         <maven.version>3.9.9</maven.version>
         <maven-plugin.version>3.15.1</maven-plugin.version>
 
-        <pmd.version>7.7.0</pmd.version>
+        <pmd.version>7.8.0</pmd.version>
     </properties>
 
     <organization>
