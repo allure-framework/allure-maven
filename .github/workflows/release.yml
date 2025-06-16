@@ -1,6 +1,8 @@
 name: Release
 run-name: Release ${{ inputs.releaseVersion }} (next ${{ inputs.nextVersion }}) by ${{ github.actor }}
 
+permissions: {}
+
 on:
   workflow_dispatch:
     inputs:
