@@ -24,9 +24,7 @@ jobs:
           servers: '[{"id": "ossrh", "username": "${{secrets.OSSRH_USERNAME}}", "password": "${{secrets.OSSRH_PASSWORD}}"}]'
 
       - name: Set up GPG
-        run: |
-          export GPG_TTY=$(tty)
-          echo -n "${GPG_PRIVATE_KEY}" | base64 --decode | gpg --batch --import
+        run: echo "MAVEN_GPG_KEY=$(echo -n "${GPG_PRIVATE_KEY}" | base64 --decode)" >> $GITHUB_ENV
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
@@ -37,7 +35,14 @@ jobs:
         run: |
           ./mvnw -Dinvoker.skip=true -Pgpg deploy \
                  -Dgpg.keyname=${GPG_KEY_ID} \
-                 -Dgpg.passphrase=${GPG_PASSPHRASE} \
         env:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: "Sonatype Release"
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/io.qameta'
+          method: 'POST'
+          username: ${{ secrets.OSSRH_USERNAME }}
+          password: ${{ secrets.OSSRH_PASSWORD }}
