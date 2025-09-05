@@ -23,11 +23,6 @@ jobs:
         with:
           servers: '[{"id": "ossrh", "username": "${{secrets.OSSRH_USERNAME}}", "password": "${{secrets.OSSRH_PASSWORD}}"}]'
 
-      - name: Set up GPG
-        run: echo "MAVEN_GPG_KEY=$(echo -n "${GPG_PRIVATE_KEY}" | base64 --decode)" >> $GITHUB_ENV
-        env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-
       - name: "Maven Build"
         run: ./mvnw -Dinvoker.skip=true install
 
@@ -38,6 +33,7 @@ jobs:
         env:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          MAVEN_GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
       - name: "Sonatype Release"
         uses: fjogeleit/http-request-action@v1
