@@ -48,3 +48,4 @@ jobs:
           method: 'POST'
           username: ${{ secrets.OSSRH_USERNAME }}
           password: ${{ secrets.OSSRH_PASSWORD }}
+          timeout: 300000
