@@ -42,7 +42,7 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: "Sonatype Release"
-        uses: fjogeleit/http-request-action@v1
+        uses: fjogeleit/http-request-action@v2
         with:
           url: 'https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/io.qameta'
           method: 'POST'
