@@ -59,7 +59,7 @@ final class AllureDownloadUtils {
 
     static void copy(final URL url, final Path destination, final Proxy mavenProxy,
             final Properties downloadProperties) throws IOException {
-        final Authenticator defaultAuthenticator = Authenticator.getDefault();
+        final AuthenticatorState authenticatorState = AuthenticatorState.capture();
         boolean proxyAuthenticatorConfigured = false;
 
         try {
@@ -90,7 +90,7 @@ final class AllureDownloadUtils {
             }
         } finally {
             if (proxyAuthenticatorConfigured) {
-                Authenticator.setDefault(defaultAuthenticator);
+                authenticatorState.restore();
             }
         }
     }
@@ -209,6 +209,39 @@ final class AllureDownloadUtils {
             }
             for (X509Certificate certificate : chain) {
                 certificate.checkValidity();
+            }
+        }
+    }
+
+    /**
+     * Captures the current JVM authenticator when the running JDK exposes a public getter.
+     * The getter is resolved reflectively so this code still compiles on Java 8, where
+     * {@code Authenticator.getDefault()} does not exist. On Java 8 there is no supported
+     * way to read the current authenticator back, so restore becomes a no-op.
+     */
+    static final class AuthenticatorState {
+
+        private final boolean restorable;
+
+        private final Authenticator authenticator;
+
+        private AuthenticatorState(final boolean restorable, final Authenticator authenticator) {
+            this.restorable = restorable;
+            this.authenticator = authenticator;
+        }
+
+        static AuthenticatorState capture() {
+            try {
+                return new AuthenticatorState(true,
+                        (Authenticator) Authenticator.class.getMethod("getDefault").invoke(null));
+            } catch (ReflectiveOperationException e) {
+                return new AuthenticatorState(false, null);
+            }
+        }
+
+        void restore() {
+            if (restorable) {
+                Authenticator.setDefault(authenticator);
             }
         }
     }
