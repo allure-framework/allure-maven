@@ -40,8 +40,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * Utility methods for downloading the Allure command line archive while honoring
- * Maven proxy and Wagon SSL-related system properties.
+ * Utility methods for downloading the Allure command line archive while honoring Maven proxy and
+ * Wagon SSL-related system properties.
  */
 @SuppressWarnings("ClassDataAbstractionCoupling")
 final class AllureDownloadUtils {
@@ -105,6 +105,7 @@ final class AllureDownloadUtils {
         return properties;
     }
 
+    @SuppressWarnings("WhitespaceAfter")
     private static URLConnection openConnection(final URL url, final java.net.Proxy proxy,
             final WagonSslProperties sslProperties) throws IOException {
         final URLConnection connection =
@@ -118,8 +119,7 @@ final class AllureDownloadUtils {
             final SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null,
                     new TrustManager[] {
-                        new RelaxedX509TrustManager(sslProperties.isIgnoreValidityDates()),
-                    },
+                            new RelaxedX509TrustManager(sslProperties.isIgnoreValidityDates()),},
                     new SecureRandom());
             httpsConnection.setSSLSocketFactory(sslContext.getSocketFactory());
             if (sslProperties.isAllowAll()) {
@@ -150,8 +150,7 @@ final class AllureDownloadUtils {
         }
 
         static WagonSslProperties from(final Properties properties) {
-            return new WagonSslProperties(
-                    getBooleanProperty(properties, WAGON_HTTP_SSL_INSECURE),
+            return new WagonSslProperties(getBooleanProperty(properties, WAGON_HTTP_SSL_INSECURE),
                     getBooleanProperty(properties, WAGON_HTTP_SSL_ALLOW_ALL),
                     getBooleanProperty(properties, WAGON_HTTP_SSL_IGNORE_VALIDITY_DATES));
         }
@@ -175,8 +174,8 @@ final class AllureDownloadUtils {
     }
 
     /**
-     * Trust manager that optionally skips certificate validity date checks when
-     * Maven's Wagon compatibility flags request relaxed SSL handling.
+     * Trust manager that optionally skips certificate validity date checks when Maven's Wagon
+     * compatibility flags request relaxed SSL handling.
      */
     static final class RelaxedX509TrustManager implements X509TrustManager {
 
@@ -214,10 +213,10 @@ final class AllureDownloadUtils {
     }
 
     /**
-     * Captures the current JVM authenticator when the running JDK exposes a public getter.
-     * The getter is resolved reflectively so this code still compiles on Java 8, where
-     * {@code Authenticator.getDefault()} does not exist. On Java 8 there is no supported
-     * way to read the current authenticator back, so restore becomes a no-op.
+     * Captures the current JVM authenticator when the running JDK exposes a public getter. The
+     * getter is resolved reflectively so this code still compiles on Java 8, where
+     * {@code Authenticator.getDefault()} does not exist. On Java 8 there is no supported way to
+     * read the current authenticator back, so restore becomes a no-op.
      */
     static final class AuthenticatorState {
 

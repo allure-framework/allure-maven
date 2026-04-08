@@ -77,8 +77,10 @@ public class AllureCommandlineTest {
 
             assertThat(connection.getCustomSocketFactory(), notNullValue());
             assertThat(connection.getCustomHostnameVerifier(), notNullValue());
-            assertThat(connection.getCustomHostnameVerifier().verify("example.test", null), is(true));
-            assertThat(installDirectory.resolve("allure-" + version).resolve("bin").resolve("allure"),
+            assertThat(connection.getCustomHostnameVerifier().verify("example.test", null),
+                    is(true));
+            assertThat(
+                    installDirectory.resolve("allure-" + version).resolve("bin").resolve("allure"),
                     exists());
         } finally {
             FileUtils.deleteQuietly(installDirectory.toFile());
@@ -93,8 +95,7 @@ public class AllureCommandlineTest {
     }
 
     @Test
-    public void shouldIgnoreCertificateValidityChecksWhenConfigured()
-            throws CertificateException {
+    public void shouldIgnoreCertificateValidityChecksWhenConfigured() throws CertificateException {
         new AllureDownloadUtils.RelaxedX509TrustManager(true)
                 .checkServerTrusted(new X509Certificate[] {new TestCertificate(true)}, "RSA");
     }
