@@ -66,7 +66,8 @@ public class AllureInstallMojo extends AbstractMojo {
                 if (StringUtils.isNotBlank(allureDownloadUrl)) {
                     getLog().info("Downloading allure commandline from " + allureDownloadUrl);
                     commandline.download(allureDownloadUrl,
-                            ProxyUtils.getProxy(session, decrypter));
+                            ProxyUtils.getProxy(session, decrypter),
+                            AllureCommandline.getDownloadProperties(session));
                     getLog().info("Downloading allure commandline complete");
                 } else {
                     commandline.downloadWithMaven(session, dependencyResolver);
