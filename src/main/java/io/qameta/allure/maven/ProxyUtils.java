@@ -41,8 +41,7 @@ final class ProxyUtils {
     @SuppressWarnings({"ModifiedControlVariable", "EmptyBlock",
             "PMD.AvoidInstantiatingObjectsInLoops", "PMD.EmptyControlStatement",
             "PMD.UnusedLocalVariable"})
-    static Proxy getProxy(final MavenSession mavenSession,
-            final SettingsDecrypter decrypter) {
+    static Proxy getProxy(final MavenSession mavenSession, final SettingsDecrypter decrypter) {
         if (mavenSession == null || mavenSession.getSettings() == null
                 || mavenSession.getSettings().getProxies() == null
                 || mavenSession.getSettings().getProxies().isEmpty()) {
