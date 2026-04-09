@@ -40,6 +40,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Properties;
@@ -51,6 +52,7 @@ import java.util.zip.ZipOutputStream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assume.assumeFalse;
 import static ru.yandex.qatools.matchers.nio.PathMatchers.exists;
 
 /**
@@ -98,6 +100,48 @@ public class AllureCommandlineTest {
     public void shouldIgnoreCertificateValidityChecksWhenConfigured() throws CertificateException {
         new AllureDownloadUtils.RelaxedX509TrustManager(true)
                 .checkServerTrusted(new X509Certificate[] {new TestCertificate(true)}, "RSA");
+    }
+
+    @Test
+    public void shouldPassUnixPathsWithoutLiteralQuotesWhenGeneratingReport() throws Exception {
+        assumeFalse(isWindows());
+
+        final Path testDirectory = Files.createTempDirectory("allure-commandline");
+        try {
+            final String version = "2.30.0";
+            final Path installDirectory = testDirectory.resolve("install");
+            final Path resultsDirectory = testDirectory.resolve("results with space");
+            final Path reportDirectory = testDirectory.resolve("report with space");
+            final Path capturedArgs = testDirectory.resolve("args.txt");
+            Files.createDirectories(resultsDirectory);
+
+            createUnixAllureExecutable(installDirectory, version, "#!/bin/sh",
+                    "printf '%s\\n' \"$@\" > '" + capturedArgs + "'", "exit 0");
+
+            final AllureCommandline commandline = new AllureCommandline(installDirectory, version);
+            commandline.generateReport(Collections.singletonList(resultsDirectory), reportDirectory,
+                    false);
+
+            assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8),
+                    is(Arrays.asList("generate", "--clean",
+                            resultsDirectory.toAbsolutePath().toString(), "-o",
+                            reportDirectory.toAbsolutePath().toString())));
+        } finally {
+            FileUtils.deleteQuietly(testDirectory.toFile());
+        }
+    }
+
+    private static void createUnixAllureExecutable(final Path installDirectory,
+            final String version, final String... lines) throws IOException {
+        final Path executable =
+                installDirectory.resolve("allure-" + version).resolve("bin").resolve("allure");
+        Files.createDirectories(executable.getParent());
+        Files.write(executable, Arrays.asList(lines), StandardCharsets.UTF_8);
+        executable.toFile().setExecutable(true);
+    }
+
+    private static boolean isWindows() {
+        return System.getProperty("os.name").toLowerCase().contains("win");
     }
 
     private static byte[] createAllureArchive(final String version) throws IOException {

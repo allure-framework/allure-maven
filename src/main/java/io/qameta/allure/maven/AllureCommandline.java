@@ -90,10 +90,10 @@ public class AllureCommandline {
         }
 
         for (Path resultsPath : resultsPaths) {
-            commandLine.addArgument(resultsPath.toAbsolutePath().toString(), true);
+            addPathArgument(commandLine, resultsPath);
         }
         commandLine.addArgument("-o");
-        commandLine.addArgument(reportPath.toAbsolutePath().toString(), true);
+        addPathArgument(commandLine, reportPath);
 
         return execute(commandLine, timeout);
     }
@@ -117,7 +117,7 @@ public class AllureCommandline {
             commandLine.addArgument(Objects.toString(servePort));
         }
         for (Path resultsPath : resultsPaths) {
-            commandLine.addArgument(resultsPath.toAbsolutePath().toString(), true);
+            addPathArgument(commandLine, resultsPath);
         }
         return execute(commandLine, timeout);
     }
@@ -136,6 +136,10 @@ public class AllureCommandline {
         executor.setWatchdog(watchdog);
         executor.setExitValue(0);
         return executor.execute(commandLine);
+    }
+
+    private void addPathArgument(final CommandLine commandLine, final Path path) {
+        commandLine.addArgument(path.toAbsolutePath().toString(), isWindows());
     }
 
     private Path getAllureExecutablePath() {
