@@ -13,10 +13,11 @@ on:
 
 jobs:
   build:
-    name: "Build"
-    runs-on: ubuntu-latest
+    name: "Build (${{ matrix.os }}, JDK ${{ matrix.java-version }})"
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ ubuntu-latest, windows-latest ]
         java-version: [ '8.0.x', '11.0.x', '17.0.x' ]
     steps:
       - uses: actions/checkout@v6.0.2
@@ -26,4 +27,9 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
       - name: Maven Build
+        if: runner.os != 'Windows'
         run:  ./mvnw -Dmaven.test.failure.ignore=true clean verify --no-transfer-progress
+      - name: Maven Build
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: .\mvnw.cmd -Dmaven.test.failure.ignore=true clean verify --no-transfer-progress
