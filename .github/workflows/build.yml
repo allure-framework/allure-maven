@@ -31,5 +31,5 @@ jobs:
         run:  ./mvnw -Dmaven.test.failure.ignore=true clean verify --no-transfer-progress
       - name: Maven Build
         if: runner.os == 'Windows'
-        shell: pwsh
-        run: .\mvnw.cmd -Dmaven.test.failure.ignore=true clean verify --no-transfer-progress
+        shell: cmd
+        run: mvnw.cmd -Dmaven.test.failure.ignore=true clean verify --no-transfer-progress
