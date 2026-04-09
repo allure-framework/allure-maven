@@ -239,8 +239,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             if (commandline.allureNotExists()) {
                 if (StringUtils.isNotBlank(allureDownloadUrl)) {
                     getLog().info("Downloading allure commandline from " + allureDownloadUrl);
-                    commandline.download(allureDownloadUrl,
-                            ProxyUtils.getProxy(session, decrypter));
+                    commandline.download(allureDownloadUrl, ProxyUtils.getProxy(session, decrypter),
+                            AllureCommandline.getDownloadProperties(session));
                     getLog().info("Downloading allure commandline complete");
                 } else {
                     commandline.downloadWithMaven(session, dependencyResolver);

@@ -34,19 +34,15 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverE
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.Authenticator;
-import java.net.InetSocketAddress;
-import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static io.qameta.allure.maven.VersionUtils.versionCompare;
@@ -190,38 +186,36 @@ public class AllureCommandline {
 
     public void download(final String allureDownloadUrl, final Proxy mavenProxy)
             throws IOException {
+        download(allureDownloadUrl, mavenProxy, System.getProperties());
+    }
+
+    void download(final String allureDownloadUrl, final Proxy mavenProxy,
+            final Properties downloadProperties) throws IOException {
+        if (allureExists()) {
+            return;
+        }
+
+        final String allureUrl = String.format(allureDownloadUrl, version, version);
+        download(new URL(allureUrl), mavenProxy, downloadProperties);
+    }
+
+    void download(final URL url, final Proxy mavenProxy, final Properties downloadProperties)
+            throws IOException {
         if (allureExists()) {
             return;
         }
 
         final Path allureZip = Files.createTempFile("allure", version);
-        final String allureUrl = String.format(allureDownloadUrl, version, version);
-        final URL url = new URL(allureUrl);
-
-        if (mavenProxy != null && version != null) {
-            final InetSocketAddress proxyAddress =
-                    new InetSocketAddress(mavenProxy.getHost(), mavenProxy.getPort());
-
-            if (mavenProxy.getUsername() != null && mavenProxy.getPassword() != null) {
-                final String proxyUser = mavenProxy.getUsername();
-                final String proxyPassword = mavenProxy.getPassword();
-
-                Authenticator.setDefault(new Authenticator() {
-                    @Override
-                    public PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(proxyUser, proxyPassword.toCharArray());
-                    }
-                });
-            }
-
-            final java.net.Proxy proxy = new java.net.Proxy(java.net.Proxy.Type.HTTP, proxyAddress);
-            final InputStream inputStream = url.openConnection(proxy).getInputStream();
-            Files.copy(inputStream, allureZip, StandardCopyOption.REPLACE_EXISTING);
-        } else {
-            FileUtils.copyURLToFile(url, allureZip.toFile());
+        try {
+            AllureDownloadUtils.copy(url, allureZip, mavenProxy, downloadProperties);
+            unpack(allureZip.toFile());
+        } finally {
+            Files.deleteIfExists(allureZip);
         }
+    }
 
-        unpack(allureZip.toFile());
+    static Properties getDownloadProperties(final MavenSession session) {
+        return AllureDownloadUtils.getDownloadProperties(session);
     }
 
     private void unpack(final File file) throws IOException {
