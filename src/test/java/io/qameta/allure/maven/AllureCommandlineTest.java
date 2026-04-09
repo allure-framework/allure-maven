@@ -43,6 +43,8 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -53,6 +55,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 import static ru.yandex.qatools.matchers.nio.PathMatchers.exists;
 
 /**
@@ -131,6 +134,37 @@ public class AllureCommandlineTest {
         }
     }
 
+    @Test
+    public void shouldPassWindowsPathsWithoutLosingSpacesWhenServingReport() throws Exception {
+        assumeTrue(isWindows());
+
+        final Path testDirectory = Files.createTempDirectory("allure commandline");
+        try {
+            final String version = "2.30.0";
+            final Path installDirectory = testDirectory.resolve("install with space");
+            final Path resultsDirectory = testDirectory.resolve("results with space");
+            final Path reportDirectory = testDirectory.resolve("report with space");
+            final Path capturedArgs = testDirectory.resolve("captured args.txt");
+            Files.createDirectories(resultsDirectory);
+
+            final RecordingHttpsConnection connection = new RecordingHttpsConnection(
+                    new URL("https://example.test/allure.zip"), createAllureArchive(version,
+                            "echo allure", createWindowsArgumentCapturingLauncher(capturedArgs)));
+            final URL url = new URL(null, "https://example.test/allure.zip",
+                    new RecordingUrlStreamHandler(connection));
+
+            final AllureCommandline commandline = new AllureCommandline(installDirectory, version);
+            commandline.download(url, null, new Properties());
+            commandline.serve(Collections.singletonList(resultsDirectory), reportDirectory, null,
+                    0);
+
+            assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8),
+                    is(Arrays.asList("serve", resultsDirectory.toAbsolutePath().toString())));
+        } finally {
+            FileUtils.deleteQuietly(testDirectory.toFile());
+        }
+    }
+
     private static void createUnixAllureExecutable(final Path installDirectory,
             final String version, final String... lines) throws IOException {
         final Path executable =
@@ -145,13 +179,38 @@ public class AllureCommandlineTest {
     }
 
     private static byte[] createAllureArchive(final String version) throws IOException {
+        return createAllureArchive(version, "echo allure", "@echo off\r\necho allure\r\n");
+    }
+
+    private static byte[] createAllureArchive(final String version, final String unixLauncher,
+            final String windowsLauncher) throws IOException {
         final ByteArrayOutputStream output = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(output)) {
-            zip.putNextEntry(new ZipEntry("allure-" + version + "/bin/allure"));
-            zip.write("echo allure".getBytes(StandardCharsets.UTF_8));
-            zip.closeEntry();
+            final Map<String, String> entries = new LinkedHashMap<>();
+            entries.put("allure-" + version + "/bin/allure", unixLauncher);
+            entries.put("allure-" + version + "/bin/allure.bat", windowsLauncher);
+            for (Map.Entry<String, String> entry : entries.entrySet()) {
+                addZipEntry(zip, entry.getKey(), entry.getValue());
+            }
         }
         return output.toByteArray();
+    }
+
+    private static void addZipEntry(final ZipOutputStream zip, final String name,
+            final String content) throws IOException {
+        zip.putNextEntry(new ZipEntry(name));
+        zip.write(content.getBytes(StandardCharsets.UTF_8));
+        zip.closeEntry();
+    }
+
+    private static String createWindowsArgumentCapturingLauncher(final Path capturedArgs) {
+        final String captureDirectory = capturedArgs.getParent().toAbsolutePath().toString();
+        final String captureFile = capturedArgs.toAbsolutePath().toString();
+        return String.join("\r\n", "@echo off", "setlocal EnableExtensions DisableDelayedExpansion",
+                "if not exist \"" + captureDirectory + "\" mkdir \"" + captureDirectory + "\"",
+                "type nul > \"" + captureFile + "\"", ":loop", "if \"%~1\"==\"\" goto done",
+                ">> \"" + captureFile + "\" echo(%~1", "shift", "goto loop", ":done", "exit /b 0",
+                "");
     }
 
     /**
