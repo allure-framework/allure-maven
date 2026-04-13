@@ -1,0 +1,4 @@
+plugins:
+  system-config:
+    options:
+      enabled: true

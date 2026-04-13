@@ -26,8 +26,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <reportDirectory>${project.build.directory}/site/allure</reportDirectory>
                     <reportVersion>2.30.0</reportVersion>
+                    <singleFile>true</singleFile>
                 </configuration>
             </plugin>
         </plugins>

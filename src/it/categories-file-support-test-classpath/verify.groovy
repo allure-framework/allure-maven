@@ -13,5 +13,6 @@ def cateforiesPath = dataDirectory.resolve("categories.json")
 
 def jsonSlurper = new JsonSlurper()
 def categories = jsonSlurper.parseText(cateforiesPath.text)
+def root = categories instanceof List ? categories[0] : categories
 
-assert categories.children.size == 1
+assert root.children.size() == 1

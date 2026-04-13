@@ -39,6 +39,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -46,12 +47,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
-import static io.qameta.allure.maven.AllureCommandline.ALLURE_DEFAULT_VERSION;
+import static io.qameta.allure.maven.Allure3Commandline.NODE_DEFAULT_DOWNLOAD_URL;
+import static io.qameta.allure.maven.Allure3Commandline.NODE_DEFAULT_VERSION;
+import static io.qameta.allure.maven.Allure3Commandline.NPM_DEFAULT_REGISTRY;
 
 /**
  * @author Dmitry Baev dmitry.baev@qameta.io Date: 04.08.15
  */
-@SuppressWarnings({"PMD.GodClass", "ClassFanOutComplexity"})
+@SuppressWarnings({"PMD.GodClass", "ClassDataAbstractionCoupling", "ClassFanOutComplexity",
+        "MultipleStringLiterals", "PMD.TooManyMethods", "PMD.CyclomaticComplexity"})
 public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
     public static final String ALLURE_OLD_PROPERTIES = "allure.properties";
@@ -59,6 +63,9 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     public static final String ALLURE_NEW_PROPERTIES = "report.properties";
 
     public static final String CATEGORIES_FILE_NAME = "categories.json";
+
+    private static final List<String> ALLURE3_AUTO_CONFIG_NAMES = Arrays.asList("allurerc.js",
+            "allurerc.mjs", "allurerc.cjs", "allurerc.json", "allurerc.yaml", "allurerc.yml");
 
     /**
      * The project build directory. For maven projects it is usually the target folder.
@@ -111,11 +118,35 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     @Parameter(defaultValue = "report.properties")
     protected String propertiesFilePath;
 
+    @Parameter(defaultValue = "${project.basedir}", readonly = true)
+    protected String projectDirectory;
+
     @Parameter(property = "allure.install.directory", defaultValue = "${project.basedir}/.allure")
     protected String installDirectory;
 
     @Parameter(property = "allure.download.url")
     protected String allureDownloadUrl;
+
+    @Parameter(property = "allure.node.version", defaultValue = NODE_DEFAULT_VERSION)
+    protected String nodeVersion;
+
+    @Parameter(property = "allure.node.download.url", defaultValue = NODE_DEFAULT_DOWNLOAD_URL)
+    protected String nodeDownloadUrl;
+
+    @Parameter(property = "allure.npm.registry", defaultValue = NPM_DEFAULT_REGISTRY)
+    protected String npmRegistry;
+
+    /**
+     * Optional path to a local Allure 3 package archive (.tgz or .tar.gz).
+     */
+    @Parameter(property = "allure.package.path")
+    protected String packagePath;
+
+    /**
+     * The path to the Allure 3 config file. Relative paths are resolved from the project root.
+     */
+    @Parameter(property = "allure.config.path")
+    protected String configPath;
 
     @Parameter(property = "session", defaultValue = "${session}", readonly = true)
     protected MavenSession session;
@@ -152,11 +183,13 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
     @Override
     protected void executeReport(final Locale locale) throws MavenReportException {
         try {
+            final AllureVersion allureVersion = AllureVersion.resolve(reportVersion);
+            validateConfiguredParameters(allureVersion);
 
-            this.installAllure();
+            this.installAllure(allureVersion);
 
             getLog().info(String.format("Generate Allure report (%s) with version %s",
-                    getMojoName(), reportVersion != null ? reportVersion : ALLURE_DEFAULT_VERSION));
+                    getMojoName(), allureVersion.getVersion()));
             getLog().info("Generate Allure report to " + getReportDirectory());
 
             final List<Path> inputDirectories = getInputDirectories();
@@ -170,7 +203,7 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             this.loadProperties(inputDirectories);
             this.loadCategories(inputDirectories);
             this.copyExecutorInfo(inputDirectories);
-            this.generateReport(inputDirectories);
+            this.generateReport(inputDirectories, allureVersion);
 
             render(getSink(), getName(locale));
 
@@ -229,10 +262,18 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
         }
     }
 
-    private void installAllure() throws MavenReportException {
+    private void installAllure(final AllureVersion allureVersion) throws MavenReportException {
+        if (allureVersion.isAllure3()) {
+            installAllure3(allureVersion, 3600);
+        } else {
+            installAllure2(allureVersion);
+        }
+    }
+
+    private void installAllure2(final AllureVersion allureVersion) throws MavenReportException {
         try {
             final AllureCommandline commandline =
-                    new AllureCommandline(Paths.get(installDirectory), reportVersion);
+                    new AllureCommandline(Paths.get(installDirectory), allureVersion.getVersion());
             getLog().info(String.format("Allure installation directory %s", installDirectory));
             getLog().info(String.format("Try to finding out allure %s", commandline.getVersion()));
 
@@ -252,12 +293,37 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
         }
     }
 
-    protected void generateReport(final List<Path> resultsPaths) throws MavenReportException {
+    private void installAllure3(final AllureVersion allureVersion, final int timeout)
+            throws MavenReportException {
+        try {
+            validateAllure3Configuration();
+            final Allure3Commandline commandline = createAllure3Commandline(allureVersion, timeout);
+            getLog().info(String.format("Allure installation directory %s", installDirectory));
+            getLog().info(String.format("Try to finding out allure %s using Node.js %s",
+                    commandline.getVersion(), commandline.getNodeVersion()));
+            commandline.install();
+        } catch (IOException e) {
+            getLog().error("Installation error", e);
+            throw new MavenReportException("Can't install allure", e);
+        }
+    }
+
+    protected void generateReport(final List<Path> resultsPaths, final AllureVersion allureVersion)
+            throws MavenReportException {
+        if (allureVersion.isAllure3()) {
+            generateAllure3Report(resultsPaths, allureVersion);
+        } else {
+            generateAllure2Report(resultsPaths, allureVersion);
+        }
+    }
+
+    private void generateAllure2Report(final List<Path> resultsPaths,
+            final AllureVersion allureVersion) throws MavenReportException {
         try {
             final Path reportPath = Paths.get(getReportDirectory());
 
             final AllureCommandline commandline = new AllureCommandline(
-                    Paths.get(getInstallDirectory()), reportVersion, reportTimeout);
+                    Paths.get(getInstallDirectory()), allureVersion.getVersion(), reportTimeout);
 
             getLog().info("Generate report to " + reportPath);
             commandline.generateReport(resultsPaths, reportPath, Boolean.TRUE.equals(singleFile));
@@ -266,6 +332,136 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             getLog().error("Generation error", e);
             throw new MavenReportException("Can't generate allure report data", e);
         }
+    }
+
+    private void generateAllure3Report(final List<Path> resultsPaths,
+            final AllureVersion allureVersion) throws MavenReportException {
+        try {
+            validateAllure3Configuration();
+            final Path reportPath = Paths.get(getReportDirectory());
+            final Allure3Commandline commandline =
+                    createAllure3Commandline(allureVersion, reportTimeout);
+            final Path allureConfig = resolveAllure3ConfigPath();
+
+            getLog().info("Generate report to " + reportPath);
+            commandline.generateReport(resultsPaths, reportPath, Boolean.TRUE.equals(singleFile),
+                    Paths.get(buildDirectory), getName(Locale.getDefault()), allureConfig);
+            getLog().info("Report generated successfully.");
+        } catch (Exception e) {
+            getLog().error("Generation error", e);
+            throw new MavenReportException("Can't generate allure report data", e);
+        }
+    }
+
+    protected Allure3Commandline createAllure3Commandline(final AllureVersion allureVersion,
+            final int timeout) throws IOException {
+        return new Allure3Commandline(Paths.get(getInstallDirectory()), allureVersion.getVersion(),
+                nodeVersion, nodeDownloadUrl, npmRegistry, resolveAllurePackagePathOrNull(),
+                ProxyUtils.getProxy(session, decrypter),
+                AllureCommandline.getDownloadProperties(session),
+                session != null && session.isOffline(), timeout);
+    }
+
+    protected void validateAllure3Configuration() throws IOException {
+        if (StringUtils.isNotBlank(allureDownloadUrl)) {
+            throw new IOException("Parameter allure.download.url is only supported for Allure 2. "
+                    + "Configure reportVersion 2.x to use it, or use allure.node.download.url "
+                    + "for the Allure 3 Node.js runtime.");
+        }
+    }
+
+    protected void validateConfiguredParameters(final AllureVersion allureVersion)
+            throws MavenReportException {
+        if (!allureVersion.isAllure3() && StringUtils.isNotBlank(configPath)) {
+            throw new MavenReportException("Parameter allure.config.path is only supported for "
+                    + "Allure 3. Configure reportVersion 3.x to use it.");
+        }
+        if (!allureVersion.isAllure3() && StringUtils.isNotBlank(packagePath)) {
+            throw new MavenReportException("Parameter allure.package.path is only supported for "
+                    + "Allure 3. Configure reportVersion 3.x to use it.");
+        }
+    }
+
+    @SuppressWarnings("PMD.CyclomaticComplexity")
+    protected Path resolveAllure3ConfigPath() throws IOException {
+        final Path projectRoot = getProjectDirectoryPath();
+        if (StringUtils.isNotBlank(configPath)) {
+            Path configuredPath = Paths.get(configPath);
+            if (!configuredPath.isAbsolute()) {
+                if (projectRoot == null) {
+                    throw new IOException("Cannot resolve relative allure.config.path because the "
+                            + "project base directory is unavailable.");
+                }
+                configuredPath = projectRoot.resolve(configuredPath).normalize();
+            }
+            if (!Files.exists(configuredPath)) {
+                throw new IOException(
+                        "Configured Allure 3 config file does not exist: " + configuredPath);
+            }
+            if (!Files.isRegularFile(configuredPath)) {
+                throw new IOException(
+                        "Configured Allure 3 config path is not a file: " + configuredPath);
+            }
+            getLog().info("Using Allure 3 config " + configuredPath.toAbsolutePath());
+            return configuredPath;
+        }
+
+        if (projectRoot == null) {
+            return null;
+        }
+        for (String fileName : ALLURE3_AUTO_CONFIG_NAMES) {
+            final Path candidate = projectRoot.resolve(fileName);
+            if (Files.isRegularFile(candidate)) {
+                getLog().info("Using Allure 3 config " + candidate.toAbsolutePath());
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private Path getProjectDirectoryPath() {
+        if (StringUtils.isNotBlank(projectDirectory)) {
+            return Paths.get(projectDirectory);
+        }
+        if (getProject() != null && getProject().getBasedir() != null) {
+            return getProject().getBasedir().toPath();
+        }
+        return Paths.get("").toAbsolutePath();
+    }
+
+    protected Path resolveAllurePackagePathOrNull() throws IOException {
+        if (StringUtils.isBlank(packagePath)) {
+            return null;
+        }
+        return resolveAllurePackagePath();
+    }
+
+    protected Path resolveAllurePackagePath() throws IOException {
+        final Path projectRoot = getProjectDirectoryPath();
+        Path resolvedPath = Paths.get(packagePath);
+        if (!resolvedPath.isAbsolute()) {
+            if (projectRoot == null) {
+                throw new IOException("Cannot resolve relative allure.package.path because the "
+                        + "project base directory is unavailable.");
+            }
+            resolvedPath = projectRoot.resolve(resolvedPath).normalize();
+        }
+        if (!Files.exists(resolvedPath)) {
+            throw new IOException(
+                    "Configured Allure 3 package archive does not exist: " + resolvedPath);
+        }
+        if (!Files.isRegularFile(resolvedPath)) {
+            throw new IOException(
+                    "Configured Allure 3 package archive is not a file: " + resolvedPath);
+        }
+        final String fileName = resolvedPath.getFileName().toString().toLowerCase(Locale.ENGLISH);
+        if (!(fileName.endsWith(".tgz") || fileName.endsWith(".tar.gz"))) {
+            throw new IOException("Configured Allure 3 package archive must be a .tgz or "
+                    + ".tar.gz file: " + resolvedPath);
+        }
+        getLog().info("Using Allure 3 package archive " + resolvedPath.toAbsolutePath());
+        return resolvedPath;
     }
 
     /**

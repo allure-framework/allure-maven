@@ -1,0 +1,13 @@
+import groovy.json.JsonSlurper
+import java.nio.file.Paths
+
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.Matchers.nullValue
+import static org.hamcrest.Matchers.is
+
+def basedirPath = basedir.absolutePath
+def config = new JsonSlurper().parse(Paths.get(basedirPath, 'target',
+        'allure-maven', 'allure3', 'allurerc.json').toFile())
+
+assertThat(config.plugins.'system-config'.options.enabled, is(true))
+assertThat(config.plugins.'root-config', nullValue())
