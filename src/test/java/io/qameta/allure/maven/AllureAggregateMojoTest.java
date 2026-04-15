@@ -15,6 +15,8 @@
  */
 package io.qameta.allure.maven;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.logging.Log;
@@ -25,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,6 +37,8 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 
 public class AllureAggregateMojoTest {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Test
     public void shouldPreferInjectedReactorProjectsOverSessionProjects() throws Exception {
@@ -94,6 +99,66 @@ public class AllureAggregateMojoTest {
                 contains("Reactor projects were not resolved for aggregate " + "goal."));
     }
 
+    @Test
+    public void shouldPreserveChildExecutorInfoWhenAggregating() throws Exception {
+        final Path workspace = Files.createTempDirectory("allure-aggregate-executor");
+        try {
+            final MavenProject currentProject = createProject(workspace, "current", "Current");
+            final MavenProject childProject = createProject(workspace, "child", "Child");
+            final Path currentResultsDirectory = resultsDirectory(currentProject);
+            final Path childResultsDirectory = resultsDirectory(childProject);
+            final Path childExecutor = childResultsDirectory.resolve("executor.json");
+
+            Files.writeString(currentResultsDirectory.resolve("executor.json"),
+                    "{\"buildName\":\"Old\"}");
+            Files.writeString(childExecutor,
+                    "{\"buildName\":\"Child\",\"name\":\"Existing\",\"type\":\"custom\"}");
+
+            final TestAggregateMojo mojo = new TestAggregateMojo(
+                    Arrays.asList(currentProject, childProject), currentProject);
+            final List<Path> inputDirectories =
+                    Arrays.asList(currentResultsDirectory, childResultsDirectory);
+
+            assertThat(mojo.executorInfoDirectoriesFrom(inputDirectories),
+                    contains(currentResultsDirectory));
+
+            mojo.copyExecutorInfoTo(inputDirectories);
+
+            final JsonNode currentExecutorInfo = OBJECT_MAPPER
+                    .readTree(currentResultsDirectory.resolve("executor.json").toFile());
+            assertThat(currentExecutorInfo.get("buildName").asText(), is("Current"));
+            assertThat(currentExecutorInfo.get("name").asText(), is("Maven"));
+            assertThat(currentExecutorInfo.get("type").asText(), is("maven"));
+
+            final JsonNode childExecutorInfo = OBJECT_MAPPER.readTree(childExecutor.toFile());
+            assertThat(childExecutorInfo.get("buildName").asText(), is("Child"));
+            assertThat(childExecutorInfo.get("name").asText(), is("Existing"));
+            assertThat(childExecutorInfo.get("type").asText(), is("custom"));
+        } finally {
+            FileUtils.deleteQuietly(workspace.toFile());
+        }
+    }
+
+    @Test
+    public void shouldSkipExecutorInfoWhenCurrentModuleResultsAreNotInAggregateInputs()
+            throws Exception {
+        final Path workspace = Files.createTempDirectory("allure-aggregate-executor-missing");
+        try {
+            final MavenProject currentProject = createProject(workspace, "current", "Current");
+            final MavenProject childProject = createProject(workspace, "child", "Child");
+
+            final TestAggregateMojo mojo =
+                    new TestAggregateMojo(Collections.singletonList(childProject), currentProject);
+
+            assertThat(
+                    mojo.executorInfoDirectoriesFrom(
+                            Collections.singletonList(resultsDirectory(childProject))),
+                    is(empty()));
+        } finally {
+            FileUtils.deleteQuietly(workspace.toFile());
+        }
+    }
+
     private static MavenProject createProject(final Path workspace, final String directoryName,
             final String projectName) throws Exception {
         final Path projectDirectory = workspace.resolve(directoryName);
@@ -133,6 +198,14 @@ public class AllureAggregateMojoTest {
         @Override
         protected MavenProject getProject() {
             return currentProject;
+        }
+
+        private List<Path> executorInfoDirectoriesFrom(final List<Path> inputDirectories) {
+            return getExecutorInfoDirectories(inputDirectories);
+        }
+
+        private void copyExecutorInfoTo(final List<Path> inputDirectories) throws Exception {
+            copyExecutorInfo(inputDirectories);
         }
     }
 
