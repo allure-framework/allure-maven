@@ -23,6 +23,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,7 +34,9 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 
 public class AllureAggregateMojoTest {
@@ -100,12 +103,97 @@ public class AllureAggregateMojoTest {
     }
 
     @Test
+    public void shouldUseChildResultsDirectoryPropertyOverrideWhenPresent() throws Exception {
+        final Path workspace = Files.createTempDirectory("allure-aggregate-property-override");
+        try {
+            final MavenProject project =
+                    createProject(workspace, "child", "Child", "child-results");
+            project.getProperties().setProperty("allure.results.directory", "child-results");
+
+            final TestAggregateMojo mojo =
+                    new TestAggregateMojo(Collections.singletonList(project), null);
+
+            assertThat(mojo.getInputDirectories(),
+                    contains(resultsDirectory(project, "child-results")));
+        } finally {
+            FileUtils.deleteQuietly(workspace.toFile());
+        }
+    }
+
+    @Test
+    public void shouldAllowResultsDirectoryThatResolvesWithinModule() throws Exception {
+        final Path workspace = Files.createTempDirectory("allure-aggregate-module-relative");
+        try {
+            final MavenProject project =
+                    createProject(workspace, "child", "Child", "../allure-results");
+
+            final TestAggregateMojo mojo =
+                    new TestAggregateMojo(Collections.singletonList(project), null);
+            mojo.setResultsDirectoryValue("../allure-results");
+
+            assertThat(mojo.getInputDirectories(),
+                    contains(resultsDirectory(project, "../allure-results")));
+        } finally {
+            FileUtils.deleteQuietly(workspace.toFile());
+        }
+    }
+
+    @Test
+    public void shouldSkipResultsDirectoryOutsideModule() throws Exception {
+        final Path workspace = Files.createTempDirectory("allure-aggregate-module-escape");
+        try {
+            createDirectories(workspace.resolve("shared-results"));
+            final MavenProject project =
+                    createProject(workspace, "child", "Child", "../../shared-results");
+
+            final RecordingLog log = new RecordingLog();
+            final TestAggregateMojo mojo =
+                    new TestAggregateMojo(Collections.singletonList(project), null);
+            mojo.setResultsDirectoryValue("../../shared-results");
+            mojo.setLog(log);
+
+            assertThat(mojo.getInputDirectories(), is(empty()));
+            assertThat(log.warnMessages,
+                    hasItem(containsString("results directory resolves outside module")));
+        } finally {
+            FileUtils.deleteQuietly(workspace.toFile());
+        }
+    }
+
+    @Test
+    public void shouldSkipAbsoluteResultsDirectoryOverride() throws Exception {
+        final Path workspace = Files.createTempDirectory("allure-aggregate-absolute-override");
+        try {
+            final Path absoluteResults = workspace.resolve("absolute-results").toAbsolutePath();
+            createDirectories(absoluteResults);
+            final MavenProject project = createProject(workspace, "child", "Child");
+            project.getProperties().setProperty("allure.results.directory",
+                    absoluteResults.toString());
+
+            final RecordingLog log = new RecordingLog();
+            final TestAggregateMojo mojo =
+                    new TestAggregateMojo(Collections.singletonList(project), null);
+            mojo.setLog(log);
+
+            assertThat(mojo.getInputDirectories(), is(empty()));
+            assertThat(log.warnMessages,
+                    hasItem(containsString("should not be absolute for aggregate goal")));
+        } finally {
+            FileUtils.deleteQuietly(workspace.toFile());
+        }
+    }
+
+    @Test
     public void shouldPreserveChildExecutorInfoWhenAggregating() throws Exception {
         final Path workspace = Files.createTempDirectory("allure-aggregate-executor");
         try {
-            final MavenProject currentProject = createProject(workspace, "current", "Current");
+            final MavenProject currentProject =
+                    createProject(workspace, "current", "Current", "current-results");
             final MavenProject childProject = createProject(workspace, "child", "Child");
-            final Path currentResultsDirectory = resultsDirectory(currentProject);
+            currentProject.getProperties().setProperty("allure.results.directory",
+                    "current-results");
+            final Path currentResultsDirectory =
+                    resultsDirectory(currentProject, "current-results");
             final Path childResultsDirectory = resultsDirectory(childProject);
             final Path childExecutor = childResultsDirectory.resolve("executor.json");
 
@@ -160,10 +248,18 @@ public class AllureAggregateMojoTest {
     }
 
     private static MavenProject createProject(final Path workspace, final String directoryName,
-            final String projectName) throws Exception {
+            final String projectName, final String... resultsDirectories) throws Exception {
         final Path projectDirectory = workspace.resolve(directoryName);
         final Path buildDirectory = projectDirectory.resolve("target");
-        Files.createDirectories(buildDirectory.resolve("allure-results"));
+        createDirectories(projectDirectory);
+        Files.writeString(projectDirectory.resolve("pom.xml"), "<project/>");
+        if (resultsDirectories.length == 0) {
+            createDirectories(buildDirectory.resolve("allure-results"));
+        } else {
+            for (String resultsDirectory : resultsDirectories) {
+                createDirectories(buildDirectory.resolve(resultsDirectory).normalize());
+            }
+        }
 
         final Build build = new Build();
         build.setDirectory(buildDirectory.toString());
@@ -171,11 +267,22 @@ public class AllureAggregateMojoTest {
         final MavenProject project = new MavenProject();
         project.setName(projectName);
         project.setBuild(build);
+        project.setFile(projectDirectory.resolve("pom.xml").toFile());
         return project;
     }
 
     private static Path resultsDirectory(final MavenProject project) {
         return Paths.get(project.getBuild().getDirectory(), "allure-results").toAbsolutePath();
+    }
+
+    private static Path resultsDirectory(final MavenProject project,
+            final String configuredResultsDirectory) {
+        return Paths.get(project.getBuild().getDirectory()).resolve(configuredResultsDirectory)
+                .toAbsolutePath().normalize();
+    }
+
+    private static void createDirectories(final Path directory) throws IOException {
+        Files.createDirectories(directory);
     }
 
     private static final class TestAggregateMojo extends AllureAggregateMojo {
@@ -206,6 +313,10 @@ public class AllureAggregateMojoTest {
 
         private void copyExecutorInfoTo(final List<Path> inputDirectories) throws Exception {
             copyExecutorInfo(inputDirectories);
+        }
+
+        private void setResultsDirectoryValue(final String resultsDirectory) {
+            this.resultsDirectory = resultsDirectory;
         }
     }
 
