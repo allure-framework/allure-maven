@@ -17,7 +17,6 @@ package io.qameta.allure.maven;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.nio.file.Path;
@@ -34,10 +33,14 @@ import java.util.List;
 public class AllureAggregateMojo extends AllureGenerateMojo {
 
     /**
-     * The projects in the reactor.
+     * Normalize the inherited report parameter so direct CLI invocations can fall back at runtime
+     * instead of failing during configuration when Maven injects null here.
      */
-    @Parameter(defaultValue = "${reactorProjects}", required = true, readonly = true)
-    protected List<MavenProject> reactorProjects;
+    @SuppressWarnings("unused")
+    public void setReactorProjects(final List<MavenProject> reactorProjects) {
+        this.reactorProjects =
+                reactorProjects == null ? Collections.<MavenProject>emptyList() : reactorProjects;
+    }
 
     /**
      * {@inheritDoc}
@@ -50,8 +53,14 @@ public class AllureAggregateMojo extends AllureGenerateMojo {
             return Collections.emptyList();
         }
 
+        final List<MavenProject> projects = resolveReactorProjects();
+        if (projects.isEmpty()) {
+            getLog().warn("Reactor projects were not resolved for aggregate goal.");
+            return Collections.emptyList();
+        }
+
         final List<Path> result = new ArrayList<>();
-        for (MavenProject child : reactorProjects) {
+        for (MavenProject child : projects) {
             final Path target = Paths.get(child.getBuild().getDirectory());
             final Path path = target.resolve(relative).toAbsolutePath();
             if (isDirectoryExists(path)) {
@@ -63,6 +72,39 @@ public class AllureAggregateMojo extends AllureGenerateMojo {
         }
 
         return result;
+    }
+
+    protected List<MavenProject> resolveReactorProjects() {
+        final List<MavenProject> injectedProjects = getInjectedReactorProjects();
+        if (!injectedProjects.isEmpty()) {
+            return injectedProjects;
+        }
+
+        final List<MavenProject> sessionProjects = getSessionProjects();
+        if (!sessionProjects.isEmpty()) {
+            return sessionProjects;
+        }
+
+        final MavenProject currentProject = getProject();
+        if (currentProject != null) {
+            return Collections.singletonList(currentProject);
+        }
+
+        return Collections.emptyList();
+    }
+
+    protected List<MavenProject> getInjectedReactorProjects() {
+        if (reactorProjects == null) {
+            return Collections.emptyList();
+        }
+        return reactorProjects;
+    }
+
+    protected List<MavenProject> getSessionProjects() {
+        if (session == null || session.getProjects() == null) {
+            return Collections.emptyList();
+        }
+        return session.getProjects();
     }
 
     @Override
