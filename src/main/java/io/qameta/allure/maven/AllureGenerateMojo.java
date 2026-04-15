@@ -211,16 +211,20 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
         }
     }
 
-    private void copyExecutorInfo(final List<Path> inputDirectories) throws IOException {
+    protected void copyExecutorInfo(final List<Path> inputDirectories) throws IOException {
         addPropertyIfAbsent("name", "Maven");
         addPropertyIfAbsent("type", "maven");
         addPropertyIfAbsent("buildName", getProject() == null ? "N/A" : getProject().getName());
 
         final ObjectMapper mapper = new ObjectMapper();
-        for (Path dir : inputDirectories) {
+        for (Path dir : getExecutorInfoDirectories(inputDirectories)) {
             final Path executorInfoFile = dir.resolve("executor.json");
             mapper.writeValue(executorInfoFile.toFile(), executorInfo);
         }
+    }
+
+    protected List<Path> getExecutorInfoDirectories(final List<Path> inputDirectories) {
+        return inputDirectories;
     }
 
     private void addPropertyIfAbsent(final String key, final String value) {

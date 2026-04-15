@@ -108,6 +108,30 @@ public class AllureAggregateMojo extends AllureGenerateMojo {
     }
 
     @Override
+    protected List<Path> getExecutorInfoDirectories(final List<Path> inputDirectories) {
+        final MavenProject currentProject = getProject();
+        if (currentProject == null || currentProject.getBuild() == null
+                || currentProject.getBuild().getDirectory() == null) {
+            return Collections.emptyList();
+        }
+
+        final Path relative = Paths.get(resultsDirectory);
+        if (relative.isAbsolute()) {
+            return Collections.emptyList();
+        }
+
+        final Path currentResultsDirectory = Paths.get(currentProject.getBuild().getDirectory())
+                .resolve(relative).toAbsolutePath().normalize();
+        for (Path inputDirectory : inputDirectories) {
+            if (inputDirectory.toAbsolutePath().normalize().equals(currentResultsDirectory)) {
+                return Collections.singletonList(inputDirectory);
+            }
+        }
+
+        return Collections.emptyList();
+    }
+
+    @Override
     protected String getMojoName() {
         return "aggregate";
     }
