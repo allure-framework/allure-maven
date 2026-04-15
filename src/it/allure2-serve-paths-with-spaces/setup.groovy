@@ -2,11 +2,19 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 def version = '2.30.0'
-def artifactDirectory = localRepositoryPath.toPath()
+def localRepository = Paths.get(basedir.absolutePath, 'target', 'it-local-repo')
+def sharedRepository = localRepositoryPath.toPath()
+copyRecursively(
+        sharedRepository.resolve(Paths.get('io', 'qameta', 'allure', 'allure-maven')),
+        localRepository.resolve(Paths.get('io', 'qameta', 'allure', 'allure-maven'))
+)
+
+def artifactDirectory = localRepository
         .resolve(Paths.get('io', 'qameta', 'allure', 'allure-commandline', version))
 Files.createDirectories(artifactDirectory)
 
@@ -66,4 +74,20 @@ static void addZipEntry(final ZipOutputStream zip, final String name, final Stri
     zip.putNextEntry(new ZipEntry(name))
     zip.write(content.getBytes(StandardCharsets.UTF_8))
     zip.closeEntry()
+}
+
+static void copyRecursively(final Path source, final Path target) {
+    if (!Files.exists(source)) {
+        return
+    }
+    Files.walk(source).forEach { path ->
+        def relative = source.relativize(path)
+        def destination = target.resolve(relative.toString())
+        if (Files.isDirectory(path)) {
+            Files.createDirectories(destination)
+        } else {
+            Files.createDirectories(destination.getParent())
+            Files.copy(path, destination, StandardCopyOption.REPLACE_EXISTING)
+        }
+    }
 }

@@ -1,0 +1,6 @@
+plugins:
+  custom:
+    enabled: true
+  awesome:
+    options:
+      reportLanguage: en

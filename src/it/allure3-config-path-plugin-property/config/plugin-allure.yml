@@ -1,0 +1,4 @@
+plugins:
+  plugin-config:
+    options:
+      enabled: true
