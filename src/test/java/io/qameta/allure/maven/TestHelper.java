@@ -98,14 +98,13 @@ public final class TestHelper {
         assertThat(content, not(containsString("Generate Allure report (aggregate)")));
         assertThat(content, not(containsString("Generate Allure report to ")));
         assertThat(countMatches(content,
-                "^\\[INFO\\] Generate Allure report \\(report\\) with version ",
-                Pattern.MULTILINE), is(1));
+                "^\\[INFO\\] Generate Allure report \\(report\\) with version ", Pattern.MULTILINE),
+                is(1));
         assertThat(countMatches(content, "^\\[INFO\\] Generate report to ", Pattern.MULTILINE),
                 is(1));
     }
 
-    private static int countMatches(final String content, final String pattern,
-            final int flags) {
+    private static int countMatches(final String content, final String pattern, final int flags) {
         final Matcher matcher = Pattern.compile(pattern, flags).matcher(content);
         int count = 0;
         while (matcher.find()) {
