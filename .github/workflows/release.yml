@@ -29,6 +29,12 @@ jobs:
         with:
           token: ${{ secrets.QAMETA_CI }}
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
       - name: "Configure CI Git User"
         run: |
           git config --global user.name qameta-ci

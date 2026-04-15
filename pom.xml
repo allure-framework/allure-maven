@@ -14,7 +14,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <compiler.version>1.8</compiler.version>
+        <compiler.version>17</compiler.version>
 
         <maven.version>3.9.14</maven.version>
         <maven-plugin.version>3.15.2</maven-plugin.version>
@@ -122,9 +122,28 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.15.0</version>
                 <configuration>
-                    <source>${compiler.version}</source>
-                    <target>${compiler.version}</target>
+                    <release>${compiler.version}</release>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.6.2</version>
+                <executions>
+                    <execution>
+                        <id>enforce-java</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[17,)</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -163,7 +182,7 @@
                         </goals>
                         <configuration>
                             <additionalJOption>-Xdoclint:none</additionalJOption>
-                            <source>8</source>
+                            <source>${compiler.version}</source>
                             <detectJavaApiLink>false</detectJavaApiLink>
                         </configuration>
                     </execution>

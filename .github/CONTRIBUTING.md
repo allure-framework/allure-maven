@@ -8,7 +8,7 @@ Fork, then clone the repo:
 $ git clone git@github.com:your-username/allure-maven.git
 ```
 
-Then build the project (build requires JDK 1.8 or higher):
+Then build the project (build requires JDK 17 or higher):
 
 ```bash
 $ ./mvnw install
@@ -21,4 +21,3 @@ $ ./mvnw verify
 ```
 
 Push your fork and submit a pull request. 
-
