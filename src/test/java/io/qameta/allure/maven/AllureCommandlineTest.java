@@ -143,7 +143,6 @@ public class AllureCommandlineTest {
             final String version = "2.30.0";
             final Path installDirectory = testDirectory.resolve("install with space");
             final Path resultsDirectory = testDirectory.resolve("results with space");
-            final Path reportDirectory = testDirectory.resolve("report with space");
             final Path capturedArgs = testDirectory.resolve("captured args.txt");
             Files.createDirectories(resultsDirectory);
 
@@ -155,8 +154,7 @@ public class AllureCommandlineTest {
 
             final AllureCommandline commandline = new AllureCommandline(installDirectory, version);
             commandline.download(url, null, new Properties());
-            commandline.serve(Collections.singletonList(resultsDirectory), reportDirectory, null,
-                    0);
+            commandline.serve(Collections.singletonList(resultsDirectory), null, 0);
 
             assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8),
                     is(Arrays.asList("serve", resultsDirectory.toAbsolutePath().toString())));
