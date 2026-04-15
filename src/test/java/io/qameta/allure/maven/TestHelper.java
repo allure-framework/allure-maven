@@ -89,6 +89,21 @@ public final class TestHelper {
                 is(1));
     }
 
+    public static void checkRegularReportMojoOnly(Path projectDirectory) throws IOException {
+        final Path buildLog = projectDirectory.resolve("build.log");
+        assertThat(buildLog, exists());
+
+        final String content = Files.readString(buildLog, StandardCharsets.UTF_8);
+        assertThat(content, containsString("Generate Allure report (report)"));
+        assertThat(content, not(containsString("Generate Allure report (aggregate)")));
+        assertThat(content, not(containsString("Generate Allure report to ")));
+        assertThat(countMatches(content,
+                "^\\[INFO\\] Generate Allure report \\(report\\) with version ",
+                Pattern.MULTILINE), is(1));
+        assertThat(countMatches(content, "^\\[INFO\\] Generate report to ", Pattern.MULTILINE),
+                is(1));
+    }
+
     private static int countMatches(final String content, final String pattern,
             final int flags) {
         final Matcher matcher = Pattern.compile(pattern, flags).matcher(content);

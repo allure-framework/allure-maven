@@ -2,10 +2,12 @@ import groovy.json.JsonSlurper
 
 import java.nio.file.Paths
 
+import static io.qameta.allure.maven.TestHelper.checkRegularReportMojoOnly
 import static io.qameta.allure.maven.TestHelper.checkReportDirectory
 import static io.qameta.allure.maven.TestHelper.getTestCases
 
 def outputDirectory = Paths.get(basedir.absolutePath, 'target', 'site', 'allure-maven-plugin')
+checkRegularReportMojoOnly(Paths.get(basedir.absolutePath))
 checkReportDirectory(outputDirectory, 1)
 
 def dataDirectory = outputDirectory.resolve('data')
