@@ -190,7 +190,6 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
             getLog().info(String.format("Generate Allure report (%s) with version %s",
                     getMojoName(), allureVersion.getVersion()));
-            getLog().info("Generate Allure report to " + getReportDirectory());
 
             final List<Path> inputDirectories = getInputDirectories();
 

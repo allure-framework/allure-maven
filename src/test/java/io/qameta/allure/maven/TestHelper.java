@@ -17,11 +17,18 @@ package io.qameta.allure.maven;
 
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static ru.yandex.qatools.matchers.nio.PathMatchers.exists;
@@ -68,5 +75,41 @@ public final class TestHelper {
 
     public static List<String> getTestCases(Path dataDirectory) {
         return Arrays.asList(dataDirectory.toFile().list(new WildcardFileFilter("*.json")));
+    }
+
+    public static void checkAggregateMojoOnly(Path projectDirectory) throws IOException {
+        final Path buildLog = projectDirectory.resolve("build.log");
+        assertThat(buildLog, exists());
+
+        final String content = Files.readString(buildLog, StandardCharsets.UTF_8);
+        assertThat(content, containsString("Generate Allure report (aggregate)"));
+        assertThat(content, not(containsString("Generate Allure report (report)")));
+        assertThat(content, not(containsString("Generate Allure report to ")));
+        assertThat(countMatches(content, "^\\[INFO\\] Generate report to ", Pattern.MULTILINE),
+                is(1));
+    }
+
+    public static void checkRegularReportMojoOnly(Path projectDirectory) throws IOException {
+        final Path buildLog = projectDirectory.resolve("build.log");
+        assertThat(buildLog, exists());
+
+        final String content = Files.readString(buildLog, StandardCharsets.UTF_8);
+        assertThat(content, containsString("Generate Allure report (report)"));
+        assertThat(content, not(containsString("Generate Allure report (aggregate)")));
+        assertThat(content, not(containsString("Generate Allure report to ")));
+        assertThat(countMatches(content,
+                "^\\[INFO\\] Generate Allure report \\(report\\) with version ", Pattern.MULTILINE),
+                is(1));
+        assertThat(countMatches(content, "^\\[INFO\\] Generate report to ", Pattern.MULTILINE),
+                is(1));
+    }
+
+    private static int countMatches(final String content, final String pattern, final int flags) {
+        final Matcher matcher = Pattern.compile(pattern, flags).matcher(content);
+        int count = 0;
+        while (matcher.find()) {
+            count++;
+        }
+        return count;
     }
 }
