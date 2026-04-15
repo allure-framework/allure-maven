@@ -9,6 +9,7 @@
 
 [<img src="https://allurereport.org/public/img/allure-report.svg" height="85px" alt="Allure Report logo" align="right" />](https://allurereport.org "Allure Report")
 
+- Requires JDK 17 or newer
 - Learn more about Allure Report at https://allurereport.org
 - 📚 [Documentation](https://allurereport.org/docs/) – discover official documentation for Allure Report
 - ❓ [Questions and Support](https://github.com/orgs/allure-framework/discussions/categories/questions-support) – get help from the team and community

@@ -213,35 +213,23 @@ final class AllureDownloadUtils {
     }
 
     /**
-     * Captures the current JVM authenticator when the running JDK exposes a public getter. The
-     * getter is resolved reflectively so this code still compiles on Java 8, where
-     * {@code Authenticator.getDefault()} does not exist. On Java 8 there is no supported way to
-     * read the current authenticator back, so restore becomes a no-op.
+     * Captures the current JVM authenticator so download flows can restore it after temporary proxy
+     * credentials are installed.
      */
     static final class AuthenticatorState {
 
-        private final boolean restorable;
-
         private final Authenticator authenticator;
 
-        private AuthenticatorState(final boolean restorable, final Authenticator authenticator) {
-            this.restorable = restorable;
+        private AuthenticatorState(final Authenticator authenticator) {
             this.authenticator = authenticator;
         }
 
         static AuthenticatorState capture() {
-            try {
-                return new AuthenticatorState(true,
-                        (Authenticator) Authenticator.class.getMethod("getDefault").invoke(null));
-            } catch (ReflectiveOperationException e) {
-                return new AuthenticatorState(false, null);
-            }
+            return new AuthenticatorState(Authenticator.getDefault());
         }
 
         void restore() {
-            if (restorable) {
-                Authenticator.setDefault(authenticator);
-            }
+            Authenticator.setDefault(authenticator);
         }
     }
 }
