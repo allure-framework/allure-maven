@@ -98,12 +98,10 @@ public class AllureCommandline {
         return execute(commandLine, timeout);
     }
 
-    public int serve(final List<Path> resultsPaths, final Path reportPath, final String serveHost,
-            final Integer servePort) throws IOException {
+    public int serve(final List<Path> resultsPaths, final String serveHost, final Integer servePort)
+            throws IOException {
 
         this.checkAllureExists();
-
-        FileUtils.deleteQuietly(reportPath.toFile());
 
         final CommandLine commandLine =
                 new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());

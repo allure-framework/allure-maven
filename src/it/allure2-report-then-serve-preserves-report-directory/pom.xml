@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.qameta.allure-maven.it</groupId>
+    <artifactId>allure-maven-it</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>Allure Report Then Serve Preserves Report Directory Test</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>@project.groupId@</groupId>
+                <artifactId>@project.artifactId@</artifactId>
+                <version>@project.version@</version>
+                <configuration>
+                    <installDirectory>${project.basedir}/.allure install</installDirectory>
+                    <reportDirectory>${project.build.directory}/site/preserved-report</reportDirectory>
+                    <reportVersion>2.30.0</reportVersion>
+                    <serveTimeout>10</serveTimeout>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -84,15 +84,13 @@ public class AllureServeMojo extends AllureGenerateMojo {
     private void serveAllure2(final List<Path> resultsPaths, final AllureVersion allureVersion)
             throws MavenReportException {
         try {
-            final Path reportPath = Paths.get(getReportDirectory());
-
             final AllureCommandline commandline =
                     new AllureCommandline(Paths.get(getInstallDirectory()),
                             allureVersion.getVersion(), this.serveTimeout);
 
-            getLog().info("Generate report to " + reportPath);
-            commandline.serve(resultsPaths, reportPath, this.serveHost, this.servePort);
-            getLog().info("Report generated successfully.");
+            getLog().info("Serve Allure report using a temporary directory managed by the CLI.");
+            commandline.serve(resultsPaths, this.serveHost, this.servePort);
+            getLog().info("Report served successfully.");
         } catch (Exception e) {
             getLog().error("Generate error", e);
             throw new MavenReportException("Can't generate allure report", e);
