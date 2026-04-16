@@ -86,7 +86,7 @@ public class AllureServeMojo extends AllureGenerateMojo {
         try {
             final AllureCommandline commandline =
                     new AllureCommandline(Paths.get(getInstallDirectory()),
-                            allureVersion.getVersion(), this.serveTimeout);
+                            allureVersion.getVersion(), this.serveTimeout, getLog());
 
             getLog().info("Serve Allure report using a temporary directory managed by the CLI.");
             commandline.serve(resultsPaths, this.serveHost, this.servePort);

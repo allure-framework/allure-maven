@@ -24,6 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.settings.Proxy;
@@ -38,6 +39,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -47,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 
 import static io.qameta.allure.maven.VersionUtils.versionCompare;
 
-@SuppressWarnings({"ClassDataAbstractionCoupling", "ClassFanOutComplexity",
+@SuppressWarnings({"PMD.GodClass", "ClassDataAbstractionCoupling", "ClassFanOutComplexity",
         "MultipleStringLiterals"})
 public class AllureCommandline {
 
@@ -61,17 +63,30 @@ public class AllureCommandline {
 
     private final Path installationDirectory;
 
+    private final Log log;
+
     public AllureCommandline(final Path installationDirectory, final String version) {
-        this(installationDirectory, version, DEFAULT_TIMEOUT);
+        this(installationDirectory, version, DEFAULT_TIMEOUT, null);
+    }
+
+    public AllureCommandline(final Path installationDirectory, final String version,
+            final Log log) {
+        this(installationDirectory, version, DEFAULT_TIMEOUT, log);
     }
 
     public AllureCommandline(final Path installationDirectory, final String version,
             final int timeout) {
+        this(installationDirectory, version, timeout, null);
+    }
+
+    public AllureCommandline(final Path installationDirectory, final String version,
+            final int timeout, final Log log) {
         this.installationDirectory = installationDirectory;
         this.version = StringUtils.isBlank(version) || versionCompare(version, "2.8.0") < 0
                 ? ALLURE_DEFAULT_VERSION
                 : version;
         this.timeout = timeout;
+        this.log = log;
     }
 
     public int generateReport(final List<Path> resultsPaths, final Path reportPath,
@@ -81,9 +96,7 @@ public class AllureCommandline {
 
         FileUtils.deleteQuietly(reportPath.toFile());
 
-        final CommandLine commandLine =
-                new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
-        commandLine.addArgument("generate");
+        final CommandLine commandLine = createCommandLine("generate");
         commandLine.addArgument("--clean");
         if (singleFile) {
             commandLine.addArgument("--single-file");
@@ -103,9 +116,7 @@ public class AllureCommandline {
 
         this.checkAllureExists();
 
-        final CommandLine commandLine =
-                new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
-        commandLine.addArgument("serve");
+        final CommandLine commandLine = createCommandLine("serve");
         if (serveHost != null && serveHost.matches("(\\d{1,3}\\.){3}\\d{1,3}")) {
             commandLine.addArgument("--host");
             commandLine.addArgument(serveHost);
@@ -133,7 +144,24 @@ public class AllureCommandline {
                 .setTimeout(Duration.ofMillis(TimeUnit.SECONDS.toMillis(timeout))).get();
         executor.setWatchdog(watchdog);
         executor.setExitValue(0);
+        logCommandLine(commandLine);
         return executor.execute(commandLine);
+    }
+
+    private CommandLine createCommandLine(final String command) {
+        final CommandLine commandLine =
+                new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
+        if (log != null && log.isDebugEnabled()) {
+            commandLine.addArgument("--verbose");
+        }
+        commandLine.addArgument(command);
+        return commandLine;
+    }
+
+    private void logCommandLine(final CommandLine commandLine) {
+        if (log != null && log.isDebugEnabled()) {
+            log.debug("Executing Allure command: " + Arrays.toString(commandLine.toStrings()));
+        }
     }
 
     private void addPathArgument(final CommandLine commandLine, final Path path) {

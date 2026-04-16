@@ -94,7 +94,8 @@ public class AllureInstallMojo extends AbstractMojo {
 
     private void installAllure2(final AllureVersion allureVersion) throws IOException {
         final AllureCommandline commandline =
-                new AllureCommandline(Paths.get(installDirectory), allureVersion.getVersion());
+                new AllureCommandline(Paths.get(installDirectory), allureVersion.getVersion(),
+                        getLog());
         getLog().info(String.format("Allure installation directory %s", installDirectory));
         getLog().info(String.format("Try to finding out allure %s", commandline.getVersion()));
 
@@ -121,7 +122,7 @@ public class AllureInstallMojo extends AbstractMojo {
                 allureVersion.getVersion(), nodeVersion, nodeDownloadUrl, npmRegistry,
                 resolveAllurePackagePathOrNull(), ProxyUtils.getProxy(session, decrypter),
                 AllureCommandline.getDownloadProperties(session),
-                session != null && session.isOffline(), 3600);
+                session != null && session.isOffline(), 3600, getLog());
         getLog().info(String.format("Allure installation directory %s", installDirectory));
         getLog().info(String.format("Try to finding out allure %s using Node.js %s",
                 commandline.getVersion(), commandline.getNodeVersion()));
