@@ -225,9 +225,8 @@ public class AllureCommandlineTest {
                     new AllureCommandline(installDirectory, version, 10, log);
             commandline.serve(Collections.singletonList(resultsDirectory), null, 0);
 
-            assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8),
-                    is(Arrays.asList("--verbose", "serve",
-                            resultsDirectory.toAbsolutePath().toString())));
+            assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8), is(Arrays
+                    .asList("--verbose", "serve", resultsDirectory.toAbsolutePath().toString())));
             assertThat(log.debugMessages,
                     is(Collections.singletonList("Executing Allure command: ["
                             + executable.toAbsolutePath() + ", --verbose, serve, "

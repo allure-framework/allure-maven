@@ -183,8 +183,8 @@ public class Allure3CommandlineTest {
             assertThat(log.debugMessages,
                     is(Collections.singletonList("Executing Allure command: ["
                             + commandline.getAllureExecutablePath().toAbsolutePath()
-                            + ", generate, " + resultsDirectory.toAbsolutePath()
-                            + ", --config, " + config.toAbsolutePath() + "]")));
+                            + ", generate, " + resultsDirectory.toAbsolutePath() + ", --config, "
+                            + config.toAbsolutePath() + "]")));
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
@@ -364,15 +364,15 @@ public class Allure3CommandlineTest {
             final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
                     .resolve("allurerc.json");
             assertThat(log.debugMessages,
-                    is(Arrays.asList("Executing Allure command: ["
+                    is(Arrays.asList(
+                            "Executing Allure command: ["
                                     + commandline.getAllureExecutablePath().toAbsolutePath()
                                     + ", generate, " + resultsDirectory.toAbsolutePath()
                                     + ", --config, " + config.toAbsolutePath() + "]",
                             "Executing Allure command: ["
                                     + commandline.getAllureExecutablePath().toAbsolutePath()
-                                    + ", open, " + reportDirectory.toAbsolutePath()
-                                    + ", --config, " + config.toAbsolutePath()
-                                    + ", --port, 5555]")));
+                                    + ", open, " + reportDirectory.toAbsolutePath() + ", --config, "
+                                    + config.toAbsolutePath() + ", --port, 5555]")));
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }

@@ -294,9 +294,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
     private void installAllure2(final AllureVersion allureVersion) throws MavenReportException {
         try {
-            final AllureCommandline commandline =
-                    new AllureCommandline(Paths.get(installDirectory), allureVersion.getVersion(),
-                            getLog());
+            final AllureCommandline commandline = new AllureCommandline(Paths.get(installDirectory),
+                    allureVersion.getVersion(), getLog());
             getLog().info(String.format("Allure installation directory %s", installDirectory));
             getLog().info(String.format("Try to finding out allure %s", commandline.getVersion()));
 
@@ -345,9 +344,9 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
         try {
             final Path reportPath = Paths.get(getReportDirectory());
 
-            final AllureCommandline commandline = new AllureCommandline(
-                    Paths.get(getInstallDirectory()), allureVersion.getVersion(), reportTimeout,
-                    getLog());
+            final AllureCommandline commandline =
+                    new AllureCommandline(Paths.get(getInstallDirectory()),
+                            allureVersion.getVersion(), reportTimeout, getLog());
 
             getLog().info("Generate report to " + reportPath);
             commandline.generateReport(resultsPaths, reportPath, Boolean.TRUE.equals(singleFile));

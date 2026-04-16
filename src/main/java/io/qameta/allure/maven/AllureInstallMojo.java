@@ -93,9 +93,8 @@ public class AllureInstallMojo extends AbstractMojo {
     }
 
     private void installAllure2(final AllureVersion allureVersion) throws IOException {
-        final AllureCommandline commandline =
-                new AllureCommandline(Paths.get(installDirectory), allureVersion.getVersion(),
-                        getLog());
+        final AllureCommandline commandline = new AllureCommandline(Paths.get(installDirectory),
+                allureVersion.getVersion(), getLog());
         getLog().info(String.format("Allure installation directory %s", installDirectory));
         getLog().info(String.format("Try to finding out allure %s", commandline.getVersion()));
 
