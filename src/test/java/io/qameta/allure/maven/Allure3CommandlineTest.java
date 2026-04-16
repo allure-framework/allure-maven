@@ -24,9 +24,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -117,8 +120,13 @@ public class Allure3CommandlineTest {
             Allure3SetupHelper.prepareFakeReportRuntime(installDirectory, capturedArgs,
                     reportDirectory, true);
 
+            final Map<String, Object> defaultConfig = new LinkedHashMap<>();
+            defaultConfig.put("historyPath", testDirectory
+                    .resolve(Paths.get("history", "history.jsonl")).toAbsolutePath().toString());
+            defaultConfig.put("appendHistory", true);
+
             commandline.generateReport(Arrays.asList(resultsDirectory, secondResultsDirectory),
-                    reportDirectory, true, buildDirectory, "Allure", null);
+                    reportDirectory, true, buildDirectory, "Allure", null, defaultConfig);
 
             final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
                     .resolve("allurerc.json");
@@ -126,6 +134,9 @@ public class Allure3CommandlineTest {
             assertThat(configJson.get("name").asText(), is("Allure"));
             assertThat(configJson.get("output").asText(),
                     is(reportDirectory.toAbsolutePath().toString()));
+            assertThat(configJson.get("historyPath").asText(),
+                    is(defaultConfig.get("historyPath")));
+            assertThat(configJson.get("appendHistory").asBoolean(), is(true));
             assertThat(configJson.get("plugins").get("awesome").get("options").get("singleFile")
                     .asBoolean(), is(true));
             assertThat(reportDirectory.resolve("index.html"), exists());
@@ -167,8 +178,13 @@ public class Allure3CommandlineTest {
             Allure3SetupHelper.prepareFakeReportRuntime(installDirectory,
                     testDirectory.resolve("node-args.txt"), reportDirectory, false);
 
+            final Map<String, Object> defaultConfig = new LinkedHashMap<>();
+            defaultConfig.put("historyPath", testDirectory
+                    .resolve(Paths.get("history", "history.jsonl")).toAbsolutePath().toString());
+            defaultConfig.put("appendHistory", true);
+
             commandline.generateReport(Collections.singletonList(resultsDirectory), reportDirectory,
-                    true, buildDirectory, "Allure", userConfig);
+                    true, buildDirectory, "Allure", userConfig, defaultConfig);
 
             final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
                     .resolve("allurerc.json");
@@ -176,6 +192,9 @@ public class Allure3CommandlineTest {
             assertThat(configJson.get("name").asText(), is("Allure"));
             assertThat(configJson.get("output").asText(),
                     is(reportDirectory.toAbsolutePath().toString()));
+            assertThat(configJson.get("historyPath").asText(),
+                    is(defaultConfig.get("historyPath")));
+            assertThat(configJson.get("appendHistory").asBoolean(), is(true));
             assertThat(configJson.get("plugins").get("custom").get("enabled").asBoolean(),
                     is(true));
             assertThat(configJson.get("plugins").get("awesome").get("options").get("collapseSuites")
@@ -214,8 +233,13 @@ public class Allure3CommandlineTest {
             Allure3SetupHelper.prepareFakeReportRuntime(installDirectory,
                     testDirectory.resolve("node-args.txt"), reportDirectory, false);
 
+            final Map<String, Object> defaultConfig = new LinkedHashMap<>();
+            defaultConfig.put("historyPath", testDirectory
+                    .resolve(Paths.get("history", "history.jsonl")).toAbsolutePath().toString());
+            defaultConfig.put("appendHistory", true);
+
             commandline.generateReport(Collections.singletonList(resultsDirectory), reportDirectory,
-                    true, buildDirectory, "Allure", userConfig);
+                    true, buildDirectory, "Allure", userConfig, defaultConfig);
 
             final Path generatedConfig = buildDirectory.resolve("allure-maven").resolve("allure3")
                     .resolve("allurerc.mjs");
@@ -226,6 +250,11 @@ public class Allure3CommandlineTest {
                     .writeValueAsString(userConfig.toAbsolutePath().toUri().toString()) + ";"));
             assertThat(generatedConfigLines, hasItem("  name: \"Allure\","));
             assertThat(generatedConfigLines, hasItem("        singleFile: true,"));
+            assertThat(generatedConfigLines, hasItem("  historyPath: config.historyPath ?? "
+                    + new ObjectMapper().writeValueAsString(defaultConfig.get("historyPath"))
+                    + ","));
+            assertThat(generatedConfigLines,
+                    hasItem("  appendHistory: config.appendHistory ?? true,"));
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }

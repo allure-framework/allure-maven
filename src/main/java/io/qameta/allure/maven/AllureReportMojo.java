@@ -15,16 +15,21 @@
  */
 package io.qameta.allure.maven;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.String.format;
 
@@ -36,6 +41,9 @@ public class AllureReportMojo extends AllureGenerateMojo {
 
     private static final String FOUND_DIRECTORY = "Found results directory %s";
     private static final String DIRECTORY_NOT_FOUND = "Directory %s not found";
+    private static final String HISTORY_DIRECTORY_NAME = "history";
+    private static final String REPORT_DIRECTORY_NAME = "report";
+    private static final String TO_PATH_SEPARATOR = " to ";
 
     /**
      * The comma-separated list of additional input directories. As long as unix path can contains
@@ -44,6 +52,9 @@ public class AllureReportMojo extends AllureGenerateMojo {
      */
     @Parameter(property = "allure.results.inputDirectories")
     protected String inputDirectories;
+
+    @Parameter(property = "allure.history.enabled", defaultValue = "true")
+    protected boolean historyEnabled;
 
     /**
      * {@inheritDoc}
@@ -80,11 +91,91 @@ public class AllureReportMojo extends AllureGenerateMojo {
 
     @Override
     protected String getMojoName() {
-        return "report";
+        return REPORT_DIRECTORY_NAME;
+    }
+
+    @Override
+    protected List<Path> prepareInputDirectoriesForGenerate(final List<Path> inputDirectories,
+            final AllureVersion allureVersion) throws IOException {
+        if (!historyEnabled || allureVersion.isAllure3()) {
+            return inputDirectories;
+        }
+
+        final Path cachedHistoryDirectory = getCachedAllure2HistoryDirectory();
+        if (!isDirectoryExists(cachedHistoryDirectory)) {
+            getLog().info("No cached Allure history found at " + cachedHistoryDirectory);
+            return inputDirectories;
+        }
+
+        final Path historyInputDirectory = restoreCachedHistoryInput(cachedHistoryDirectory);
+        final List<Path> generationInputDirectories = new ArrayList<>(inputDirectories);
+        generationInputDirectories.add(historyInputDirectory);
+        getLog().info("Restored cached Allure history from " + cachedHistoryDirectory
+                + TO_PATH_SEPARATOR + historyInputDirectory.resolve(HISTORY_DIRECTORY_NAME));
+        return generationInputDirectories;
+    }
+
+    @Override
+    protected void afterGenerateReport(final List<Path> inputDirectories,
+            final AllureVersion allureVersion) throws IOException {
+        if (!historyEnabled || allureVersion.isAllure3()) {
+            return;
+        }
+
+        final Path generatedHistoryDirectory =
+                Paths.get(getReportDirectory()).resolve(HISTORY_DIRECTORY_NAME);
+        if (!isDirectoryExists(generatedHistoryDirectory)) {
+            return;
+        }
+
+        final Path cacheRoot = getReportHistoryCacheDirectory();
+        final Path cachedHistoryDirectory = cacheRoot.resolve(HISTORY_DIRECTORY_NAME);
+        FileUtils.deleteQuietly(cacheRoot.toFile());
+        Files.createDirectories(cacheRoot);
+        FileUtils.copyDirectory(generatedHistoryDirectory.toFile(),
+                cachedHistoryDirectory.toFile());
+        getLog().info("Refreshed cached Allure history from " + generatedHistoryDirectory
+                + TO_PATH_SEPARATOR + cachedHistoryDirectory);
+    }
+
+    @Override
+    protected Map<String, Object> getAllure3ConfigDefaults() throws IOException {
+        if (!historyEnabled) {
+            return Collections.emptyMap();
+        }
+
+        final Path historyFile = getReportHistoryCacheDirectory().resolve("history.jsonl");
+        Files.createDirectories(historyFile.getParent());
+        getLog().info("Using Allure 3 history file " + historyFile.toAbsolutePath());
+
+        final Map<String, Object> defaults = new LinkedHashMap<>();
+        defaults.put("historyPath", historyFile.toAbsolutePath().toString());
+        defaults.put("appendHistory", true);
+        return defaults;
     }
 
     private Path getInputDirectoryAbsolutePath() {
         final Path path = Paths.get(resultsDirectory);
         return path.isAbsolute() ? path : Paths.get(buildDirectory).resolve(path);
+    }
+
+    private Path restoreCachedHistoryInput(final Path cachedHistoryDirectory) throws IOException {
+        final Path historyInputRoot =
+                Paths.get(buildDirectory).resolve(Paths.get("allure-maven", "history-input"));
+        final Path historyInputDirectory = historyInputRoot.resolve("allure-results");
+        final Path restoredHistoryDirectory = historyInputDirectory.resolve(HISTORY_DIRECTORY_NAME);
+        FileUtils.deleteQuietly(historyInputRoot.toFile());
+        Files.createDirectories(historyInputDirectory);
+        FileUtils.copyDirectory(cachedHistoryDirectory.toFile(), restoredHistoryDirectory.toFile());
+        return historyInputDirectory;
+    }
+
+    private Path getReportHistoryCacheDirectory() {
+        return Paths.get(getInstallDirectory())
+                .resolve(Paths.get(HISTORY_DIRECTORY_NAME, REPORT_DIRECTORY_NAME));
+    }
+
+    private Path getCachedAllure2HistoryDirectory() {
+        return getReportHistoryCacheDirectory().resolve(HISTORY_DIRECTORY_NAME);
     }
 }

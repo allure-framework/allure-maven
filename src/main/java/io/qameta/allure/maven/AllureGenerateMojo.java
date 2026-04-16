@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import static io.qameta.allure.maven.Allure3Commandline.NODE_DEFAULT_DOWNLOAD_URL;
@@ -202,13 +203,31 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
             this.loadProperties(inputDirectories);
             this.loadCategories(inputDirectories);
             this.copyExecutorInfo(inputDirectories);
-            this.generateReport(inputDirectories, allureVersion);
+            final List<Path> generationInputDirectories =
+                    prepareInputDirectoriesForGenerate(inputDirectories, allureVersion);
+            this.generateReport(generationInputDirectories, allureVersion);
+            afterGenerateReport(generationInputDirectories, allureVersion);
 
             render(getSink(), getName(locale));
 
         } catch (Exception e) {
             throw new MavenReportException("Could not generate the report", e);
         }
+    }
+
+    protected List<Path> prepareInputDirectoriesForGenerate(final List<Path> inputDirectories,
+            final AllureVersion allureVersion) throws IOException {
+        return inputDirectories;
+    }
+
+    protected void afterGenerateReport(final List<Path> inputDirectories,
+            final AllureVersion allureVersion) throws IOException {
+        Objects.requireNonNull(inputDirectories, "inputDirectories");
+        Objects.requireNonNull(allureVersion, "allureVersion");
+    }
+
+    protected Map<String, Object> getAllure3ConfigDefaults() throws IOException {
+        return Collections.emptyMap();
     }
 
     protected void copyExecutorInfo(final List<Path> inputDirectories) throws IOException {
@@ -348,7 +367,8 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
             getLog().info("Generate report to " + reportPath);
             commandline.generateReport(resultsPaths, reportPath, Boolean.TRUE.equals(singleFile),
-                    Paths.get(buildDirectory), getName(Locale.getDefault()), allureConfig);
+                    Paths.get(buildDirectory), getName(Locale.getDefault()), allureConfig,
+                    getAllure3ConfigDefaults());
             getLog().info("Report generated successfully.");
         } catch (Exception e) {
             getLog().error("Generation error", e);
