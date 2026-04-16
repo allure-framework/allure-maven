@@ -118,6 +118,19 @@ For Allure 3, the plugin supports:
 JSON/YAML configs are merged into a generated config file, while JS/MJS/CJS configs are wrapped so
 the plugin can still overlay the report output, report name, and `singleFile` setting.
 
+### Trend history for `allure:report`
+
+The `report` goal preserves trend history automatically by default.
+
+- configure it with `allure.history.enabled` (`true` by default)
+- scope: `allure:report` only; `allure:aggregate` and `allure:serve` keep their current behavior
+- Allure 2: the plugin restores the previous `history/` directory from
+  `${allure.install.directory}/history/report/history` into a temporary input directory before
+  generation, then refreshes the cache from the newly generated report
+- Allure 3: the plugin sets default `historyPath` and `appendHistory=true` values that point to
+  `${allure.install.directory}/history/report/history.jsonl`; explicit values in your Allure 3
+  config still win
+
 ### Allure 3 serve behavior
 
 For Allure 3, `allure:serve` performs:

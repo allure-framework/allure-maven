@@ -43,6 +43,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,13 +120,20 @@ public class Allure3Commandline {
     public int generateReport(final List<Path> resultsPaths, final Path reportPath,
             final boolean singleFile, final Path buildDirectory, final String reportName,
             final Path userConfigPath) throws IOException {
+        return generateReport(resultsPaths, reportPath, singleFile, buildDirectory, reportName,
+                userConfigPath, Collections.<String, Object>emptyMap());
+    }
+
+    public int generateReport(final List<Path> resultsPaths, final Path reportPath,
+            final boolean singleFile, final Path buildDirectory, final String reportName,
+            final Path userConfigPath, final Map<String, Object> defaultConfig) throws IOException {
         checkAllureExists();
         ensureLaunchers();
         FileUtils.deleteQuietly(reportPath.toFile());
 
         final Path workDirectory = prepareWorkDirectory(buildDirectory);
-        final Path config =
-                writeConfig(workDirectory, reportPath, singleFile, reportName, userConfigPath);
+        final Path config = writeConfig(workDirectory, reportPath, singleFile, reportName,
+                userConfigPath, defaultConfig);
 
         return executeGenerate(resultsPaths, config);
     }
@@ -138,8 +146,8 @@ public class Allure3Commandline {
         FileUtils.deleteQuietly(reportPath.toFile());
 
         final Path workDirectory = prepareWorkDirectory(buildDirectory);
-        final Path config =
-                writeConfig(workDirectory, reportPath, singleFile, reportName, userConfigPath);
+        final Path config = writeConfig(workDirectory, reportPath, singleFile, reportName,
+                userConfigPath, Collections.<String, Object>emptyMap());
 
         executeGenerate(resultsPaths, config);
         return executeOpen(reportPath, config, servePort);
@@ -392,14 +400,15 @@ public class Allure3Commandline {
     }
 
     private Path writeConfig(final Path workDirectory, final Path reportPath,
-            final boolean singleFile, final String reportName, final Path userConfigPath)
-            throws IOException {
+            final boolean singleFile, final String reportName, final Path userConfigPath,
+            final Map<String, Object> defaultConfig) throws IOException {
         if (isScriptConfig(userConfigPath)) {
             return writeScriptConfig(workDirectory, reportPath, singleFile, reportName,
-                    userConfigPath);
+                    userConfigPath, defaultConfig);
         }
 
         final Map<String, Object> config = readConfig(userConfigPath);
+        applyDefaultConfig(config, defaultConfig);
         config.put("name", reportName);
         config.put("output", reportPath.toAbsolutePath().toString());
 
@@ -415,11 +424,11 @@ public class Allure3Commandline {
     }
 
     private Path writeScriptConfig(final Path workDirectory, final Path reportPath,
-            final boolean singleFile, final String reportName, final Path userConfigPath)
-            throws IOException {
+            final boolean singleFile, final String reportName, final Path userConfigPath,
+            final Map<String, Object> defaultConfig) throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
         final Path configPath = workDirectory.resolve("allurerc.mjs");
-        final List<String> lines = Arrays.asList(
+        final List<String> lines = new java.util.ArrayList<>(Arrays.asList(
                 "import userConfig from " + mapper.writeValueAsString(
                         userConfigPath.toAbsolutePath().toUri().toString()) + ";",
                 "", "const config = userConfig ?? {};",
@@ -430,14 +439,26 @@ public class Allure3Commandline {
                 "const awesomeOptions = typeof awesome.options === \"object\" "
                         + "&& awesome.options !== null",
                 "  ? awesome.options", "  : {};", "", "export default {", "  ...config,",
-                "  name: " + mapper.writeValueAsString(reportName) + ",",
-                "  output: " + mapper.writeValueAsString(reportPath.toAbsolutePath().toString())
-                        + ",",
-                "  plugins: {", "    ...plugins,", "    awesome: {", "      ...awesome,",
-                "      options: {", "        ...awesomeOptions,",
-                "        singleFile: " + singleFile + ",", "      },", "    },", "  },", "};", "");
+                "  name: " + mapper.writeValueAsString(reportName) + ",", "  output: "
+                        + mapper.writeValueAsString(reportPath.toAbsolutePath().toString()) + ","));
+        for (Map.Entry<String, Object> entry : defaultConfig.entrySet()) {
+            lines.add("  " + entry.getKey() + ": config." + entry.getKey() + " ?? "
+                    + mapper.writeValueAsString(entry.getValue()) + ",");
+        }
+        lines.addAll(Arrays.asList("  plugins: {", "    ...plugins,", "    awesome: {",
+                "      ...awesome,", "      options: {", "        ...awesomeOptions,",
+                "        singleFile: " + singleFile + ",", "      },", "    },", "  },", "};", ""));
         Files.write(configPath, lines, StandardCharsets.UTF_8);
         return configPath;
+    }
+
+    private void applyDefaultConfig(final Map<String, Object> config,
+            final Map<String, Object> defaultConfig) {
+        for (Map.Entry<String, Object> entry : defaultConfig.entrySet()) {
+            if (!config.containsKey(entry.getKey())) {
+                config.put(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     private Map<String, Object> readConfig(final Path userConfigPath) throws IOException {
