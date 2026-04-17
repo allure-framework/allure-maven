@@ -24,8 +24,6 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
@@ -42,7 +40,6 @@ import java.nio.file.Path;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -50,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -58,8 +54,7 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings({"PMD.GodClass", "ClassDataAbstractionCoupling", "ClassFanOutComplexity",
         "MultipleStringLiterals", "ParameterNumber", "PMD.CouplingBetweenObjects",
-        "PMD.TooManyMethods", "PMD.CyclomaticComplexity", "PMD.ExcessiveParameterList",
-        "PMD.NcssCount"})
+        "PMD.TooManyMethods", "PMD.CyclomaticComplexity", "PMD.ExcessiveParameterList"})
 public class Allure3Commandline {
 
     public static final String NODE_DEFAULT_VERSION = "24.14.1";
@@ -592,13 +587,8 @@ public class Allure3Commandline {
     }
 
     private int execute(final CommandLine commandLine, final int timeout) throws IOException {
-        final DefaultExecutor executor = DefaultExecutor.builder().get();
-        final ExecuteWatchdog watchdog = ExecuteWatchdog.builder()
-                .setTimeout(Duration.ofMillis(TimeUnit.SECONDS.toMillis(timeout))).get();
-        executor.setWatchdog(watchdog);
-        executor.setExitValue(0);
         logCommandLine(commandLine);
-        return executor.execute(commandLine);
+        return CommandLineExecutorFactory.newExecutor(timeout).execute(commandLine);
     }
 
     private void addPathArgument(final CommandLine commandLine, final Path path) {

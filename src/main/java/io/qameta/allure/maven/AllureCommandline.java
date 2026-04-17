@@ -18,8 +18,6 @@ package io.qameta.allure.maven;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
@@ -38,14 +36,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import static io.qameta.allure.maven.VersionUtils.versionCompare;
 
@@ -139,13 +135,8 @@ public class AllureCommandline {
     }
 
     private int execute(final CommandLine commandLine, final int timeout) throws IOException {
-        final DefaultExecutor executor = DefaultExecutor.builder().get();
-        final ExecuteWatchdog watchdog = ExecuteWatchdog.builder()
-                .setTimeout(Duration.ofMillis(TimeUnit.SECONDS.toMillis(timeout))).get();
-        executor.setWatchdog(watchdog);
-        executor.setExitValue(0);
         logCommandLine(commandLine);
-        return executor.execute(commandLine);
+        return CommandLineExecutorFactory.newExecutor(timeout).execute(commandLine);
     }
 
     private CommandLine createCommandLine(final String command) {
