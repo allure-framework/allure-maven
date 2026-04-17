@@ -16,6 +16,7 @@
 package io.qameta.allure.maven;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.logging.Log;
 import org.junit.Test;
 
 import javax.net.ssl.HostnameVerifier;
@@ -43,6 +44,7 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -135,6 +137,44 @@ public class AllureCommandlineTest {
     }
 
     @Test
+    public void shouldPassVerboseFlagAndLogCommandWhenDebugGeneratingReport() throws Exception {
+        assumeFalse(isWindows());
+
+        final Path testDirectory = Files.createTempDirectory("allure-commandline");
+        try {
+            final String version = "2.30.0";
+            final Path installDirectory = testDirectory.resolve("install");
+            final Path resultsDirectory = testDirectory.resolve("results with space");
+            final Path reportDirectory = testDirectory.resolve("report with space");
+            final Path capturedArgs = testDirectory.resolve("args.txt");
+            final Path executable =
+                    installDirectory.resolve("allure-" + version).resolve("bin").resolve("allure");
+            final RecordingLog log = new RecordingLog(true);
+            Files.createDirectories(resultsDirectory);
+
+            createUnixAllureExecutable(installDirectory, version, "#!/bin/sh",
+                    "printf '%s\\n' \"$@\" > '" + capturedArgs + "'", "exit 0");
+
+            final AllureCommandline commandline =
+                    new AllureCommandline(installDirectory, version, 10, log);
+            commandline.generateReport(Collections.singletonList(resultsDirectory), reportDirectory,
+                    false);
+
+            assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8),
+                    is(Arrays.asList("--verbose", "generate", "--clean",
+                            resultsDirectory.toAbsolutePath().toString(), "-o",
+                            reportDirectory.toAbsolutePath().toString())));
+            assertThat(log.debugMessages,
+                    is(Collections.singletonList("Executing Allure command: ["
+                            + executable.toAbsolutePath() + ", --verbose, generate, --clean, "
+                            + resultsDirectory.toAbsolutePath() + ", -o, "
+                            + reportDirectory.toAbsolutePath() + "]")));
+        } finally {
+            FileUtils.deleteQuietly(testDirectory.toFile());
+        }
+    }
+
+    @Test
     public void shouldPassWindowsPathsWithoutLosingSpacesWhenServingReport() throws Exception {
         assumeTrue(isWindows());
 
@@ -158,6 +198,39 @@ public class AllureCommandlineTest {
 
             assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8),
                     is(Arrays.asList("serve", resultsDirectory.toAbsolutePath().toString())));
+        } finally {
+            FileUtils.deleteQuietly(testDirectory.toFile());
+        }
+    }
+
+    @Test
+    public void shouldPassVerboseFlagAndLogCommandWhenDebugServingReport() throws Exception {
+        assumeFalse(isWindows());
+
+        final Path testDirectory = Files.createTempDirectory("allure-commandline");
+        try {
+            final String version = "2.30.0";
+            final Path installDirectory = testDirectory.resolve("install");
+            final Path resultsDirectory = testDirectory.resolve("results with space");
+            final Path capturedArgs = testDirectory.resolve("args.txt");
+            final Path executable =
+                    installDirectory.resolve("allure-" + version).resolve("bin").resolve("allure");
+            final RecordingLog log = new RecordingLog(true);
+            Files.createDirectories(resultsDirectory);
+
+            createUnixAllureExecutable(installDirectory, version, "#!/bin/sh",
+                    "printf '%s\\n' \"$@\" > '" + capturedArgs + "'", "exit 0");
+
+            final AllureCommandline commandline =
+                    new AllureCommandline(installDirectory, version, 10, log);
+            commandline.serve(Collections.singletonList(resultsDirectory), null, 0);
+
+            assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8), is(Arrays
+                    .asList("--verbose", "serve", resultsDirectory.toAbsolutePath().toString())));
+            assertThat(log.debugMessages,
+                    is(Collections.singletonList("Executing Allure command: ["
+                            + executable.toAbsolutePath() + ", --verbose, serve, "
+                            + resultsDirectory.toAbsolutePath() + "]")));
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
@@ -209,6 +282,80 @@ public class AllureCommandlineTest {
                 "type nul > \"" + captureFile + "\"", ":loop", "if \"%~1\"==\"\" goto done",
                 ">> \"" + captureFile + "\" echo(%~1", "shift", "goto loop", ":done", "exit /b 0",
                 "");
+    }
+
+    private static final class RecordingLog implements Log {
+
+        private final boolean debugEnabled;
+
+        private final List<String> debugMessages;
+
+        private RecordingLog(final boolean debugEnabled) {
+            this.debugEnabled = debugEnabled;
+            this.debugMessages = new java.util.ArrayList<String>();
+        }
+
+        @Override
+        public boolean isDebugEnabled() {
+            return debugEnabled;
+        }
+
+        @Override
+        public void debug(final CharSequence content) {
+            debugMessages.add(content.toString());
+        }
+
+        @Override
+        public void debug(final CharSequence content, final Throwable error) {
+            debug(content);
+        }
+
+        @Override
+        public void debug(final Throwable error) {
+            debug(error.getMessage());
+        }
+
+        @Override
+        public boolean isInfoEnabled() {
+            return false;
+        }
+
+        @Override
+        public void info(final CharSequence content) {}
+
+        @Override
+        public void info(final CharSequence content, final Throwable error) {}
+
+        @Override
+        public void info(final Throwable error) {}
+
+        @Override
+        public boolean isWarnEnabled() {
+            return false;
+        }
+
+        @Override
+        public void warn(final CharSequence content) {}
+
+        @Override
+        public void warn(final CharSequence content, final Throwable error) {}
+
+        @Override
+        public void warn(final Throwable error) {}
+
+        @Override
+        public boolean isErrorEnabled() {
+            return false;
+        }
+
+        @Override
+        public void error(final CharSequence content) {}
+
+        @Override
+        public void error(final CharSequence content, final Throwable error) {}
+
+        @Override
+        public void error(final Throwable error) {}
     }
 
     /**

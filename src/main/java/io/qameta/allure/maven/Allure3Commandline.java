@@ -28,6 +28,7 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.settings.Proxy;
 
 import java.io.BufferedReader;
@@ -57,7 +58,8 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings({"PMD.GodClass", "ClassDataAbstractionCoupling", "ClassFanOutComplexity",
         "MultipleStringLiterals", "ParameterNumber", "PMD.CouplingBetweenObjects",
-        "PMD.TooManyMethods", "PMD.CyclomaticComplexity", "PMD.ExcessiveParameterList"})
+        "PMD.TooManyMethods", "PMD.CyclomaticComplexity", "PMD.ExcessiveParameterList",
+        "PMD.NcssCount"})
 public class Allure3Commandline {
 
     public static final String NODE_DEFAULT_VERSION = "24.14.1";
@@ -93,10 +95,20 @@ public class Allure3Commandline {
 
     private final Allure3Platform platform;
 
+    private final Log log;
+
     public Allure3Commandline(final Path installationDirectory, final String allureVersion,
             final String nodeVersion, final String nodeDownloadUrl, final String npmRegistry,
             final Path allurePackagePath, final Proxy proxy, final Properties downloadProperties,
             final boolean offline, final int timeout) {
+        this(installationDirectory, allureVersion, nodeVersion, nodeDownloadUrl, npmRegistry,
+                allurePackagePath, proxy, downloadProperties, offline, timeout, null);
+    }
+
+    public Allure3Commandline(final Path installationDirectory, final String allureVersion,
+            final String nodeVersion, final String nodeDownloadUrl, final String npmRegistry,
+            final Path allurePackagePath, final Proxy proxy, final Properties downloadProperties,
+            final boolean offline, final int timeout, final Log log) {
         this.installationDirectory = installationDirectory;
         this.allureVersion = allureVersion;
         this.nodeVersion = StringUtils.defaultIfBlank(nodeVersion, NODE_DEFAULT_VERSION);
@@ -109,6 +121,7 @@ public class Allure3Commandline {
         this.offline = offline;
         this.timeout = timeout;
         this.platform = Allure3Platform.detect();
+        this.log = log;
     }
 
     public void install() throws IOException {
@@ -584,11 +597,18 @@ public class Allure3Commandline {
                 .setTimeout(Duration.ofMillis(TimeUnit.SECONDS.toMillis(timeout))).get();
         executor.setWatchdog(watchdog);
         executor.setExitValue(0);
+        logCommandLine(commandLine);
         return executor.execute(commandLine);
     }
 
     private void addPathArgument(final CommandLine commandLine, final Path path) {
         commandLine.addArgument(path.toAbsolutePath().toString(), platform.isWindows());
+    }
+
+    private void logCommandLine(final CommandLine commandLine) {
+        if (log != null && log.isDebugEnabled()) {
+            log.debug("Executing Allure command: " + Arrays.toString(commandLine.toStrings()));
+        }
     }
 
     private static final class MapTypeReference extends TypeReference<Map<String, Object>> {

@@ -18,6 +18,7 @@ package io.qameta.allure.maven;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.logging.Log;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -148,6 +149,42 @@ public class Allure3CommandlineTest {
                             "arg=" + resultsDirectory.toAbsolutePath(),
                             "arg=" + secondResultsDirectory.toAbsolutePath(), "arg=--config",
                             "arg=" + config.toAbsolutePath(), "---")));
+        } finally {
+            FileUtils.deleteQuietly(testDirectory.toFile());
+        }
+    }
+
+    @Test
+    public void shouldLogGenerateCommandInDebugModeWithoutVerboseFlag() throws Exception {
+        assumeFalse(isWindows());
+
+        final Path testDirectory = Files.createTempDirectory("allure3-commandline");
+        try {
+            final Path installDirectory = testDirectory.resolve("install");
+            final Path buildDirectory = testDirectory.resolve("build");
+            final Path resultsDirectory = testDirectory.resolve("results with space");
+            final Path reportDirectory = testDirectory.resolve("report with space");
+            final Path capturedArgs = testDirectory.resolve("node-args.txt");
+            final RecordingLog log = new RecordingLog(true);
+            final Allure3Commandline commandline =
+                    newCommandline(installDirectory, null, false, 10, log);
+
+            Files.createDirectories(resultsDirectory);
+            Files.write(resultsDirectory.resolve("sample.json"), Collections.singletonList("{}"),
+                    StandardCharsets.UTF_8);
+            Allure3SetupHelper.prepareFakeReportRuntime(installDirectory, capturedArgs,
+                    reportDirectory, false);
+
+            commandline.generateReport(Collections.singletonList(resultsDirectory), reportDirectory,
+                    false, buildDirectory, "Allure", null);
+
+            final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
+                    .resolve("allurerc.json");
+            assertThat(log.debugMessages,
+                    is(Collections.singletonList("Executing Allure command: ["
+                            + commandline.getAllureExecutablePath().toAbsolutePath()
+                            + ", generate, " + resultsDirectory.toAbsolutePath() + ", --config, "
+                            + config.toAbsolutePath() + "]")));
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
@@ -300,6 +337,47 @@ public class Allure3CommandlineTest {
         }
     }
 
+    @Test
+    public void shouldLogGenerateAndOpenCommandsInDebugModeWithoutVerboseFlag() throws Exception {
+        assumeFalse(isWindows());
+
+        final Path testDirectory = Files.createTempDirectory("allure3-commandline");
+        try {
+            final Path installDirectory = testDirectory.resolve("install");
+            final Path buildDirectory = testDirectory.resolve("build");
+            final Path resultsDirectory = testDirectory.resolve("results with space");
+            final Path reportDirectory = testDirectory.resolve("report with space");
+            final Path capturedArgs = testDirectory.resolve("node-args.txt");
+            final RecordingLog log = new RecordingLog(true);
+            final Allure3Commandline commandline =
+                    newCommandline(installDirectory, null, false, 10, log);
+
+            Files.createDirectories(resultsDirectory);
+            Files.write(resultsDirectory.resolve("sample.json"), Collections.singletonList("{}"),
+                    StandardCharsets.UTF_8);
+            Allure3SetupHelper.prepareFakeReportRuntime(installDirectory, capturedArgs,
+                    reportDirectory, false);
+
+            commandline.serve(Collections.singletonList(resultsDirectory), reportDirectory, false,
+                    buildDirectory, "Allure", 5555, null);
+
+            final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
+                    .resolve("allurerc.json");
+            assertThat(log.debugMessages,
+                    is(Arrays.asList(
+                            "Executing Allure command: ["
+                                    + commandline.getAllureExecutablePath().toAbsolutePath()
+                                    + ", generate, " + resultsDirectory.toAbsolutePath()
+                                    + ", --config, " + config.toAbsolutePath() + "]",
+                            "Executing Allure command: ["
+                                    + commandline.getAllureExecutablePath().toAbsolutePath()
+                                    + ", open, " + reportDirectory.toAbsolutePath() + ", --config, "
+                                    + config.toAbsolutePath() + ", --port, 5555]")));
+        } finally {
+            FileUtils.deleteQuietly(testDirectory.toFile());
+        }
+    }
+
     @Test(expected = IOException.class)
     public void shouldFailOfflineWhenPrivateNodeIsMissing() throws Exception {
         final Path testDirectory = Files.createTempDirectory("allure3-commandline");
@@ -312,14 +390,93 @@ public class Allure3CommandlineTest {
 
     private static Allure3Commandline newCommandline(final Path installDirectory,
             final Path packageArchive, final boolean offline, final int timeout) {
+        return newCommandline(installDirectory, packageArchive, offline, timeout, null);
+    }
+
+    private static Allure3Commandline newCommandline(final Path installDirectory,
+            final Path packageArchive, final boolean offline, final int timeout, final Log log) {
         return new Allure3Commandline(installDirectory, "3.4.1",
                 Allure3Commandline.NODE_DEFAULT_VERSION,
                 Allure3Commandline.NODE_DEFAULT_DOWNLOAD_URL,
                 Allure3Commandline.NPM_DEFAULT_REGISTRY, packageArchive, null, new Properties(),
-                offline, timeout);
+                offline, timeout, log);
     }
 
     private static boolean isWindows() {
         return System.getProperty("os.name").toLowerCase().contains("win");
+    }
+
+    private static final class RecordingLog implements Log {
+
+        private final boolean debugEnabled;
+
+        private final List<String> debugMessages;
+
+        private RecordingLog(final boolean debugEnabled) {
+            this.debugEnabled = debugEnabled;
+            this.debugMessages = new java.util.ArrayList<String>();
+        }
+
+        @Override
+        public boolean isDebugEnabled() {
+            return debugEnabled;
+        }
+
+        @Override
+        public void debug(final CharSequence content) {
+            debugMessages.add(content.toString());
+        }
+
+        @Override
+        public void debug(final CharSequence content, final Throwable error) {
+            debug(content);
+        }
+
+        @Override
+        public void debug(final Throwable error) {
+            debug(error.getMessage());
+        }
+
+        @Override
+        public boolean isInfoEnabled() {
+            return false;
+        }
+
+        @Override
+        public void info(final CharSequence content) {}
+
+        @Override
+        public void info(final CharSequence content, final Throwable error) {}
+
+        @Override
+        public void info(final Throwable error) {}
+
+        @Override
+        public boolean isWarnEnabled() {
+            return false;
+        }
+
+        @Override
+        public void warn(final CharSequence content) {}
+
+        @Override
+        public void warn(final CharSequence content, final Throwable error) {}
+
+        @Override
+        public void warn(final Throwable error) {}
+
+        @Override
+        public boolean isErrorEnabled() {
+            return false;
+        }
+
+        @Override
+        public void error(final CharSequence content) {}
+
+        @Override
+        public void error(final CharSequence content, final Throwable error) {}
+
+        @Override
+        public void error(final Throwable error) {}
     }
 }
