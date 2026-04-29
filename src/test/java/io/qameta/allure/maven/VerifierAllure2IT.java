@@ -271,9 +271,10 @@ class VerifierAllure2IT extends VerifierTestSupport {
                 canonical(projectDirectory.resolve(Path.of("target", "allure-results")));
         final Path reportDirectory =
                 canonical(projectDirectory.resolve(Path.of("target", "site", "preserved-report")));
-        assertThat(readLines(captureFile)).isEqualTo(List.of("command=generate", "arg=generate",
-                "arg=--clean", "arg=" + resultsDirectory, "arg=-o", "arg=" + reportDirectory, "---",
-                "command=serve", "arg=serve", "arg=" + resultsDirectory, "---"));
+        assertCommandLines(readLines(captureFile),
+                List.of("command=generate", "arg=generate", "arg=--clean",
+                        "arg=" + resultsDirectory, "arg=-o", "arg=" + reportDirectory, "---",
+                        "command=serve", "arg=serve", "arg=" + resultsDirectory, "---"));
         assertThat(reportDirectory.resolve("index.html")).exists();
     }
 
@@ -281,8 +282,8 @@ class VerifierAllure2IT extends VerifierTestSupport {
      * Project structure: a single-module Maven project created in a path with spaces and configured
      * with a results directory named {@code my results}.
      * <p>
-     * Verifies that the Allure 2 serve goal receives the canonical results directory with spaces
-     * intact.
+     * Verifies that the Allure 2 serve goal receives the intended results directory with spaces
+     * intact, regardless of platform-specific long or short path spelling.
      */
     @Test
     @Description
@@ -294,8 +295,12 @@ class VerifierAllure2IT extends VerifierTestSupport {
 
         runGoals(projectDirectory, List.of("site"));
 
-        assertThat(readLines(captureFile)).isEqualTo(List.of("serve",
-                canonical(projectDirectory.resolve(Path.of("target", "my results"))).toString()));
+        final List<String> args = readLines(captureFile);
+        assertThat(args).hasSize(2);
+        assertThat(args.get(0)).isEqualTo("serve");
+        assertThat(args.get(1)).contains("my results");
+
+        assertSamePath(args.get(1), projectDirectory.resolve(Path.of("target", "my results")));
     }
 
     /**

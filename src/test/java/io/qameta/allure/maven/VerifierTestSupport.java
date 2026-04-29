@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
@@ -209,6 +210,26 @@ abstract class VerifierTestSupport {
         return path.toRealPath();
     }
 
+    protected final void assertCommandLines(final List<String> actual,
+            final List<String> expected) {
+        assertThat(actual).hasSize(expected.size());
+        for (int index = 0; index < expected.size(); index++) {
+            assertCommandLine(index + 1, actual.get(index), expected.get(index));
+        }
+    }
+
+    protected final void assertCommandLinesContain(final List<String> actual,
+            final String expected) {
+        assertThat(actual.stream()
+                .anyMatch(line -> line.equals(expected) || areSamePathLine(line, expected)))
+                .as("captured command lines should contain <%s>", expected).isTrue();
+    }
+
+    protected final void assertSamePath(final String actual, final Path expected) {
+        assertThat(isSameFile(Path.of(actual), expected))
+                .as("Expected path <%s> to point to <%s>", actual, expected).isTrue();
+    }
+
     private void attachPreparedProject(final Path projectDirectory) throws IOException {
         try (Stream<Path> paths = Files.walk(projectDirectory)) {
             final List<Path> files = paths.filter(Files::isRegularFile).sorted().toList();
@@ -220,6 +241,41 @@ abstract class VerifierTestSupport {
             for (Path file : files) {
                 attachPreparedProjectFile(projectDirectory, file);
             }
+        }
+    }
+
+    private void assertCommandLine(final int lineNumber, final String actual,
+            final String expected) {
+        if (actual.equals(expected) || areSamePathLine(actual, expected)) {
+            return;
+        }
+
+        assertThat(actual).as("captured command line %s", lineNumber).isEqualTo(expected);
+    }
+
+    private boolean areSamePathLine(final String actual, final String expected) {
+        for (String prefix : List.of("arg=", "cli=")) {
+            if (actual.startsWith(prefix) && expected.startsWith(prefix)) {
+                return areSameFileValues(actual.substring(prefix.length()),
+                        expected.substring(prefix.length()));
+            }
+        }
+        return false;
+    }
+
+    private boolean areSameFileValues(final String actual, final String expected) {
+        try {
+            return isSameFile(Path.of(actual), Path.of(expected));
+        } catch (InvalidPathException error) {
+            return false;
+        }
+    }
+
+    private boolean isSameFile(final Path actual, final Path expected) {
+        try {
+            return Files.isSameFile(actual, expected);
+        } catch (IOException error) {
+            return false;
         }
     }
 

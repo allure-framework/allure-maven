@@ -159,7 +159,7 @@ class VerifierAggregateIT extends VerifierTestSupport {
         final Path results = projectDirectory.resolve(Path.of("target", "allure-results"));
         TestHelper.checkAggregateMojoOnly(projectDirectory);
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
-        assertThat(readLines(captureFile)).isEqualTo(
+        assertCommandLines(readLines(captureFile),
                 List.of("cli=" + canonical(allureCli(projectDirectory.resolve(".allure"))),
                         "command=generate", "arg=generate", "arg=" + canonical(results),
                         "arg=--config", "arg=" + canonical(configPath(projectDirectory)), "---"));
@@ -191,7 +191,7 @@ class VerifierAggregateIT extends VerifierTestSupport {
                 projectDirectory.resolve(Path.of("second", "target", "override-results"));
         TestHelper.checkAggregateMojoOnly(projectDirectory);
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
-        assertThat(readLines(captureFile)).isEqualTo(
+        assertCommandLines(readLines(captureFile),
                 List.of("cli=" + canonical(allureCli(projectDirectory.resolve(".allure"))),
                         "command=generate", "arg=generate", "arg=" + canonical(firstResults),
                         "arg=" + canonical(secondResults), "arg=--config",

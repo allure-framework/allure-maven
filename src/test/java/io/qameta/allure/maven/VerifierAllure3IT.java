@@ -57,11 +57,13 @@ class VerifierAllure3IT extends VerifierTestSupport {
         assertThat(allureCli).exists();
 
         final List<String> args = readLines(captureFile);
-        assertThat(args).contains("arg=" + canonical(packageArchive));
+        assertCommandLinesContain(args, "arg=" + canonical(packageArchive));
         assertThat(args).doesNotContain("arg=--registry");
         assertThat(args).doesNotContain("arg=allure@" + AllureVersion.ALLURE3_DEFAULT_VERSION);
-        assertThat(args.get(2)).isEqualTo("arg=" + canonical(
-                installDirectory.resolve("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION)));
+        final Path expectedInstallDirectory =
+                installDirectory.resolve("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION);
+        assertCommandLines(List.of(args.get(2)),
+                List.of("arg=" + canonical(expectedInstallDirectory)));
     }
 
     /**
@@ -93,13 +95,14 @@ class VerifierAllure3IT extends VerifierTestSupport {
 
         assertThat(allureCli(installDirectory)).exists();
         assertThat(allureExecutable).exists();
-        assertThat(readLines(captureFile)).isEqualTo(List.of("cli=" + canonical(npmCli),
-                "arg=--prefix",
-                "arg=" + canonical(installDirectory
-                        .resolve("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION)),
-                "arg=install", "arg=--no-package-lock", "arg=--no-save", "arg=--ignore-scripts",
-                "arg=allure@" + AllureVersion.ALLURE3_DEFAULT_VERSION, "arg=--registry",
-                "arg=https://registry.npmjs.org"));
+        assertCommandLines(readLines(captureFile),
+                List.of("cli=" + canonical(npmCli), "arg=--prefix",
+                        "arg=" + canonical(installDirectory
+                                .resolve("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION)),
+                        "arg=install", "arg=--no-package-lock", "arg=--no-save",
+                        "arg=--ignore-scripts",
+                        "arg=allure@" + AllureVersion.ALLURE3_DEFAULT_VERSION, "arg=--registry",
+                        "arg=https://registry.npmjs.org"));
         assertThat(nodeHome).exists();
     }
 
@@ -172,7 +175,7 @@ class VerifierAllure3IT extends VerifierTestSupport {
         final Path results = projectDirectory.resolve(Path.of("target", "allure-results"));
         final JsonNode config = readJson(configPath(projectDirectory));
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
-        assertThat(readLines(captureFile)).isEqualTo(generateInvocation(
+        assertCommandLines(readLines(captureFile), generateInvocation(
                 projectDirectory.resolve(".allure"), results, configPath(projectDirectory)));
         assertThat(config.path("plugins").path("custom").path("enabled").asBoolean()).isTrue();
         assertThat(config.path("plugins").path("awesome").path("options").path("reportLanguage")
@@ -200,7 +203,7 @@ class VerifierAllure3IT extends VerifierTestSupport {
 
         final Path results = projectDirectory.resolve(Path.of("target", "allure-results"));
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
-        assertThat(readLines(captureFile)).isEqualTo(generateInvocation(
+        assertCommandLines(readLines(captureFile), generateInvocation(
                 projectDirectory.resolve(".allure"), results, configPath(projectDirectory)));
     }
 
@@ -227,10 +230,11 @@ class VerifierAllure3IT extends VerifierTestSupport {
         final JsonNode config = readJson(configPath(projectDirectory));
         TestHelper.checkRegularReportMojoOnly(projectDirectory);
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
-        assertThat(readLines(captureFile)).isEqualTo(generateInvocation(
+        assertCommandLines(readLines(captureFile), generateInvocation(
                 projectDirectory.resolve(".allure"), results, configPath(projectDirectory)));
-        assertThat(config.path("historyPath").asText()).isEqualTo(
-                canonical(historyFile.getParent()).resolve(historyFile.getFileName()).toString());
+        final Path historyPath = Path.of(config.path("historyPath").asText());
+        assertThat(historyPath.getFileName()).isEqualTo(historyFile.getFileName());
+        assertSamePath(historyPath.getParent().toString(), historyFile.getParent());
         assertThat(config.path("appendHistory").asBoolean()).isTrue();
         assertThat(historyFile.getParent()).isDirectory();
     }
@@ -257,8 +261,8 @@ class VerifierAllure3IT extends VerifierTestSupport {
                 projectDirectory.resolve(".allure"), results, configPath(projectDirectory));
         final JsonNode config = readJson(configPath(projectDirectory));
         TestHelper.checkSingleFile(outputDirectory(projectDirectory));
-        assertThat(readLines(captureFile))
-                .isEqualTo(concatenate(expectedInvocation, expectedInvocation));
+        assertCommandLines(readLines(captureFile),
+                concatenate(expectedInvocation, expectedInvocation));
         assertThat(config.path("plugins").path("awesome").path("options").path("singleFile")
                 .asBoolean()).isTrue();
     }
@@ -288,8 +292,8 @@ class VerifierAllure3IT extends VerifierTestSupport {
                 projectDirectory.resolve(Path.of("target", "site", "allure serve report"));
         final Path config = configPath(projectDirectory);
 
-        assertThat(readLines(captureFile))
-                .isEqualTo(concatenate(generateInvocation(installDirectory, results, config),
+        assertCommandLines(readLines(captureFile),
+                concatenate(generateInvocation(installDirectory, results, config),
                         openInvocation(installDirectory, reportDirectory, config)));
     }
 
