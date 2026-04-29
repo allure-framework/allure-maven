@@ -15,9 +15,11 @@
  */
 package io.qameta.allure.maven;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.reporting.MavenReportException;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.nio.file.Files;
@@ -27,46 +29,66 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
+import static io.qameta.allure.Allure.addAttachment;
+import static io.qameta.allure.Allure.step;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AllureServeMojoTest {
+@Tag("unit")
+@Tag("serve")
+class AllureServeMojoTest {
 
     @Test
-    public void shouldRejectServeHostForAllure3() throws Exception {
+    void shouldRejectServeHostForAllure3() throws Exception {
         final AllureServeMojo mojo = new AllureServeMojo();
         setField(mojo, "serveHost", "127.0.0.1");
+        addAttachment("Serve host override",
+                String.join(System.lineSeparator(), "serveHost=127.0.0.1", "allureVersion=3.4.1"));
 
-        try {
-            mojo.generateReport(Collections.emptyList(), AllureVersion.resolve("3.4.1"));
-        } catch (MavenReportException e) {
-            assertThat(e.getMessage(), containsString("does not support allure.serve.host"));
-            return;
-        }
-
-        throw new AssertionError("Expected Allure 3 serveHost rejection");
+        step("Verify Allure 3 rejects serveHost", () -> {
+            final MavenReportException error = assertThrows(MavenReportException.class, () -> mojo
+                    .generateReport(Collections.emptyList(), AllureVersion.resolve("3.4.1")));
+            addAttachment("Serve host rejection", String.valueOf(error.getMessage()));
+            assertThat(error).hasMessageContaining("does not support allure.serve.host");
+        });
     }
 
     @Test
-    public void shouldIgnoreSingleFileForAllure3ServeAndWarn() throws Exception {
+    void shouldIgnoreSingleFileForAllure3ServeAndWarn() throws Exception {
         final Path projectDirectory = Files.createTempDirectory("allure3-serve-mojo");
-        final FakeAllure3Commandline commandline = new FakeAllure3Commandline(projectDirectory);
-        final TestServeMojo mojo = new TestServeMojo(commandline);
-        final RecordingLog log = new RecordingLog();
+        try {
+            final FakeAllure3Commandline commandline = new FakeAllure3Commandline(projectDirectory);
+            final TestServeMojo mojo = new TestServeMojo(commandline);
+            final RecordingLog log = new RecordingLog();
+            final Path resultsDirectory = projectDirectory.resolve("results");
 
-        mojo.singleFile = true;
-        mojo.buildDirectory = projectDirectory.resolve("build").toString();
-        mojo.reportDirectory = projectDirectory.resolve("report").toString();
-        mojo.projectDirectory = projectDirectory.toString();
-        mojo.setLog(log);
+            step("Prepare Allure 3 serve mojo with single-file flag enabled", () -> {
+                mojo.singleFile = true;
+                mojo.buildDirectory = projectDirectory.resolve("build").toString();
+                mojo.reportDirectory = projectDirectory.resolve("report").toString();
+                mojo.projectDirectory = projectDirectory.toString();
+                mojo.setLog(log);
+                addAttachment("Serve mojo inputs",
+                        String.join(System.lineSeparator(), "projectDirectory=" + projectDirectory,
+                                "resultsDirectory=" + resultsDirectory,
+                                "reportDirectory=" + mojo.reportDirectory,
+                                "singleFile=" + mojo.singleFile));
+            });
 
-        mojo.generateReport(Collections.singletonList(projectDirectory.resolve("results")),
-                AllureVersion.resolve("3.4.1"));
+            step("Generate report through Allure 3 serve flow",
+                    () -> mojo.generateReport(Collections.singletonList(resultsDirectory),
+                            AllureVersion.resolve("3.4.1")));
 
-        assertThat(commandline.singleFile, is(false));
-        assertThat(log.warnMessages.get(0),
-                containsString("Ignoring singleFile for Allure 3 serve"));
+            step("Verify single-file flag is ignored and warning is logged", () -> {
+                addAttachment("Serve warning log",
+                        String.join(System.lineSeparator(), log.warnMessages));
+                assertThat(commandline.singleFile).isFalse();
+                assertThat(log.warnMessages.get(0))
+                        .contains("Ignoring singleFile for Allure 3 serve");
+            });
+        } finally {
+            FileUtils.deleteQuietly(projectDirectory.toFile());
+        }
     }
 
     private static void setField(final Object target, final String fieldName, final Object value)

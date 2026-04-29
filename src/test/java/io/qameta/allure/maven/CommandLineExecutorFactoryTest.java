@@ -18,39 +18,63 @@ package io.qameta.allure.maven;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static io.qameta.allure.Allure.addAttachment;
+import static io.qameta.allure.Allure.step;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class CommandLineExecutorFactoryTest {
+@Tag("unit")
+@Tag("commandline")
+class CommandLineExecutorFactoryTest {
 
     @Test
-    public void shouldConfigureShutdownHookProcessDestroyer() {
-        final DefaultExecutor executor = CommandLineExecutorFactory.newExecutor(10);
+    void shouldConfigureShutdownHookProcessDestroyer() {
+        final DefaultExecutor executor = step("Create executor with 10 second timeout",
+                () -> CommandLineExecutorFactory.newExecutor(10));
 
-        assertThat(executor.getProcessDestroyer(), instanceOf(ShutdownHookProcessDestroyer.class));
+        step("Verify shutdown hook process destroyer", () -> {
+            addAttachment("Executor destroyer",
+                    executor.getProcessDestroyer().getClass().getName());
+            assertThat(executor.getProcessDestroyer())
+                    .isInstanceOf(ShutdownHookProcessDestroyer.class);
+        });
     }
 
     @Test
-    public void shouldConfigureWatchdogTimeoutInSeconds() {
-        final ExecuteWatchdog watchdog = CommandLineExecutorFactory.newExecutor(10).getWatchdog();
+    void shouldConfigureWatchdogTimeoutInSeconds() {
+        final DefaultExecutor executor = step("Create executor with 10 second timeout",
+                () -> CommandLineExecutorFactory.newExecutor(10));
+        final ExecuteWatchdog watchdog =
+                step("Capture watchdog from executor", executor::getWatchdog);
+        final Duration timeout =
+                step("Inspect watchdog timeout via reflection", () -> getTimeout(watchdog));
 
-        assertThat(watchdog, notNullValue());
-        assertThat(getTimeout(watchdog), is(Duration.ofSeconds(10)));
+        step("Verify watchdog timeout", () -> {
+            addAttachment("Watchdog timeout", String.join(System.lineSeparator(),
+                    "timeout=" + timeout, "watchdogClass=" + watchdog.getClass().getName()));
+            assertThat(watchdog).isNotNull();
+            assertThat(timeout).isEqualTo(Duration.ofSeconds(10));
+        });
     }
 
     @Test
-    public void shouldTreatOnlyZeroExitCodeAsSuccess() {
-        final DefaultExecutor executor = CommandLineExecutorFactory.newExecutor(10);
+    void shouldTreatOnlyZeroExitCodeAsSuccess() {
+        final DefaultExecutor executor = step("Create executor with 10 second timeout",
+                () -> CommandLineExecutorFactory.newExecutor(10));
 
-        assertThat(executor.isFailure(0), is(false));
-        assertThat(executor.isFailure(1), is(true));
+        step("Verify exit-code failure mapping", () -> {
+            final boolean zeroExitFailure = executor.isFailure(0);
+            final boolean oneExitFailure = executor.isFailure(1);
+            addAttachment("Failure decisions", String.join(System.lineSeparator(),
+                    "exitCode=0 -> " + zeroExitFailure, "exitCode=1 -> " + oneExitFailure));
+            assertThat(zeroExitFailure).isFalse();
+            assertThat(oneExitFailure).isTrue();
+        });
     }
 
     private static Duration getTimeout(final ExecuteWatchdog watchdog) {

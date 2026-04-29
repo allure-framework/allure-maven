@@ -21,7 +21,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,19 +33,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class AllureAggregateMojoTest {
+@Tag("unit")
+@Tag("aggregate")
+class AllureAggregateMojoTest {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Test
-    public void shouldPreferInjectedReactorProjectsOverSessionProjects() throws Exception {
+    void shouldPreferInjectedReactorProjectsOverSessionProjects() throws Exception {
         final Path workspace = Files.createTempDirectory("allure-aggregate-injected");
         try {
             final MavenProject injectedProject = createProject(workspace, "injected", "Injected");
@@ -54,14 +52,15 @@ public class AllureAggregateMojoTest {
                     new TestAggregateMojo(Collections.singletonList(sessionProject), null);
             mojo.setReactorProjects(Collections.singletonList(injectedProject));
 
-            assertThat(mojo.getInputDirectories(), contains(resultsDirectory(injectedProject)));
+            assertThat(mojo.getInputDirectories())
+                    .containsExactly(resultsDirectory(injectedProject));
         } finally {
             FileUtils.deleteQuietly(workspace.toFile());
         }
     }
 
     @Test
-    public void shouldUseSessionProjectsWhenInjectedProjectsAreMissing() throws Exception {
+    void shouldUseSessionProjectsWhenInjectedProjectsAreMissing() throws Exception {
         final Path workspace = Files.createTempDirectory("allure-aggregate-session");
         try {
             final MavenProject sessionProject = createProject(workspace, "session", "Session");
@@ -69,14 +68,15 @@ public class AllureAggregateMojoTest {
             final TestAggregateMojo mojo =
                     new TestAggregateMojo(Collections.singletonList(sessionProject), null);
 
-            assertThat(mojo.getInputDirectories(), contains(resultsDirectory(sessionProject)));
+            assertThat(mojo.getInputDirectories())
+                    .containsExactly(resultsDirectory(sessionProject));
         } finally {
             FileUtils.deleteQuietly(workspace.toFile());
         }
     }
 
     @Test
-    public void shouldFallbackToCurrentProjectWhenReactorProjectsAreMissing() throws Exception {
+    void shouldFallbackToCurrentProjectWhenReactorProjectsAreMissing() throws Exception {
         final Path workspace = Files.createTempDirectory("allure-aggregate-project");
         try {
             final MavenProject currentProject = createProject(workspace, "current", "Current");
@@ -84,26 +84,27 @@ public class AllureAggregateMojoTest {
             final TestAggregateMojo mojo =
                     new TestAggregateMojo(Collections.<MavenProject>emptyList(), currentProject);
 
-            assertThat(mojo.getInputDirectories(), contains(resultsDirectory(currentProject)));
+            assertThat(mojo.getInputDirectories())
+                    .containsExactly(resultsDirectory(currentProject));
         } finally {
             FileUtils.deleteQuietly(workspace.toFile());
         }
     }
 
     @Test
-    public void shouldWarnAndReturnEmptyListWhenNoProjectsAreAvailable() {
+    void shouldWarnAndReturnEmptyListWhenNoProjectsAreAvailable() {
         final RecordingLog log = new RecordingLog();
         final TestAggregateMojo mojo =
                 new TestAggregateMojo(Collections.<MavenProject>emptyList(), null);
         mojo.setLog(log);
 
-        assertThat(mojo.getInputDirectories(), is(empty()));
-        assertThat(log.warnMessages,
-                contains("Reactor projects were not resolved for aggregate " + "goal."));
+        assertThat(mojo.getInputDirectories()).isEmpty();
+        assertThat(log.warnMessages)
+                .containsExactly("Reactor projects were not resolved for aggregate goal.");
     }
 
     @Test
-    public void shouldUseChildResultsDirectoryPropertyOverrideWhenPresent() throws Exception {
+    void shouldUseChildResultsDirectoryPropertyOverrideWhenPresent() throws Exception {
         final Path workspace = Files.createTempDirectory("allure-aggregate-property-override");
         try {
             final MavenProject project =
@@ -113,15 +114,15 @@ public class AllureAggregateMojoTest {
             final TestAggregateMojo mojo =
                     new TestAggregateMojo(Collections.singletonList(project), null);
 
-            assertThat(mojo.getInputDirectories(),
-                    contains(resultsDirectory(project, "child-results")));
+            assertThat(mojo.getInputDirectories())
+                    .containsExactly(resultsDirectory(project, "child-results"));
         } finally {
             FileUtils.deleteQuietly(workspace.toFile());
         }
     }
 
     @Test
-    public void shouldAllowResultsDirectoryThatResolvesWithinModule() throws Exception {
+    void shouldAllowResultsDirectoryThatResolvesWithinModule() throws Exception {
         final Path workspace = Files.createTempDirectory("allure-aggregate-module-relative");
         try {
             final MavenProject project =
@@ -131,15 +132,15 @@ public class AllureAggregateMojoTest {
                     new TestAggregateMojo(Collections.singletonList(project), null);
             mojo.setResultsDirectoryValue("../allure-results");
 
-            assertThat(mojo.getInputDirectories(),
-                    contains(resultsDirectory(project, "../allure-results")));
+            assertThat(mojo.getInputDirectories())
+                    .containsExactly(resultsDirectory(project, "../allure-results"));
         } finally {
             FileUtils.deleteQuietly(workspace.toFile());
         }
     }
 
     @Test
-    public void shouldSkipResultsDirectoryOutsideModule() throws Exception {
+    void shouldSkipResultsDirectoryOutsideModule() throws Exception {
         final Path workspace = Files.createTempDirectory("allure-aggregate-module-escape");
         try {
             createDirectories(workspace.resolve("shared-results"));
@@ -152,16 +153,16 @@ public class AllureAggregateMojoTest {
             mojo.setResultsDirectoryValue("../../shared-results");
             mojo.setLog(log);
 
-            assertThat(mojo.getInputDirectories(), is(empty()));
-            assertThat(log.warnMessages,
-                    hasItem(containsString("results directory resolves outside module")));
+            assertThat(mojo.getInputDirectories()).isEmpty();
+            assertThat(log.warnMessages).anySatisfy(message -> assertThat(message)
+                    .contains("results directory resolves outside module"));
         } finally {
             FileUtils.deleteQuietly(workspace.toFile());
         }
     }
 
     @Test
-    public void shouldSkipAbsoluteResultsDirectoryOverride() throws Exception {
+    void shouldSkipAbsoluteResultsDirectoryOverride() throws Exception {
         final Path workspace = Files.createTempDirectory("allure-aggregate-absolute-override");
         try {
             final Path absoluteResults = workspace.resolve("absolute-results").toAbsolutePath();
@@ -175,16 +176,16 @@ public class AllureAggregateMojoTest {
                     new TestAggregateMojo(Collections.singletonList(project), null);
             mojo.setLog(log);
 
-            assertThat(mojo.getInputDirectories(), is(empty()));
-            assertThat(log.warnMessages,
-                    hasItem(containsString("should not be absolute for aggregate goal")));
+            assertThat(mojo.getInputDirectories()).isEmpty();
+            assertThat(log.warnMessages).anySatisfy(message -> assertThat(message)
+                    .contains("should not be absolute for aggregate goal"));
         } finally {
             FileUtils.deleteQuietly(workspace.toFile());
         }
     }
 
     @Test
-    public void shouldPreserveChildExecutorInfoWhenAggregating() throws Exception {
+    void shouldPreserveChildExecutorInfoWhenAggregating() throws Exception {
         final Path workspace = Files.createTempDirectory("allure-aggregate-executor");
         try {
             final MavenProject currentProject =
@@ -207,29 +208,28 @@ public class AllureAggregateMojoTest {
             final List<Path> inputDirectories =
                     Arrays.asList(currentResultsDirectory, childResultsDirectory);
 
-            assertThat(mojo.executorInfoDirectoriesFrom(inputDirectories),
-                    contains(currentResultsDirectory));
+            assertThat(mojo.executorInfoDirectoriesFrom(inputDirectories))
+                    .containsExactly(currentResultsDirectory);
 
             mojo.copyExecutorInfoTo(inputDirectories);
 
             final JsonNode currentExecutorInfo = OBJECT_MAPPER
                     .readTree(currentResultsDirectory.resolve("executor.json").toFile());
-            assertThat(currentExecutorInfo.get("buildName").asText(), is("Current"));
-            assertThat(currentExecutorInfo.get("name").asText(), is("Maven"));
-            assertThat(currentExecutorInfo.get("type").asText(), is("maven"));
+            assertThat(currentExecutorInfo.get("buildName").asText()).isEqualTo("Current");
+            assertThat(currentExecutorInfo.get("name").asText()).isEqualTo("Maven");
+            assertThat(currentExecutorInfo.get("type").asText()).isEqualTo("maven");
 
             final JsonNode childExecutorInfo = OBJECT_MAPPER.readTree(childExecutor.toFile());
-            assertThat(childExecutorInfo.get("buildName").asText(), is("Child"));
-            assertThat(childExecutorInfo.get("name").asText(), is("Existing"));
-            assertThat(childExecutorInfo.get("type").asText(), is("custom"));
+            assertThat(childExecutorInfo.get("buildName").asText()).isEqualTo("Child");
+            assertThat(childExecutorInfo.get("name").asText()).isEqualTo("Existing");
+            assertThat(childExecutorInfo.get("type").asText()).isEqualTo("custom");
         } finally {
             FileUtils.deleteQuietly(workspace.toFile());
         }
     }
 
     @Test
-    public void shouldSkipExecutorInfoWhenCurrentModuleResultsAreNotInAggregateInputs()
-            throws Exception {
+    void shouldSkipExecutorInfoWhenCurrentModuleResultsAreNotInAggregateInputs() throws Exception {
         final Path workspace = Files.createTempDirectory("allure-aggregate-executor-missing");
         try {
             final MavenProject currentProject = createProject(workspace, "current", "Current");
@@ -238,10 +238,8 @@ public class AllureAggregateMojoTest {
             final TestAggregateMojo mojo =
                     new TestAggregateMojo(Collections.singletonList(childProject), currentProject);
 
-            assertThat(
-                    mojo.executorInfoDirectoriesFrom(
-                            Collections.singletonList(resultsDirectory(childProject))),
-                    is(empty()));
+            assertThat(mojo.executorInfoDirectoriesFrom(
+                    Collections.singletonList(resultsDirectory(childProject)))).isEmpty();
         } finally {
             FileUtils.deleteQuietly(workspace.toFile());
         }

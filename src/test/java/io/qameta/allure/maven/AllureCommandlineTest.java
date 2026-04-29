@@ -17,7 +17,8 @@ package io.qameta.allure.maven;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -53,20 +54,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
-import static ru.yandex.qatools.matchers.nio.PathMatchers.exists;
+import static io.qameta.allure.Allure.addAttachment;
+import static io.qameta.allure.Allure.step;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+@Tag("unit")
+@Tag("allure2")
+@Tag("commandline")
 /**
  * Tests for the direct download path in {@link AllureCommandline}.
  */
-public class AllureCommandlineTest {
+class AllureCommandlineTest {
 
     @Test
-    public void shouldApplyMavenWagonSslOverridesForHttpsDownloads() throws Exception {
+    void shouldApplyMavenWagonSslOverridesForHttpsDownloads() throws Exception {
         final Path installDirectory = Files.createTempDirectory("allure-install");
         try {
             final String version = "2.30.0";
@@ -78,37 +82,67 @@ public class AllureCommandlineTest {
             final Properties downloadProperties = new Properties();
             downloadProperties.setProperty("maven.wagon.http.ssl.insecure", "true");
             downloadProperties.setProperty("maven.wagon.http.ssl.allowall", "true");
+            final Path launcher =
+                    installDirectory.resolve("allure-" + version).resolve("bin").resolve("allure");
+
+            step("Prepare fake HTTPS archive and Maven wagon SSL overrides", () -> {
+                addAttachment("HTTPS download inputs",
+                        String.join(System.lineSeparator(), "url=" + url,
+                                "installDirectory=" + installDirectory,
+                                "maven.wagon.http.ssl.insecure=true",
+                                "maven.wagon.http.ssl.allowall=true"));
+            });
 
             final AllureCommandline commandline = new AllureCommandline(installDirectory, version);
-            commandline.download(url, null, downloadProperties);
+            step("Download and unpack Allure commandline",
+                    () -> commandline.download(url, null, downloadProperties));
 
-            assertThat(connection.getCustomSocketFactory(), notNullValue());
-            assertThat(connection.getCustomHostnameVerifier(), notNullValue());
-            assertThat(connection.getCustomHostnameVerifier().verify("example.test", null),
-                    is(true));
-            assertThat(
-                    installDirectory.resolve("allure-" + version).resolve("bin").resolve("allure"),
-                    exists());
+            step("Verify SSL overrides and extracted launcher", () -> {
+                addAttachment("Captured SSL overrides",
+                        String.join(System.lineSeparator(),
+                                "socketFactory=" + connection.getCustomSocketFactory(),
+                                "hostnameVerifier=" + connection.getCustomHostnameVerifier(),
+                                "launcher=" + launcher));
+                assertThat(connection.getCustomSocketFactory()).isNotNull();
+                assertThat(connection.getCustomHostnameVerifier()).isNotNull();
+                assertThat(connection.getCustomHostnameVerifier().verify("example.test", null))
+                        .isTrue();
+                assertThat(launcher).exists();
+            });
         } finally {
             FileUtils.deleteQuietly(installDirectory.toFile());
         }
     }
 
-    @Test(expected = CertificateExpiredException.class)
-    public void shouldKeepCertificateValidityChecksWhenIgnoreDatesDisabled()
-            throws CertificateException {
-        new AllureDownloadUtils.RelaxedX509TrustManager(false)
-                .checkServerTrusted(new X509Certificate[] {new TestCertificate(true)}, "RSA");
+    @Test
+    void shouldKeepCertificateValidityChecksWhenIgnoreDatesDisabled() throws CertificateException {
+        final AllureDownloadUtils.RelaxedX509TrustManager trustManager =
+                step("Create trust manager with certificate date checks enabled",
+                        () -> new AllureDownloadUtils.RelaxedX509TrustManager(false));
+
+        step("Reject expired certificate when date checks stay enabled", () -> {
+            final CertificateExpiredException error = assertThrows(
+                    CertificateExpiredException.class, () -> trustManager.checkServerTrusted(
+                            new X509Certificate[] {new TestCertificate(true)}, "RSA"));
+            addAttachment("Strict trust manager error", String.valueOf(error.getMessage()));
+        });
     }
 
     @Test
-    public void shouldIgnoreCertificateValidityChecksWhenConfigured() throws CertificateException {
-        new AllureDownloadUtils.RelaxedX509TrustManager(true)
-                .checkServerTrusted(new X509Certificate[] {new TestCertificate(true)}, "RSA");
+    void shouldIgnoreCertificateValidityChecksWhenConfigured() throws CertificateException {
+        final AllureDownloadUtils.RelaxedX509TrustManager trustManager =
+                step("Create trust manager with certificate date checks disabled",
+                        () -> new AllureDownloadUtils.RelaxedX509TrustManager(true));
+
+        step("Accept expired certificate when date checks are disabled", () -> {
+            trustManager.checkServerTrusted(new X509Certificate[] {new TestCertificate(true)},
+                    "RSA");
+            addAttachment("Relaxed trust manager result", "acceptedExpiredCertificate=true");
+        });
     }
 
     @Test
-    public void shouldPassUnixPathsWithoutLiteralQuotesWhenGeneratingReport() throws Exception {
+    void shouldPassUnixPathsWithoutLiteralQuotesWhenGeneratingReport() throws Exception {
         assumeFalse(isWindows());
 
         final Path testDirectory = Files.createTempDirectory("allure-commandline");
@@ -118,26 +152,34 @@ public class AllureCommandlineTest {
             final Path resultsDirectory = testDirectory.resolve("results with space");
             final Path reportDirectory = testDirectory.resolve("report with space");
             final Path capturedArgs = testDirectory.resolve("args.txt");
-            Files.createDirectories(resultsDirectory);
-
-            createUnixAllureExecutable(installDirectory, version, "#!/bin/sh",
-                    "printf '%s\\n' \"$@\" > '" + capturedArgs + "'", "exit 0");
+            step("Prepare fake Unix runtime and results directory", () -> {
+                Files.createDirectories(resultsDirectory);
+                createUnixAllureExecutable(installDirectory, version, "#!/bin/sh",
+                        "printf '%s\\n' \"$@\" > '" + capturedArgs + "'", "exit 0");
+                addAttachment("Unix generate inputs", "resultsDirectory=" + resultsDirectory
+                        + System.lineSeparator() + "reportDirectory=" + reportDirectory);
+            });
 
             final AllureCommandline commandline = new AllureCommandline(installDirectory, version);
-            commandline.generateReport(Collections.singletonList(resultsDirectory), reportDirectory,
-                    false);
+            step("Generate report",
+                    () -> commandline.generateReport(Collections.singletonList(resultsDirectory),
+                            reportDirectory, false));
 
-            assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8),
-                    is(Arrays.asList("generate", "--clean",
-                            resultsDirectory.toAbsolutePath().toString(), "-o",
-                            reportDirectory.toAbsolutePath().toString())));
+            step("Verify generated command arguments", () -> {
+                final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
+                addAttachment("Generate command arguments",
+                        String.join(System.lineSeparator(), args));
+                assertThat(args).isEqualTo(Arrays.asList("generate", "--clean",
+                        resultsDirectory.toAbsolutePath().toString(), "-o",
+                        reportDirectory.toAbsolutePath().toString()));
+            });
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldPassVerboseFlagAndLogCommandWhenDebugGeneratingReport() throws Exception {
+    void shouldPassVerboseFlagAndLogCommandWhenDebugGeneratingReport() throws Exception {
         assumeFalse(isWindows());
 
         final Path testDirectory = Files.createTempDirectory("allure-commandline");
@@ -150,32 +192,42 @@ public class AllureCommandlineTest {
             final Path executable =
                     installDirectory.resolve("allure-" + version).resolve("bin").resolve("allure");
             final RecordingLog log = new RecordingLog(true);
-            Files.createDirectories(resultsDirectory);
-
-            createUnixAllureExecutable(installDirectory, version, "#!/bin/sh",
-                    "printf '%s\\n' \"$@\" > '" + capturedArgs + "'", "exit 0");
+            step("Prepare fake Unix runtime and debug results directory", () -> {
+                Files.createDirectories(resultsDirectory);
+                createUnixAllureExecutable(installDirectory, version, "#!/bin/sh",
+                        "printf '%s\\n' \"$@\" > '" + capturedArgs + "'", "exit 0");
+                addAttachment("Debug generate inputs", "resultsDirectory=" + resultsDirectory
+                        + System.lineSeparator() + "reportDirectory=" + reportDirectory);
+            });
 
             final AllureCommandline commandline =
                     new AllureCommandline(installDirectory, version, 10, log);
-            commandline.generateReport(Collections.singletonList(resultsDirectory), reportDirectory,
-                    false);
+            step("Generate report in debug mode",
+                    () -> commandline.generateReport(Collections.singletonList(resultsDirectory),
+                            reportDirectory, false));
 
-            assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8),
-                    is(Arrays.asList("--verbose", "generate", "--clean",
-                            resultsDirectory.toAbsolutePath().toString(), "-o",
-                            reportDirectory.toAbsolutePath().toString())));
-            assertThat(log.debugMessages,
-                    is(Collections.singletonList("Executing Allure command: ["
-                            + executable.toAbsolutePath() + ", --verbose, generate, --clean, "
-                            + resultsDirectory.toAbsolutePath() + ", -o, "
-                            + reportDirectory.toAbsolutePath() + "]")));
+            step("Verify debug command arguments and logged command", () -> {
+                final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
+                addAttachment("Debug generate command arguments",
+                        String.join(System.lineSeparator(), args));
+                addAttachment("Debug generate log messages",
+                        String.join(System.lineSeparator(), log.debugMessages));
+                assertThat(args).isEqualTo(Arrays.asList("--verbose", "generate", "--clean",
+                        resultsDirectory.toAbsolutePath().toString(), "-o",
+                        reportDirectory.toAbsolutePath().toString()));
+                assertThat(log.debugMessages)
+                        .isEqualTo(Collections.singletonList("Executing Allure command: ["
+                                + executable.toAbsolutePath() + ", --verbose, generate, --clean, "
+                                + resultsDirectory.toAbsolutePath() + ", -o, "
+                                + reportDirectory.toAbsolutePath() + "]"));
+            });
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldPassWindowsPathsWithoutLosingSpacesWhenServingReport() throws Exception {
+    void shouldPassWindowsPathsWithoutLosingSpacesWhenServingReport() throws Exception {
         assumeTrue(isWindows());
 
         final Path testDirectory = Files.createTempDirectory("allure commandline");
@@ -193,18 +245,31 @@ public class AllureCommandlineTest {
                     new RecordingUrlStreamHandler(connection));
 
             final AllureCommandline commandline = new AllureCommandline(installDirectory, version);
-            commandline.download(url, null, new Properties());
-            commandline.serve(Collections.singletonList(resultsDirectory), null, 0);
+            step("Prepare Windows runtime and results directory", () -> {
+                addAttachment("Windows serve inputs",
+                        String.join(System.lineSeparator(), "installDirectory=" + installDirectory,
+                                "resultsDirectory=" + resultsDirectory,
+                                "capturedArgs=" + capturedArgs, "downloadUrl=" + url));
+            });
+            step("Download commandline and serve report", () -> {
+                commandline.download(url, null, new Properties());
+                commandline.serve(Collections.singletonList(resultsDirectory), null, 0);
+            });
 
-            assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8),
-                    is(Arrays.asList("serve", resultsDirectory.toAbsolutePath().toString())));
+            step("Verify captured serve arguments preserve spaces", () -> {
+                final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
+                addAttachment("Windows serve command arguments",
+                        String.join(System.lineSeparator(), args));
+                assertThat(args).isEqualTo(
+                        Arrays.asList("serve", resultsDirectory.toAbsolutePath().toString()));
+            });
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldPassVerboseFlagAndLogCommandWhenDebugServingReport() throws Exception {
+    void shouldPassVerboseFlagAndLogCommandWhenDebugServingReport() throws Exception {
         assumeFalse(isWindows());
 
         final Path testDirectory = Files.createTempDirectory("allure-commandline");
@@ -216,21 +281,30 @@ public class AllureCommandlineTest {
             final Path executable =
                     installDirectory.resolve("allure-" + version).resolve("bin").resolve("allure");
             final RecordingLog log = new RecordingLog(true);
-            Files.createDirectories(resultsDirectory);
-
-            createUnixAllureExecutable(installDirectory, version, "#!/bin/sh",
-                    "printf '%s\\n' \"$@\" > '" + capturedArgs + "'", "exit 0");
+            step("Prepare fake Unix runtime and serve results directory", () -> {
+                Files.createDirectories(resultsDirectory);
+                createUnixAllureExecutable(installDirectory, version, "#!/bin/sh",
+                        "printf '%s\\n' \"$@\" > '" + capturedArgs + "'", "exit 0");
+                addAttachment("Debug serve inputs", "resultsDirectory=" + resultsDirectory);
+            });
 
             final AllureCommandline commandline =
                     new AllureCommandline(installDirectory, version, 10, log);
-            commandline.serve(Collections.singletonList(resultsDirectory), null, 0);
+            step("Serve report in debug mode",
+                    () -> commandline.serve(Collections.singletonList(resultsDirectory), null, 0));
 
-            assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8), is(Arrays
-                    .asList("--verbose", "serve", resultsDirectory.toAbsolutePath().toString())));
-            assertThat(log.debugMessages,
-                    is(Collections.singletonList("Executing Allure command: ["
-                            + executable.toAbsolutePath() + ", --verbose, serve, "
-                            + resultsDirectory.toAbsolutePath() + "]")));
+            step("Verify serve command arguments and logged command", () -> {
+                final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
+                addAttachment("Serve command arguments", String.join(System.lineSeparator(), args));
+                addAttachment("Debug serve log messages",
+                        String.join(System.lineSeparator(), log.debugMessages));
+                assertThat(args).isEqualTo(Arrays.asList("--verbose", "serve",
+                        resultsDirectory.toAbsolutePath().toString()));
+                assertThat(log.debugMessages)
+                        .isEqualTo(Collections.singletonList("Executing Allure command: ["
+                                + executable.toAbsolutePath() + ", --verbose, serve, "
+                                + resultsDirectory.toAbsolutePath() + "]"));
+            });
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
