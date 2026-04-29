@@ -24,8 +24,6 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,12 +41,19 @@ abstract class VerifierTestSupport {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String TEMPLATE_ROOT = "/verifier/";
     private static final String TESTDATA_ROOT = "/verifier-data/";
-    private static final String TARGET_DIRECTORY_PLACEHOLDER = "__target__";
+    private static final String DEFAULT_RESULTS_FILE = "target/allure-results/sample-testsuite.xml";
+    private static final String FIRST_RESULTS_FILE =
+            "first/target/allure-results/first-testsuite.xml";
+    private static final String SECOND_RESULTS_FILE =
+            "second/target/allure-results/second-testsuite.xml";
 
     @TempDir
     Path tempDir;
 
     record TemplateFile(String resourceName, String relativePath) {
+    }
+
+    record TestDataFile(String resourceName, String relativePath) {
     }
 
     protected final TemplateFile rootPom(final String scenario) {
@@ -82,7 +87,7 @@ abstract class VerifierTestSupport {
         return Allure.step("Prepare verifier project " + scenario, () -> {
             final Path projectDirectory = tempDir.resolve(directoryName);
             Files.createDirectories(projectDirectory);
-            copyScenarioData(scenario, projectDirectory);
+            copyScenarioDataFiles(scenario, projectDirectory);
 
             for (TemplateFile template : templates) {
                 copyResourceFile(TEMPLATE_ROOT + template.resourceName(),
@@ -244,22 +249,11 @@ abstract class VerifierTestSupport {
         return verifier;
     }
 
-    private void copyScenarioData(final String scenario, final Path projectDirectory)
+    private void copyScenarioDataFiles(final String scenario, final Path projectDirectory)
             throws IOException {
-        final URL resource = VerifierTestSupport.class.getResource(TESTDATA_ROOT + scenario);
-        if (resource == null) {
-            return;
-        }
-
-        final Path sourceDirectory;
-        try {
-            sourceDirectory = Path.of(resource.toURI());
-        } catch (URISyntaxException error) {
-            throw new IOException("Could not read verifier test data for " + scenario, error);
-        }
-
-        try (Stream<Path> paths = Files.walk(sourceDirectory)) {
-            paths.forEach(source -> copyPath(sourceDirectory, projectDirectory, source));
+        for (TestDataFile file : scenarioDataFiles(scenario)) {
+            copyResourceFile(TESTDATA_ROOT + file.resourceName(),
+                    projectDirectory.resolve(file.relativePath()));
         }
     }
 
@@ -276,6 +270,80 @@ abstract class VerifierTestSupport {
             }
             Files.copy(stream, targetFile, StandardCopyOption.REPLACE_EXISTING);
         }
+    }
+
+    private List<TestDataFile> scenarioDataFiles(final String scenario) {
+        return switch (scenario) {
+            case "allure-2-results" -> List.of(
+                    dataFile("allure2-result.json", "target/allure-results/sample-testsuite.json"));
+            case "input-directory-sample" ->
+                List.of(dataFile("allure2-first-result.xml", "first/first-testsuite.xml"),
+                        dataFile("allure2-second-result.xml", "second/second-testsuite.xml"));
+            case "report-change-results-directory" ->
+                List.of(dataFile("allure2-result.xml", "target/my-results/sample-testsuite.xml"));
+            case "report-paths-with-spaces", "allure2-serve-paths-with-spaces",
+                    "allure3-serve-paths-with-spaces" ->
+                List.of(dataFile("allure2-result.xml", "target/my results/sample-testsuite.xml"));
+            case "feature-should-fail-if-empty-report" ->
+                List.of(dataFile("empty-results.keep", "target/allure-results/.gitkeep"));
+            case "properties-file-support" ->
+                List.of(dataFile("allure2-properties-result.xml", DEFAULT_RESULTS_FILE),
+                        dataFile("report.properties", "allure.properties"));
+            case "properties-file-support-compile-classpath" ->
+                List.of(dataFile("allure2-properties-result.xml", DEFAULT_RESULTS_FILE),
+                        dataFile("report.properties", "target/classes/allure.properties"));
+            case "properties-file-support-configuration" ->
+                List.of(dataFile("allure2-properties-result.xml", DEFAULT_RESULTS_FILE));
+            case "properties-file-support-default-location" ->
+                List.of(dataFile("allure2-properties-result.xml", DEFAULT_RESULTS_FILE),
+                        dataFile("report.properties", "report.properties"));
+            case "properties-file-support-placeholder" ->
+                List.of(dataFile("allure2-properties-result.xml", DEFAULT_RESULTS_FILE),
+                        dataFile("report-placeholder.properties", "allure.properties"));
+            case "properties-file-support-test-classpath" ->
+                List.of(dataFile("allure2-properties-result.xml", DEFAULT_RESULTS_FILE),
+                        dataFile("report.properties", "target/test-classes/report.properties"));
+            case "categories-file-support-test-classpath" ->
+                List.of(dataFile("allure2-categories-result.xml", DEFAULT_RESULTS_FILE),
+                        dataFile("categories.json", "target/test-classes/categories.json"));
+            case "allure3-config-path-plugin-property" ->
+                List.of(dataFile("allure2-result.xml", DEFAULT_RESULTS_FILE),
+                        dataFile("allurerc-empty.yml", "allurerc.yml"),
+                        dataFile("allurerc-plugin.yml", "config/plugin-allure.yml"));
+            case "allure3-config-path-system-property" ->
+                List.of(dataFile("allure2-result.xml", DEFAULT_RESULTS_FILE),
+                        dataFile("allurerc-empty.yml", "allurerc.yml"),
+                        dataFile("allurerc-system.yml", "config/system-allure.yml"));
+            case "feature-root-allure-yaml-config" ->
+                List.of(dataFile("allure2-result.xml", DEFAULT_RESULTS_FILE),
+                        dataFile("allurerc-custom.yml", "allurerc.yml"));
+            case "aggregate-multi-module", "aggregate-multi-module-cli",
+                    "aggregate-multi-module-exclude-report",
+                    "aggregate-multi-module-preserve-child-executor", "report-multi-module" ->
+                firstAndSecondModuleResults();
+            case "allure3-aggregate-multi-module-results-directory" -> List.of(
+                    dataFile("allure2-first-result.xml",
+                            "first/target/module-results/first-testsuite.xml"),
+                    dataFile("allure2-second-result.xml",
+                            "second/target/override-results/second-testsuite.xml"));
+            case "allure2-feature-without-version-property", "feature-plugins-support",
+                    "report-change-report-directory", "report-as-build-plugin", "custom-url-report",
+                    "report-with-bundled-version", "allure2-report-single-file",
+                    "allure2-report-then-serve-preserves-report-directory", "aggregate-sample",
+                    "allure3-aggregate-sample", "feature-without-version-property",
+                    "report-history-allure3", "report-single-file" ->
+                List.of(dataFile("allure2-result.xml", DEFAULT_RESULTS_FILE));
+            default -> List.of();
+        };
+    }
+
+    private List<TestDataFile> firstAndSecondModuleResults() {
+        return List.of(dataFile("allure2-first-result.xml", FIRST_RESULTS_FILE),
+                dataFile("allure2-second-result.xml", SECOND_RESULTS_FILE));
+    }
+
+    private TestDataFile dataFile(final String resourceName, final String relativePath) {
+        return new TestDataFile(resourceName, relativePath);
     }
 
     private void filterPomFiles(final Path projectDirectory, final Map<String, String> replacements)
@@ -296,35 +364,6 @@ abstract class VerifierTestSupport {
                 Files.writeString(pomFile, content, StandardCharsets.UTF_8);
             }
         }
-    }
-
-    private void copyPath(final Path sourceDirectory, final Path projectDirectory,
-            final Path source) {
-        try {
-            final Path relative = sourceDirectory.relativize(source);
-            final Path target = projectDirectory.resolve(materializeFixturePath(relative));
-            if (Files.isDirectory(source)) {
-                Files.createDirectories(target);
-                return;
-            }
-
-            if (target.getParent() != null) {
-                Files.createDirectories(target.getParent());
-            }
-            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException error) {
-            throw new IllegalStateException("Could not copy verifier test data " + source, error);
-        }
-    }
-
-    private Path materializeFixturePath(final Path relative) {
-        Path materialized = Path.of("");
-        for (Path segment : relative) {
-            final String name = segment.toString();
-            materialized = materialized
-                    .resolve(TARGET_DIRECTORY_PLACEHOLDER.equals(name) ? "target" : name);
-        }
-        return materialized;
     }
 
     private String normalizeSeparators(final String path) {

@@ -16,6 +16,7 @@
 package io.qameta.allure.maven;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.qameta.allure.Description;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +29,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Tag("allure3")
 class VerifierAllure3IT extends VerifierTestSupport {
 
+    /**
+     * Project structure: a single-module Maven project with an Allure 3 package archive under
+     * {@code packages/custom-allure.tgz} and a private install directory containing a fake npm
+     * runtime.
+     * <p>
+     * Verifies that package-path installation uses the local archive, does not hit the npm
+     * registry, and installs the expected Allure CLI files.
+     */
     @Test
+    @Description
     void shouldInstallAllure3FromPackageArchiveUsingVerifier() throws Exception {
         final Path projectDirectory = prepareProject("allure3-package-path-install",
                 rootPom("allure3-package-path-install"));
@@ -54,7 +64,15 @@ class VerifierAllure3IT extends VerifierTestSupport {
                 installDirectory.resolve("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION)));
     }
 
+    /**
+     * Project structure: a single-module Maven project using the default Allure 3 version and a
+     * private Node installation under {@code .allure install}.
+     * <p>
+     * Verifies that the plugin provisions the bundled Node/npm runtime and invokes npm with the
+     * expected prefix, registry, and package arguments.
+     */
     @Test
+    @Description
     void shouldInstallAllure3WithBundledPrivateNode() throws Exception {
         final Path projectDirectory = prepareProject("allure3-install-private-node",
                 rootPom("allure3-install-private-node"));
@@ -85,7 +103,15 @@ class VerifierAllure3IT extends VerifierTestSupport {
         assertThat(nodeHome).exists();
     }
 
+    /**
+     * Project structure: a single-module Maven project with Allure 3 results, default root config,
+     * and plugin configuration pointing to {@code config/plugin-allure.yml}.
+     * <p>
+     * Verifies that the plugin-level config path overrides root discovery and is merged into the
+     * generated Allure 3 config.
+     */
     @Test
+    @Description
     void shouldUsePluginConfiguredAllure3ConfigPath() throws Exception {
         final Path projectDirectory = prepareProject("allure3-config-path-plugin-property",
                 rootPom("allure3-config-path-plugin-property"));
@@ -101,7 +127,15 @@ class VerifierAllure3IT extends VerifierTestSupport {
         assertThat(config.path("plugins").has("root-config")).isFalse();
     }
 
+    /**
+     * Project structure: a single-module Maven project with Allure 3 results, default root config,
+     * and an alternate config file at {@code config/system-allure.yml}.
+     * <p>
+     * Verifies that the {@code allure.config.path} system property overrides root config discovery
+     * and plugin configuration.
+     */
     @Test
+    @Description
     void shouldUseSystemPropertyConfiguredAllure3ConfigPath() throws Exception {
         final Path projectDirectory = prepareProject("allure3-config-path-system-property",
                 rootPom("allure3-config-path-system-property"));
@@ -118,7 +152,15 @@ class VerifierAllure3IT extends VerifierTestSupport {
         assertThat(config.path("plugins").has("root-config")).isFalse();
     }
 
+    /**
+     * Project structure: a single-module Maven project with Allure 3 results and a root
+     * {@code allurerc.yml}.
+     * <p>
+     * Verifies that root Allure config discovery feeds the generated config and that report
+     * generation receives the expected results and config paths.
+     */
     @Test
+    @Description
     void shouldUseRootAllureYamlConfigForAllure3Report() throws Exception {
         final Path projectDirectory = prepareProject("feature-root-allure-yaml-config",
                 rootPom("feature-root-allure-yaml-config"));
@@ -139,7 +181,15 @@ class VerifierAllure3IT extends VerifierTestSupport {
                 .asBoolean()).isFalse();
     }
 
+    /**
+     * Project structure: a single-module Maven project with Allure 3 results and no configured
+     * report version.
+     * <p>
+     * Verifies that the default Allure 3 version is used and that report generation is invoked with
+     * the generated config.
+     */
     @Test
+    @Description
     void shouldUseDefaultAllure3VersionWhenReportVersionIsOmitted() throws Exception {
         final Path projectDirectory = prepareProject("feature-without-version-property",
                 rootPom("feature-without-version-property"));
@@ -154,7 +204,15 @@ class VerifierAllure3IT extends VerifierTestSupport {
                 projectDirectory.resolve(".allure"), results, configPath(projectDirectory)));
     }
 
+    /**
+     * Project structure: a single-module Maven project with Allure 3 results and report history
+     * enabled.
+     * <p>
+     * Verifies that the generated config contains append-history settings and that the history
+     * cache directory is prepared for the report.
+     */
     @Test
+    @Description
     void shouldWriteHistoryConfigForAllure3Reports() throws Exception {
         final Path projectDirectory =
                 prepareProject("report-history-allure3", rootPom("report-history-allure3"));
@@ -177,7 +235,15 @@ class VerifierAllure3IT extends VerifierTestSupport {
         assertThat(historyFile.getParent()).isDirectory();
     }
 
+    /**
+     * Project structure: a single-module Maven project with Allure 3 results and single-file report
+     * mode enabled.
+     * <p>
+     * Verifies that single-file mode is written into the generated config and that both generation
+     * calls target the same report output.
+     */
     @Test
+    @Description
     void shouldGenerateSingleFileAllure3Reports() throws Exception {
         final Path projectDirectory =
                 prepareProject("report-single-file", rootPom("report-single-file"));
@@ -197,7 +263,16 @@ class VerifierAllure3IT extends VerifierTestSupport {
                 .asBoolean()).isTrue();
     }
 
+    /**
+     * Project structure: a single-module Maven project created in a path with spaces, with results
+     * under {@code target/my results} and report output under
+     * {@code target/site/allure serve report}.
+     * <p>
+     * Verifies that Allure 3 serve first generates the report and then opens the configured report
+     * directory while preserving paths with spaces.
+     */
     @Test
+    @Description
     void shouldServeAllure3ReportWhenPathsContainSpaces() throws Exception {
         final Path projectDirectory = prepareProject("allure3-serve-paths-with-spaces",
                 "allure3 serve paths with spaces", rootPom("allure3-serve-paths-with-spaces"));

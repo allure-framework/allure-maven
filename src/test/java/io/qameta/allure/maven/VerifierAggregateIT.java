@@ -15,6 +15,7 @@
  */
 package io.qameta.allure.maven;
 
+import io.qameta.allure.Description;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +30,15 @@ class VerifierAggregateIT extends VerifierTestSupport {
 
     private static final String ALLURE2_VERSION = "2.30.0";
 
+    /**
+     * Project structure: a parent Maven project with {@code first} and {@code second} child
+     * modules, each containing Allure 2 results under {@code target/allure-results}.
+     * <p>
+     * Verifies that the site lifecycle runs only the aggregate mojo and produces a combined report
+     * with both module test cases.
+     */
     @Test
+    @Description
     void shouldAggregateMultiModuleAllure2Results() throws Exception {
         final Path projectDirectory = prepareAllure2MultiModuleProject("aggregate-multi-module");
         installAllure2Commandline(projectDirectory, "aggregate-allure2-args.txt", 2);
@@ -40,7 +49,15 @@ class VerifierAggregateIT extends VerifierTestSupport {
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 2);
     }
 
+    /**
+     * Project structure: a parent Maven project with two child modules containing Allure 2 result
+     * files.
+     * <p>
+     * Verifies that a direct {@code allure:aggregate} invocation, with the report version supplied
+     * on the command line, produces a two-case aggregate report.
+     */
     @Test
+    @Description
     void shouldAggregateMultiModuleAllure2ResultsFromDirectGoal() throws Exception {
         final Path projectDirectory =
                 prepareAllure2MultiModuleProject("aggregate-multi-module-cli");
@@ -52,7 +69,15 @@ class VerifierAggregateIT extends VerifierTestSupport {
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 2);
     }
 
+    /**
+     * Project structure: a parent Maven project with two child modules and aggregate report
+     * configuration that excludes regular per-module report generation.
+     * <p>
+     * Verifies that the aggregate report is generated while regular report mojo output remains
+     * suppressed.
+     */
     @Test
+    @Description
     void shouldSkipRegularReportWhenAggregateReportIsConfigured() throws Exception {
         final Path projectDirectory =
                 prepareAllure2MultiModuleProject("aggregate-multi-module-exclude-report");
@@ -64,7 +89,15 @@ class VerifierAggregateIT extends VerifierTestSupport {
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 2);
     }
 
+    /**
+     * Project structure: a parent Maven project with two child modules, each contributing Allure 2
+     * results that can receive executor metadata.
+     * <p>
+     * Verifies that aggregate generation preserves each child module's executor file while
+     * producing the combined report.
+     */
     @Test
+    @Description
     void shouldPreserveChildExecutorFilesWhenAggregating() throws Exception {
         final Path projectDirectory =
                 prepareAllure2MultiModuleProject("aggregate-multi-module-preserve-child-executor");
@@ -86,7 +119,15 @@ class VerifierAggregateIT extends VerifierTestSupport {
                 .isEqualTo("Allure Report Test Second Child");
     }
 
+    /**
+     * Project structure: a single-module Maven project configured for aggregate report generation
+     * with one Allure 2 result file.
+     * <p>
+     * Verifies that aggregate mode works for a non-reactor project and does not run the regular
+     * report mojo.
+     */
     @Test
+    @Description
     void shouldAggregateSingleModuleAllure2Results() throws Exception {
         final Path projectDirectory =
                 prepareProject("aggregate-sample", rootPom("aggregate-sample"));
@@ -98,7 +139,15 @@ class VerifierAggregateIT extends VerifierTestSupport {
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
     }
 
+    /**
+     * Project structure: a single-module Maven project configured for Allure 3 aggregate generation
+     * with results under {@code target/allure-results}.
+     * <p>
+     * Verifies that the Allure 3 runtime is invoked with the generated config and produces an
+     * aggregate report.
+     */
     @Test
+    @Description
     void shouldAggregateSingleModuleAllure3Results() throws Exception {
         final Path projectDirectory =
                 prepareProject("allure3-aggregate-sample", rootPom("allure3-aggregate-sample"));
@@ -116,7 +165,15 @@ class VerifierAggregateIT extends VerifierTestSupport {
                         "arg=--config", "arg=" + canonical(configPath(projectDirectory)), "---"));
     }
 
+    /**
+     * Project structure: a parent Maven project with two Allure 3 child modules; one module uses
+     * {@code target/module-results}, and the other uses {@code target/override-results}.
+     * <p>
+     * Verifies that aggregate generation reads each configured module results directory and passes
+     * both paths to Allure 3.
+     */
     @Test
+    @Description
     void shouldAggregateAllure3ResultsFromConfiguredModuleDirectories() throws Exception {
         final Path projectDirectory =
                 prepareProject("allure3-aggregate-multi-module-results-directory",
@@ -141,7 +198,15 @@ class VerifierAggregateIT extends VerifierTestSupport {
                         "arg=" + canonical(configPath(projectDirectory)), "---"));
     }
 
+    /**
+     * Project structure: a parent Maven project with {@code first} and {@code second} child
+     * modules, each running regular Allure 2 report generation.
+     * <p>
+     * Verifies that normal multi-module site generation writes separate reports for each child
+     * module instead of aggregating them.
+     */
     @Test
+    @Description
     void shouldGeneratePerModuleReportsForRegularMultiModuleBuilds() throws Exception {
         final Path projectDirectory = prepareProject("report-multi-module",
                 rootPom("report-multi-module"), modulePom("report-multi-module", "first"),

@@ -149,6 +149,20 @@
                 <configuration>
                     <release>${compiler.version}</release>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <configuration>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>io.qameta.allure</groupId>
+                                    <artifactId>allure-descriptions-javadoc</artifactId>
+                                    <version>${allure.version}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
