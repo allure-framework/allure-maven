@@ -43,6 +43,7 @@ abstract class VerifierTestSupport {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String TEMPLATE_ROOT = "/verifier/";
     private static final String TESTDATA_ROOT = "/verifier-data/";
+    private static final String TARGET_DIRECTORY_PLACEHOLDER = "__target__";
 
     @TempDir
     Path tempDir;
@@ -301,7 +302,7 @@ abstract class VerifierTestSupport {
             final Path source) {
         try {
             final Path relative = sourceDirectory.relativize(source);
-            final Path target = projectDirectory.resolve(relative.toString());
+            final Path target = projectDirectory.resolve(materializeFixturePath(relative));
             if (Files.isDirectory(source)) {
                 Files.createDirectories(target);
                 return;
@@ -314,6 +315,16 @@ abstract class VerifierTestSupport {
         } catch (IOException error) {
             throw new IllegalStateException("Could not copy verifier test data " + source, error);
         }
+    }
+
+    private Path materializeFixturePath(final Path relative) {
+        Path materialized = Path.of("");
+        for (Path segment : relative) {
+            final String name = segment.toString();
+            materialized = materialized
+                    .resolve(TARGET_DIRECTORY_PLACEHOLDER.equals(name) ? "target" : name);
+        }
+        return materialized;
     }
 
     private String normalizeSeparators(final String path) {

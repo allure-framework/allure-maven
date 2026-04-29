@@ -58,7 +58,7 @@ jobs:
         with:
           name: ${{ env.ALLURE_DUMP_NAME }}
           path: ./${{ env.ALLURE_DUMP_NAME }}.zip
-          if-no-files-found: fail
+          if-no-files-found: error
 
   report:
     needs: [ build ]
