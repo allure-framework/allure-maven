@@ -10,11 +10,10 @@ set "PREFIX="
 shift
 if "%~1"=="" goto done
 >> "@capture.file@" echo(arg=%~1
-if "%~1"=="--prefix" (
-  shift
-  set "PREFIX=%~1"
-  >> "@capture.file@" echo(arg=%~1
-)
+if not "%~1"=="--prefix" goto loop
+shift
+set "PREFIX=%~1"
+>> "@capture.file@" echo(arg=%~1
 goto loop
 
 :done
