@@ -43,7 +43,8 @@ final class Allure3SetupHelper {
         Files.write(allureCli, "console.log(\"fake allure\");\n".getBytes(StandardCharsets.UTF_8));
 
         if (platform.isWindows()) {
-            Files.write(nodeExecutable,
+            Files.write(nodeExecutable, "fake node marker\r\n".getBytes(StandardCharsets.UTF_8));
+            Files.write(nodeExecutable.resolveSibling("node.cmd"),
                     createWindowsReportNode(captureFile, reportDirectory, createDataFiles)
                             .getBytes(StandardCharsets.UTF_8));
             return;
@@ -68,7 +69,8 @@ final class Allure3SetupHelper {
         Files.write(npmCli, "console.log(\"fake npm\");\n".getBytes(StandardCharsets.UTF_8));
 
         if (platform.isWindows()) {
-            Files.write(nodeExecutable,
+            Files.write(nodeExecutable, "fake node marker\r\n".getBytes(StandardCharsets.UTF_8));
+            Files.write(nodeExecutable.resolveSibling("node.cmd"),
                     createWindowsInstallNode(captureFile).getBytes(StandardCharsets.UTF_8));
             return;
         }

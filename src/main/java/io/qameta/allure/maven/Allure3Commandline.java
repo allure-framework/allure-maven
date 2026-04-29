@@ -250,7 +250,10 @@ public class Allure3Commandline {
 
         final Path installTarget = resolveInstallTarget();
 
-        final CommandLine commandLine = new CommandLine(getNodeExecutable().toFile());
+        final CommandLine commandLine = new CommandLine(
+                platform.isWindows() && Files.exists(getNodeExecutable().resolveSibling("node.cmd"))
+                        ? getNodeExecutable().resolveSibling("node.cmd").toFile()
+                        : getNodeExecutable().toFile());
         addPathArgument(commandLine, getNpmCliPath());
         commandLine.addArgument("--prefix");
         addPathArgument(commandLine, getAllureHome());
@@ -580,10 +583,15 @@ public class Allure3Commandline {
     }
 
     private String createWindowsLauncher() {
-        return new StringBuilder().append("@echo off\r\n").append("\"%~dp0..\\")
+        return new StringBuilder().append("@echo off\r\n").append("setlocal\r\n")
+                .append("set \"NODE=%~dp0..\\")
                 .append(platform.getNodeHome(installationDirectory, nodeVersion).getFileName())
-                .append("\\node.exe\" \"%~dp0..\\allure-").append(allureVersion)
-                .append("\\node_modules\\allure\\cli.js\" %*\r\n").toString();
+                .append("\\node.exe\"\r\n").append("if exist \"%~dp0..\\")
+                .append(platform.getNodeHome(installationDirectory, nodeVersion).getFileName())
+                .append("\\node.cmd\" set \"NODE=%~dp0..\\")
+                .append(platform.getNodeHome(installationDirectory, nodeVersion).getFileName())
+                .append("\\node.cmd\"\r\n").append("\"%NODE%\" \"%~dp0..\\allure-")
+                .append(allureVersion).append("\\node_modules\\allure\\cli.js\" %*\r\n").toString();
     }
 
     private int execute(final CommandLine commandLine, final int timeout) throws IOException {
