@@ -26,82 +26,77 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
-import static ru.yandex.qatools.matchers.nio.PathMatchers.exists;
-import static ru.yandex.qatools.matchers.nio.PathMatchers.isDirectory;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dmitry Baev dmitry.baev@qameta.io Date: 05.08.15
  */
 @SuppressWarnings("unused")
-public final class TestHelper {
+final class TestHelper {
 
     public static final List<String> FILE_NAMES = Arrays.asList("behaviors.json", "categories.json",
             "packages.json", "timeline.json", "suites.json");
 
     TestHelper() {}
 
-    public static void checkReportDirectory(Path outputDirectory, int testCasesCount) {
+    static void checkReportDirectory(Path outputDirectory, int testCasesCount) {
         Path index = outputDirectory.resolve("index.html");
-        assertThat(index, exists());
+        assertThat(index).exists();
 
         Path dataDirectory = outputDirectory.resolve("data");
 
-        assertThat(dataDirectory, isDirectory());
+        assertThat(dataDirectory).isDirectory();
 
         for (String fileName : FILE_NAMES) {
-            assertThat(dataDirectory.resolve(fileName), exists());
+            assertThat(dataDirectory.resolve(fileName)).exists();
         }
 
-        assertThat("There is not enough test case files in " + dataDirectory + " directory.",
-                getTestCases(dataDirectory.resolve("test-cases")), hasSize(testCasesCount));
+        assertThat(getTestCases(dataDirectory.resolve("test-cases")))
+                .as("There is not enough test case files in %s directory.", dataDirectory)
+                .hasSize(testCasesCount);
     }
 
-    public static void checkSingleFile(Path outputDirectory) {
+    static void checkSingleFile(Path outputDirectory) {
         Path index = outputDirectory.resolve("index.html");
-        assertThat(index, exists());
+        assertThat(index).exists();
 
         Path dataDirectory = outputDirectory.resolve("data");
-        assertThat(dataDirectory, not(exists()));
+        assertThat(dataDirectory).doesNotExist();
 
         for (String fileName : FILE_NAMES) {
-            assertThat(dataDirectory.resolve(fileName), not(exists()));
+            assertThat(dataDirectory.resolve(fileName)).doesNotExist();
         }
     }
 
-    public static List<String> getTestCases(Path dataDirectory) {
+    static List<String> getTestCases(Path dataDirectory) {
         return Arrays.asList(dataDirectory.toFile().list(new WildcardFileFilter("*.json")));
     }
 
-    public static void checkAggregateMojoOnly(Path projectDirectory) throws IOException {
+    static void checkAggregateMojoOnly(Path projectDirectory) throws IOException {
         final Path buildLog = projectDirectory.resolve("build.log");
-        assertThat(buildLog, exists());
+        assertThat(buildLog).exists();
 
         final String content = Files.readString(buildLog, StandardCharsets.UTF_8);
-        assertThat(content, containsString("Generate Allure report (aggregate)"));
-        assertThat(content, not(containsString("Generate Allure report (report)")));
-        assertThat(content, not(containsString("Generate Allure report to ")));
-        assertThat(countMatches(content, "^\\[INFO\\] Generate report to ", Pattern.MULTILINE),
-                is(1));
+        assertThat(content).contains("Generate Allure report (aggregate)");
+        assertThat(content).doesNotContain("Generate Allure report (report)");
+        assertThat(content).doesNotContain("Generate Allure report to ");
+        assertThat(countMatches(content, "^\\[INFO\\] Generate report to ", Pattern.MULTILINE))
+                .isEqualTo(1);
     }
 
-    public static void checkRegularReportMojoOnly(Path projectDirectory) throws IOException {
+    static void checkRegularReportMojoOnly(Path projectDirectory) throws IOException {
         final Path buildLog = projectDirectory.resolve("build.log");
-        assertThat(buildLog, exists());
+        assertThat(buildLog).exists();
 
         final String content = Files.readString(buildLog, StandardCharsets.UTF_8);
-        assertThat(content, containsString("Generate Allure report (report)"));
-        assertThat(content, not(containsString("Generate Allure report (aggregate)")));
-        assertThat(content, not(containsString("Generate Allure report to ")));
+        assertThat(content).contains("Generate Allure report (report)");
+        assertThat(content).doesNotContain("Generate Allure report (aggregate)");
+        assertThat(content).doesNotContain("Generate Allure report to ");
         assertThat(countMatches(content,
-                "^\\[INFO\\] Generate Allure report \\(report\\) with version ", Pattern.MULTILINE),
-                is(1));
-        assertThat(countMatches(content, "^\\[INFO\\] Generate report to ", Pattern.MULTILINE),
-                is(1));
+                "^\\[INFO\\] Generate Allure report \\(report\\) with version ", Pattern.MULTILINE))
+                .isEqualTo(1);
+        assertThat(countMatches(content, "^\\[INFO\\] Generate report to ", Pattern.MULTILINE))
+                .isEqualTo(1);
     }
 
     private static int countMatches(final String content, final String pattern, final int flags) {

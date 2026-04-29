@@ -15,47 +15,71 @@
  */
 package io.qameta.allure.maven;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static io.qameta.allure.Allure.addAttachment;
+import static io.qameta.allure.Allure.step;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AllureVersionTest {
+@Tag("unit")
+@Tag("versioning")
+class AllureVersionTest {
 
     @Test
-    public void shouldUseAllure3AsDefaultVersion() {
-        final AllureVersion version = AllureVersion.resolve(null);
-
-        assertThat(version.isAllure3(), is(true));
-        assertThat(version.getVersion(), is(AllureVersion.ALLURE3_DEFAULT_VERSION));
+    void shouldUseAllure3AsDefaultVersion() {
+        assertResolvedVersion(null, true, AllureVersion.ALLURE3_DEFAULT_VERSION);
     }
 
     @Test
-    public void shouldUseAllure3ForBlankVersion() {
-        final AllureVersion version = AllureVersion.resolve("  ");
-
-        assertThat(version.isAllure3(), is(true));
-        assertThat(version.getVersion(), is(AllureVersion.ALLURE3_DEFAULT_VERSION));
+    void shouldUseAllure3ForBlankVersion() {
+        assertResolvedVersion("  ", true, AllureVersion.ALLURE3_DEFAULT_VERSION);
     }
 
     @Test
-    public void shouldRouteAllure2VersionsToAllure2Runtime() {
-        final AllureVersion version = AllureVersion.resolve("2.39.0");
-
-        assertThat(version.isAllure2(), is(true));
-        assertThat(version.getVersion(), is("2.39.0"));
+    void shouldRouteAllure2VersionsToAllure2Runtime() {
+        assertResolvedVersion("2.39.0", false, "2.39.0");
     }
 
     @Test
-    public void shouldRouteAllure3PrereleaseVersionsToAllure3Runtime() {
-        final AllureVersion version = AllureVersion.resolve("3.0.0-beta.23");
-
-        assertThat(version.isAllure3(), is(true));
-        assertThat(version.getVersion(), is("3.0.0-beta.23"));
+    void shouldRouteAllure3PrereleaseVersionsToAllure3Runtime() {
+        assertResolvedVersion("3.0.0-beta.23", true, "3.0.0-beta.23");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldRejectUnsupportedMajorVersions() {
-        AllureVersion.resolve("1.5.4");
+    @Test
+    void shouldRejectUnsupportedMajorVersions() {
+        step("Reject unsupported major version 1.5.4", () -> {
+            final IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                    () -> AllureVersion.resolve("1.5.4"));
+            addAttachment("Unsupported version error", String.valueOf(error.getMessage()));
+        });
+    }
+
+    private static void assertResolvedVersion(final String requestedVersion,
+            final boolean expectedAllure3, final String expectedVersion) {
+        final String requested = describeRequestedVersion(requestedVersion);
+        final AllureVersion resolvedVersion = step("Resolve report version " + requested,
+                () -> AllureVersion.resolve(requestedVersion));
+
+        step("Verify selected runtime and normalized version", () -> {
+            addAttachment("Version resolution",
+                    String.join(System.lineSeparator(), "requested=" + requested,
+                            "resolved=" + resolvedVersion.getVersion(),
+                            "runtime=" + (resolvedVersion.isAllure3() ? "allure3" : "allure2")));
+            assertThat(resolvedVersion.isAllure3()).isEqualTo(expectedAllure3);
+            assertThat(resolvedVersion.isAllure2()).isEqualTo(!expectedAllure3);
+            assertThat(resolvedVersion.getVersion()).isEqualTo(expectedVersion);
+        });
+    }
+
+    private static String describeRequestedVersion(final String requestedVersion) {
+        if (requestedVersion == null) {
+            return "<default>";
+        }
+        if (requestedVersion.isBlank()) {
+            return "<blank>";
+        }
+        return requestedVersion;
     }
 }

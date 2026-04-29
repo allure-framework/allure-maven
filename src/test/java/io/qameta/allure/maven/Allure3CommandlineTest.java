@@ -19,7 +19,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -33,17 +34,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assume.assumeFalse;
-import static ru.yandex.qatools.matchers.nio.PathMatchers.exists;
+import static io.qameta.allure.Allure.addAttachment;
+import static io.qameta.allure.Allure.step;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-public class Allure3CommandlineTest {
+@Tag("unit")
+@Tag("allure3")
+@Tag("commandline")
+class Allure3CommandlineTest {
 
     @Test
-    public void shouldInstallAllure3WithPrivateNodeAndNpmCli() throws Exception {
+    void shouldInstallAllure3WithPrivateNodeAndNpmCli() throws Exception {
         assumeFalse(isWindows());
 
         final Path testDirectory = Files.createTempDirectory("allure3-commandline");
@@ -53,24 +56,32 @@ public class Allure3CommandlineTest {
             final Allure3Commandline commandline =
                     newCommandline(installDirectory, null, false, 10);
 
-            Allure3SetupHelper.prepareFakeInstallRuntime(installDirectory, capturedArgs);
+            step("Prepare fake install runtime", () -> {
+                Allure3SetupHelper.prepareFakeInstallRuntime(installDirectory, capturedArgs);
+                addAttachment("Install runtime setup", "installDirectory=" + installDirectory
+                        + System.lineSeparator() + "capturedArgs=" + capturedArgs);
+            });
 
-            commandline.install();
+            step("Install Allure 3 runtime", commandline::install);
 
-            final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
-            assertThat(args, is(Arrays.asList("cli=" + commandline.getNpmCliPath().toAbsolutePath(),
-                    "arg=--prefix", "arg=" + commandline.getAllureHome().toAbsolutePath(),
-                    "arg=install", "arg=--no-package-lock", "arg=--no-save", "arg=--ignore-scripts",
-                    "arg=allure@3.4.1", "arg=--registry", "arg=https://registry.npmjs.org")));
-            assertThat(commandline.getAllureCliPath(), exists());
-            assertThat(commandline.getAllureExecutablePath(), exists());
+            step("Verify npm arguments and installed binaries", () -> {
+                final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
+                addAttachment("Captured npm arguments", String.join(System.lineSeparator(), args));
+                assertThat(args).isEqualTo(Arrays.asList(
+                        "cli=" + commandline.getNpmCliPath().toAbsolutePath(), "arg=--prefix",
+                        "arg=" + commandline.getAllureHome().toAbsolutePath(), "arg=install",
+                        "arg=--no-package-lock", "arg=--no-save", "arg=--ignore-scripts",
+                        "arg=allure@3.4.1", "arg=--registry", "arg=https://registry.npmjs.org"));
+                assertThat(commandline.getAllureCliPath()).exists();
+                assertThat(commandline.getAllureExecutablePath()).exists();
+            });
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldInstallAllure3FromLocalPackageArchiveWithoutRegistry() throws Exception {
+    void shouldInstallAllure3FromLocalPackageArchiveWithoutRegistry() throws Exception {
         assumeFalse(isWindows());
 
         final Path testDirectory = Files.createTempDirectory("allure3-commandline");
@@ -81,24 +92,34 @@ public class Allure3CommandlineTest {
             final Allure3Commandline commandline =
                     newCommandline(installDirectory, packageArchive, false, 10);
 
-            Allure3SetupHelper.prepareFakeInstallRuntime(installDirectory, capturedArgs);
-            Allure3SetupHelper.prepareFakePackageArchive(packageArchive);
+            step("Prepare fake install runtime and local package archive", () -> {
+                Allure3SetupHelper.prepareFakeInstallRuntime(installDirectory, capturedArgs);
+                Allure3SetupHelper.prepareFakePackageArchive(packageArchive);
+                addAttachment("Local package install setup",
+                        "installDirectory=" + installDirectory + System.lineSeparator()
+                                + "packageArchive=" + packageArchive + System.lineSeparator()
+                                + "capturedArgs=" + capturedArgs);
+            });
 
-            commandline.install();
+            step("Install Allure 3 from local package archive", commandline::install);
 
-            final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
-            assertThat(args, hasItem("arg=" + packageArchive.toAbsolutePath()));
-            assertThat(args, not(hasItem("arg=--registry")));
-            assertThat(args, not(hasItem("arg=allure@3.4.1")));
-            assertThat(commandline.getAllureCliPath(), exists());
-            assertThat(commandline.getAllureExecutablePath(), exists());
+            step("Verify archive install arguments and installed binaries", () -> {
+                final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
+                addAttachment("Captured archive install arguments",
+                        String.join(System.lineSeparator(), args));
+                assertThat(args).contains("arg=" + packageArchive.toAbsolutePath());
+                assertThat(args).doesNotContain("arg=--registry");
+                assertThat(args).doesNotContain("arg=allure@3.4.1");
+                assertThat(commandline.getAllureCliPath()).exists();
+                assertThat(commandline.getAllureExecutablePath()).exists();
+            });
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldGenerateReportWithDirectResultsAndAwesomeConfig() throws Exception {
+    void shouldGenerateReportWithDirectResultsAndAwesomeConfig() throws Exception {
         assumeFalse(isWindows());
 
         final Path testDirectory = Files.createTempDirectory("allure3-commandline");
@@ -112,50 +133,65 @@ public class Allure3CommandlineTest {
             final Allure3Commandline commandline =
                     newCommandline(installDirectory, null, false, 10);
 
-            Files.createDirectories(resultsDirectory);
-            Files.write(resultsDirectory.resolve("sample.json"), Collections.singletonList("{}"),
-                    StandardCharsets.UTF_8);
-            Files.createDirectories(secondResultsDirectory);
-            Files.write(secondResultsDirectory.resolve("sample2.json"),
-                    Collections.singletonList("{}"), StandardCharsets.UTF_8);
-            Allure3SetupHelper.prepareFakeReportRuntime(installDirectory, capturedArgs,
-                    reportDirectory, true);
+            step("Prepare fake results and report runtime", () -> {
+                Files.createDirectories(resultsDirectory);
+                Files.write(resultsDirectory.resolve("sample.json"),
+                        Collections.singletonList("{}"), StandardCharsets.UTF_8);
+                Files.createDirectories(secondResultsDirectory);
+                Files.write(secondResultsDirectory.resolve("sample2.json"),
+                        Collections.singletonList("{}"), StandardCharsets.UTF_8);
+                Allure3SetupHelper.prepareFakeReportRuntime(installDirectory, capturedArgs,
+                        reportDirectory, true);
+                addAttachment("Report generation inputs",
+                        "resultsDirectory=" + resultsDirectory + System.lineSeparator()
+                                + "secondResultsDirectory=" + secondResultsDirectory
+                                + System.lineSeparator() + "reportDirectory=" + reportDirectory);
+            });
 
             final Map<String, Object> defaultConfig = new LinkedHashMap<>();
             defaultConfig.put("historyPath", testDirectory
                     .resolve(Paths.get("history", "history.jsonl")).toAbsolutePath().toString());
             defaultConfig.put("appendHistory", true);
 
-            commandline.generateReport(Arrays.asList(resultsDirectory, secondResultsDirectory),
-                    reportDirectory, true, buildDirectory, "Allure", null, defaultConfig);
+            step("Generate report with generated Allure 3 config",
+                    () -> commandline.generateReport(
+                            Arrays.asList(resultsDirectory, secondResultsDirectory),
+                            reportDirectory, true, buildDirectory, "Allure", null, defaultConfig));
 
-            final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
-                    .resolve("allurerc.json");
-            final JsonNode configJson = new ObjectMapper().readTree(config.toFile());
-            assertThat(configJson.get("name").asText(), is("Allure"));
-            assertThat(configJson.get("output").asText(),
-                    is(reportDirectory.toAbsolutePath().toString()));
-            assertThat(configJson.get("historyPath").asText(),
-                    is(defaultConfig.get("historyPath")));
-            assertThat(configJson.get("appendHistory").asBoolean(), is(true));
-            assertThat(configJson.get("plugins").get("awesome").get("options").get("singleFile")
-                    .asBoolean(), is(true));
-            assertThat(reportDirectory.resolve("index.html"), exists());
-            assertThat(reportDirectory.resolve("data").resolve("test-cases").resolve("case.json"),
-                    exists());
-            assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8),
-                    is(Arrays.asList("cli=" + commandline.getAllureCliPath().toAbsolutePath(),
-                            "command=generate", "arg=generate",
-                            "arg=" + resultsDirectory.toAbsolutePath(),
-                            "arg=" + secondResultsDirectory.toAbsolutePath(), "arg=--config",
-                            "arg=" + config.toAbsolutePath(), "---")));
+            step("Verify generated config, report files, and CLI arguments", () -> {
+                final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
+                        .resolve("allurerc.json");
+                final JsonNode configJson = new ObjectMapper().readTree(config.toFile());
+                addAttachment("Generated Allure 3 config", Files.readString(config));
+                assertThat(configJson.get("name").asText()).isEqualTo("Allure");
+                assertThat(configJson.get("output").asText())
+                        .isEqualTo(reportDirectory.toAbsolutePath().toString());
+                assertThat(configJson.get("historyPath").asText())
+                        .isEqualTo(defaultConfig.get("historyPath"));
+                assertThat(configJson.get("appendHistory").asBoolean()).isTrue();
+                assertThat(configJson.get("plugins").get("awesome").get("options").get("singleFile")
+                        .asBoolean()).isTrue();
+                assertThat(reportDirectory.resolve("index.html")).exists();
+                assertThat(
+                        reportDirectory.resolve("data").resolve("test-cases").resolve("case.json"))
+                        .exists();
+                final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
+                addAttachment("Generated report CLI arguments",
+                        String.join(System.lineSeparator(), args));
+                assertThat(args).isEqualTo(
+                        Arrays.asList("cli=" + commandline.getAllureCliPath().toAbsolutePath(),
+                                "command=generate", "arg=generate",
+                                "arg=" + resultsDirectory.toAbsolutePath(),
+                                "arg=" + secondResultsDirectory.toAbsolutePath(), "arg=--config",
+                                "arg=" + config.toAbsolutePath(), "---"));
+            });
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldLogGenerateCommandInDebugModeWithoutVerboseFlag() throws Exception {
+    void shouldLogGenerateCommandInDebugModeWithoutVerboseFlag() throws Exception {
         assumeFalse(isWindows());
 
         final Path testDirectory = Files.createTempDirectory("allure3-commandline");
@@ -169,29 +205,39 @@ public class Allure3CommandlineTest {
             final Allure3Commandline commandline =
                     newCommandline(installDirectory, null, false, 10, log);
 
-            Files.createDirectories(resultsDirectory);
-            Files.write(resultsDirectory.resolve("sample.json"), Collections.singletonList("{}"),
-                    StandardCharsets.UTF_8);
-            Allure3SetupHelper.prepareFakeReportRuntime(installDirectory, capturedArgs,
-                    reportDirectory, false);
+            step("Prepare fake results and debug report runtime", () -> {
+                Files.createDirectories(resultsDirectory);
+                Files.write(resultsDirectory.resolve("sample.json"),
+                        Collections.singletonList("{}"), StandardCharsets.UTF_8);
+                Allure3SetupHelper.prepareFakeReportRuntime(installDirectory, capturedArgs,
+                        reportDirectory, false);
+                addAttachment("Debug report inputs", "resultsDirectory=" + resultsDirectory
+                        + System.lineSeparator() + "reportDirectory=" + reportDirectory);
+            });
 
-            commandline.generateReport(Collections.singletonList(resultsDirectory), reportDirectory,
-                    false, buildDirectory, "Allure", null);
+            step("Generate report in debug mode",
+                    () -> commandline.generateReport(Collections.singletonList(resultsDirectory),
+                            reportDirectory, false, buildDirectory, "Allure", null));
 
-            final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
-                    .resolve("allurerc.json");
-            assertThat(log.debugMessages,
-                    is(Collections.singletonList("Executing Allure command: ["
-                            + commandline.getAllureExecutablePath().toAbsolutePath()
-                            + ", generate, " + resultsDirectory.toAbsolutePath() + ", --config, "
-                            + config.toAbsolutePath() + "]")));
+            step("Verify generated debug command log", () -> {
+                final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
+                        .resolve("allurerc.json");
+                addAttachment("Generated debug config", Files.readString(config));
+                addAttachment("Debug log messages",
+                        String.join(System.lineSeparator(), log.debugMessages));
+                assertThat(log.debugMessages)
+                        .isEqualTo(Collections.singletonList("Executing Allure command: ["
+                                + commandline.getAllureExecutablePath().toAbsolutePath()
+                                + ", generate, " + resultsDirectory.toAbsolutePath()
+                                + ", --config, " + config.toAbsolutePath() + "]"));
+            });
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldMergeYamlConfigIntoGeneratedConfig() throws Exception {
+    void shouldMergeYamlConfigIntoGeneratedConfig() throws Exception {
         assumeFalse(isWindows());
 
         final Path testDirectory = Files.createTempDirectory("allure3-commandline");
@@ -204,49 +250,57 @@ public class Allure3CommandlineTest {
             final Allure3Commandline commandline =
                     newCommandline(installDirectory, null, false, 10);
 
-            Files.createDirectories(resultsDirectory);
-            Files.write(resultsDirectory.resolve("sample.json"), Collections.singletonList("{}"),
-                    StandardCharsets.UTF_8);
-            Files.write(userConfig,
-                    Arrays.asList("plugins:", "  custom:", "    enabled: true", "  awesome:",
-                            "    options:", "      collapseSuites: true",
-                            "      reportLanguage: en"),
-                    StandardCharsets.UTF_8);
-            Allure3SetupHelper.prepareFakeReportRuntime(installDirectory,
-                    testDirectory.resolve("node-args.txt"), reportDirectory, false);
+            step("Prepare fake results, user YAML config, and report runtime", () -> {
+                Files.createDirectories(resultsDirectory);
+                Files.write(resultsDirectory.resolve("sample.json"),
+                        Collections.singletonList("{}"), StandardCharsets.UTF_8);
+                Files.write(userConfig,
+                        Arrays.asList("plugins:", "  custom:", "    enabled: true", "  awesome:",
+                                "    options:", "      collapseSuites: true",
+                                "      reportLanguage: en"),
+                        StandardCharsets.UTF_8);
+                Allure3SetupHelper.prepareFakeReportRuntime(installDirectory,
+                        testDirectory.resolve("node-args.txt"), reportDirectory, false);
+                addAttachment("User YAML config", Files.readString(userConfig));
+            });
 
             final Map<String, Object> defaultConfig = new LinkedHashMap<>();
             defaultConfig.put("historyPath", testDirectory
                     .resolve(Paths.get("history", "history.jsonl")).toAbsolutePath().toString());
             defaultConfig.put("appendHistory", true);
 
-            commandline.generateReport(Collections.singletonList(resultsDirectory), reportDirectory,
-                    true, buildDirectory, "Allure", userConfig, defaultConfig);
+            step("Generate report with merged YAML config",
+                    () -> commandline.generateReport(Collections.singletonList(resultsDirectory),
+                            reportDirectory, true, buildDirectory, "Allure", userConfig,
+                            defaultConfig));
 
-            final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
-                    .resolve("allurerc.json");
-            final JsonNode configJson = new ObjectMapper().readTree(config.toFile());
-            assertThat(configJson.get("name").asText(), is("Allure"));
-            assertThat(configJson.get("output").asText(),
-                    is(reportDirectory.toAbsolutePath().toString()));
-            assertThat(configJson.get("historyPath").asText(),
-                    is(defaultConfig.get("historyPath")));
-            assertThat(configJson.get("appendHistory").asBoolean(), is(true));
-            assertThat(configJson.get("plugins").get("custom").get("enabled").asBoolean(),
-                    is(true));
-            assertThat(configJson.get("plugins").get("awesome").get("options").get("collapseSuites")
-                    .asBoolean(), is(true));
-            assertThat(configJson.get("plugins").get("awesome").get("options").get("reportLanguage")
-                    .asText(), is("en"));
-            assertThat(configJson.get("plugins").get("awesome").get("options").get("singleFile")
-                    .asBoolean(), is(true));
+            step("Verify merged YAML config in generated report config", () -> {
+                final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
+                        .resolve("allurerc.json");
+                final JsonNode configJson = new ObjectMapper().readTree(config.toFile());
+                addAttachment("Merged Allure 3 config", Files.readString(config));
+                assertThat(configJson.get("name").asText()).isEqualTo("Allure");
+                assertThat(configJson.get("output").asText())
+                        .isEqualTo(reportDirectory.toAbsolutePath().toString());
+                assertThat(configJson.get("historyPath").asText())
+                        .isEqualTo(defaultConfig.get("historyPath"));
+                assertThat(configJson.get("appendHistory").asBoolean()).isTrue();
+                assertThat(configJson.get("plugins").get("custom").get("enabled").asBoolean())
+                        .isTrue();
+                assertThat(configJson.get("plugins").get("awesome").get("options")
+                        .get("collapseSuites").asBoolean()).isTrue();
+                assertThat(configJson.get("plugins").get("awesome").get("options")
+                        .get("reportLanguage").asText()).isEqualTo("en");
+                assertThat(configJson.get("plugins").get("awesome").get("options").get("singleFile")
+                        .asBoolean()).isTrue();
+            });
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldWrapJavaScriptConfigIntoGeneratedModule() throws Exception {
+    void shouldWrapJavaScriptConfigIntoGeneratedModule() throws Exception {
         assumeFalse(isWindows());
 
         final Path testDirectory = Files.createTempDirectory("allure3-commandline");
@@ -259,46 +313,59 @@ public class Allure3CommandlineTest {
             final Allure3Commandline commandline =
                     newCommandline(installDirectory, null, false, 10);
 
-            Files.createDirectories(resultsDirectory);
-            Files.write(resultsDirectory.resolve("sample.json"), Collections.singletonList("{}"),
-                    StandardCharsets.UTF_8);
-            Files.write(userConfig,
-                    Arrays.asList("export default {", "  plugins: {", "    awesome: {",
-                            "      options: {", "        reportLanguage: \"en\"", "      }",
-                            "    }", "  }", "};"),
-                    StandardCharsets.UTF_8);
-            Allure3SetupHelper.prepareFakeReportRuntime(installDirectory,
-                    testDirectory.resolve("node-args.txt"), reportDirectory, false);
+            step("Prepare fake results, user JavaScript config, and report runtime", () -> {
+                Files.createDirectories(resultsDirectory);
+                Files.write(resultsDirectory.resolve("sample.json"),
+                        Collections.singletonList("{}"), StandardCharsets.UTF_8);
+                Files.write(userConfig,
+                        Arrays.asList("export default {", "  plugins: {", "    awesome: {",
+                                "      options: {", "        reportLanguage: \"en\"", "      }",
+                                "    }", "  }", "};"),
+                        StandardCharsets.UTF_8);
+                Allure3SetupHelper.prepareFakeReportRuntime(installDirectory,
+                        testDirectory.resolve("node-args.txt"), reportDirectory, false);
+                addAttachment("User JavaScript config", Files.readString(userConfig));
+            });
 
             final Map<String, Object> defaultConfig = new LinkedHashMap<>();
             defaultConfig.put("historyPath", testDirectory
                     .resolve(Paths.get("history", "history.jsonl")).toAbsolutePath().toString());
             defaultConfig.put("appendHistory", true);
 
-            commandline.generateReport(Collections.singletonList(resultsDirectory), reportDirectory,
-                    true, buildDirectory, "Allure", userConfig, defaultConfig);
+            step("Generate report with wrapped JavaScript config",
+                    () -> commandline.generateReport(Collections.singletonList(resultsDirectory),
+                            reportDirectory, true, buildDirectory, "Allure", userConfig,
+                            defaultConfig));
 
-            final Path generatedConfig = buildDirectory.resolve("allure-maven").resolve("allure3")
-                    .resolve("allurerc.mjs");
-            final List<String> generatedConfigLines =
-                    Files.readAllLines(generatedConfig, StandardCharsets.UTF_8);
-            assertThat(generatedConfig, exists());
-            assertThat(generatedConfigLines, hasItem("import userConfig from " + new ObjectMapper()
-                    .writeValueAsString(userConfig.toAbsolutePath().toUri().toString()) + ";"));
-            assertThat(generatedConfigLines, hasItem("  name: \"Allure\","));
-            assertThat(generatedConfigLines, hasItem("        singleFile: true,"));
-            assertThat(generatedConfigLines, hasItem("  historyPath: config.historyPath ?? "
-                    + new ObjectMapper().writeValueAsString(defaultConfig.get("historyPath"))
-                    + ","));
-            assertThat(generatedConfigLines,
-                    hasItem("  appendHistory: config.appendHistory ?? true,"));
+            step("Verify generated JavaScript wrapper config", () -> {
+                final Path generatedConfig = buildDirectory.resolve("allure-maven")
+                        .resolve("allure3").resolve("allurerc.mjs");
+                final List<String> generatedConfigLines =
+                        Files.readAllLines(generatedConfig, StandardCharsets.UTF_8);
+                addAttachment("Generated JavaScript wrapper config",
+                        String.join(System.lineSeparator(), generatedConfigLines));
+                assertThat(generatedConfig).exists();
+                assertThat(generatedConfigLines)
+                        .contains(
+                                "import userConfig from "
+                                        + new ObjectMapper().writeValueAsString(
+                                                userConfig.toAbsolutePath().toUri().toString())
+                                        + ";");
+                assertThat(generatedConfigLines).contains("  name: \"Allure\",");
+                assertThat(generatedConfigLines).contains("        singleFile: true,");
+                assertThat(generatedConfigLines).contains("  historyPath: config.historyPath ?? "
+                        + new ObjectMapper().writeValueAsString(defaultConfig.get("historyPath"))
+                        + ",");
+                assertThat(generatedConfigLines)
+                        .contains("  appendHistory: config.appendHistory ?? true,");
+            });
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldServeReportWithGenerateThenOpenAndPort() throws Exception {
+    void shouldServeReportWithGenerateThenOpenAndPort() throws Exception {
         assumeFalse(isWindows());
 
         final Path testDirectory = Files.createTempDirectory("allure3-commandline");
@@ -311,34 +378,44 @@ public class Allure3CommandlineTest {
             final Allure3Commandline commandline =
                     newCommandline(installDirectory, null, false, 10);
 
-            Files.createDirectories(resultsDirectory);
-            Files.write(resultsDirectory.resolve("sample.json"), Collections.singletonList("{}"),
-                    StandardCharsets.UTF_8);
-            Allure3SetupHelper.prepareFakeReportRuntime(installDirectory, capturedArgs,
-                    reportDirectory, false);
+            step("Prepare fake results and report runtime for serve flow", () -> {
+                Files.createDirectories(resultsDirectory);
+                Files.write(resultsDirectory.resolve("sample.json"),
+                        Collections.singletonList("{}"), StandardCharsets.UTF_8);
+                Allure3SetupHelper.prepareFakeReportRuntime(installDirectory, capturedArgs,
+                        reportDirectory, false);
+                addAttachment("Serve flow inputs", "resultsDirectory=" + resultsDirectory
+                        + System.lineSeparator() + "reportDirectory=" + reportDirectory);
+            });
 
-            commandline.serve(Collections.singletonList(resultsDirectory), reportDirectory, false,
-                    buildDirectory, "Allure", 5555, null);
+            step("Generate and open report through serve flow",
+                    () -> commandline.serve(Collections.singletonList(resultsDirectory),
+                            reportDirectory, false, buildDirectory, "Allure", 5555, null));
 
-            final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
-                    .resolve("allurerc.json");
-            assertThat(reportDirectory.resolve("index.html"), exists());
-            assertThat(Files.readAllLines(capturedArgs, StandardCharsets.UTF_8),
-                    is(Arrays.asList("cli=" + commandline.getAllureCliPath().toAbsolutePath(),
-                            "command=generate", "arg=generate",
-                            "arg=" + resultsDirectory.toAbsolutePath(), "arg=--config",
-                            "arg=" + config.toAbsolutePath(), "---",
-                            "cli=" + commandline.getAllureCliPath().toAbsolutePath(),
-                            "command=open", "arg=open", "arg=" + reportDirectory.toAbsolutePath(),
-                            "arg=--config", "arg=" + config.toAbsolutePath(), "arg=--port",
-                            "arg=5555", "---")));
+            step("Verify generated report and open command arguments", () -> {
+                final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
+                        .resolve("allurerc.json");
+                addAttachment("Serve flow config", Files.readString(config));
+                assertThat(reportDirectory.resolve("index.html")).exists();
+                final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
+                addAttachment("Serve flow CLI arguments",
+                        String.join(System.lineSeparator(), args));
+                assertThat(args).isEqualTo(Arrays.asList(
+                        "cli=" + commandline.getAllureCliPath().toAbsolutePath(),
+                        "command=generate", "arg=generate",
+                        "arg=" + resultsDirectory.toAbsolutePath(), "arg=--config",
+                        "arg=" + config.toAbsolutePath(), "---",
+                        "cli=" + commandline.getAllureCliPath().toAbsolutePath(), "command=open",
+                        "arg=open", "arg=" + reportDirectory.toAbsolutePath(), "arg=--config",
+                        "arg=" + config.toAbsolutePath(), "arg=--port", "arg=5555", "---"));
+            });
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldLogGenerateAndOpenCommandsInDebugModeWithoutVerboseFlag() throws Exception {
+    void shouldLogGenerateAndOpenCommandsInDebugModeWithoutVerboseFlag() throws Exception {
         assumeFalse(isWindows());
 
         final Path testDirectory = Files.createTempDirectory("allure3-commandline");
@@ -352,37 +429,53 @@ public class Allure3CommandlineTest {
             final Allure3Commandline commandline =
                     newCommandline(installDirectory, null, false, 10, log);
 
-            Files.createDirectories(resultsDirectory);
-            Files.write(resultsDirectory.resolve("sample.json"), Collections.singletonList("{}"),
-                    StandardCharsets.UTF_8);
-            Allure3SetupHelper.prepareFakeReportRuntime(installDirectory, capturedArgs,
-                    reportDirectory, false);
+            step("Prepare fake results and debug report runtime for serve flow", () -> {
+                Files.createDirectories(resultsDirectory);
+                Files.write(resultsDirectory.resolve("sample.json"),
+                        Collections.singletonList("{}"), StandardCharsets.UTF_8);
+                Allure3SetupHelper.prepareFakeReportRuntime(installDirectory, capturedArgs,
+                        reportDirectory, false);
+                addAttachment("Debug serve flow inputs", "resultsDirectory=" + resultsDirectory
+                        + System.lineSeparator() + "reportDirectory=" + reportDirectory);
+            });
 
-            commandline.serve(Collections.singletonList(resultsDirectory), reportDirectory, false,
-                    buildDirectory, "Allure", 5555, null);
+            step("Generate and open report in debug mode",
+                    () -> commandline.serve(Collections.singletonList(resultsDirectory),
+                            reportDirectory, false, buildDirectory, "Allure", 5555, null));
 
-            final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
-                    .resolve("allurerc.json");
-            assertThat(log.debugMessages,
-                    is(Arrays.asList(
-                            "Executing Allure command: ["
-                                    + commandline.getAllureExecutablePath().toAbsolutePath()
-                                    + ", generate, " + resultsDirectory.toAbsolutePath()
-                                    + ", --config, " + config.toAbsolutePath() + "]",
-                            "Executing Allure command: ["
-                                    + commandline.getAllureExecutablePath().toAbsolutePath()
-                                    + ", open, " + reportDirectory.toAbsolutePath() + ", --config, "
-                                    + config.toAbsolutePath() + ", --port, 5555]")));
+            step("Verify logged generate and open commands", () -> {
+                final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
+                        .resolve("allurerc.json");
+                addAttachment("Debug serve flow config", Files.readString(config));
+                addAttachment("Generate and open debug log messages",
+                        String.join(System.lineSeparator(), log.debugMessages));
+                assertThat(log.debugMessages)
+                        .isEqualTo(
+                                Arrays.asList(
+                                        "Executing Allure command: ["
+                                                + commandline.getAllureExecutablePath()
+                                                        .toAbsolutePath()
+                                                + ", generate, " + resultsDirectory.toAbsolutePath()
+                                                + ", --config, " + config.toAbsolutePath() + "]",
+                                        "Executing Allure command: ["
+                                                + commandline.getAllureExecutablePath()
+                                                        .toAbsolutePath()
+                                                + ", open, " + reportDirectory.toAbsolutePath()
+                                                + ", --config, " + config.toAbsolutePath()
+                                                + ", --port, 5555]"));
+            });
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }
     }
 
-    @Test(expected = IOException.class)
-    public void shouldFailOfflineWhenPrivateNodeIsMissing() throws Exception {
+    @Test
+    void shouldFailOfflineWhenPrivateNodeIsMissing() throws Exception {
         final Path testDirectory = Files.createTempDirectory("allure3-commandline");
         try {
-            newCommandline(testDirectory.resolve("install"), null, true, 10).install();
+            assertThrows(IOException.class,
+                    () -> newCommandline(testDirectory.resolve("install"), null, true, 10)
+                            .install());
         } finally {
             FileUtils.deleteQuietly(testDirectory.toFile());
         }

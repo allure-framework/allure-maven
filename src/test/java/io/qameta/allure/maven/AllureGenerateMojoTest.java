@@ -17,7 +17,8 @@ package io.qameta.allure.maven;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.reporting.MavenReportException;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -25,15 +26,14 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class AllureGenerateMojoTest {
+@Tag("unit")
+@Tag("generate")
+class AllureGenerateMojoTest {
 
     @Test
-    public void shouldDetectAllureRcYmlInProjectRoot() throws Exception {
+    void shouldDetectAllureRcYmlInProjectRoot() throws Exception {
         final Path projectDirectory = Files.createTempDirectory("allure3-project-config");
         try {
             Files.write(projectDirectory.resolve("allurerc.yml"),
@@ -42,15 +42,15 @@ public class AllureGenerateMojoTest {
             final TestGenerateMojo mojo = new TestGenerateMojo();
             mojo.projectDirectory = projectDirectory.toString();
 
-            assertThat(mojo.resolveAllure3ConfigPath(),
-                    is(projectDirectory.resolve("allurerc.yml")));
+            assertThat(mojo.resolveAllure3ConfigPath())
+                    .isEqualTo(projectDirectory.resolve("allurerc.yml"));
         } finally {
             FileUtils.deleteQuietly(projectDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldPreferAllureRcJsBeforeYaml() throws Exception {
+    void shouldPreferAllureRcJsBeforeYaml() throws Exception {
         final Path projectDirectory = Files.createTempDirectory("allure3-project-config");
         try {
             Files.write(projectDirectory.resolve("allurerc.js"),
@@ -61,15 +61,15 @@ public class AllureGenerateMojoTest {
             final TestGenerateMojo mojo = new TestGenerateMojo();
             mojo.projectDirectory = projectDirectory.toString();
 
-            assertThat(mojo.resolveAllure3ConfigPath(),
-                    is(projectDirectory.resolve("allurerc.js")));
+            assertThat(mojo.resolveAllure3ConfigPath())
+                    .isEqualTo(projectDirectory.resolve("allurerc.js"));
         } finally {
             FileUtils.deleteQuietly(projectDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldResolveExplicitRelativeAllureConfigPath() throws Exception {
+    void shouldResolveExplicitRelativeAllureConfigPath() throws Exception {
         final Path projectDirectory = Files.createTempDirectory("allure3-project-config");
         try {
             final Path configured = projectDirectory.resolve("config").resolve("custom.yml");
@@ -81,27 +81,27 @@ public class AllureGenerateMojoTest {
             mojo.projectDirectory = projectDirectory.toString();
             mojo.configPath = "config/custom.yml";
 
-            assertThat(mojo.resolveAllure3ConfigPath(), is(configured));
+            assertThat(mojo.resolveAllure3ConfigPath()).isEqualTo(configured);
         } finally {
             FileUtils.deleteQuietly(projectDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldReturnNullWhenNoAutoDetectedConfigExists() throws Exception {
+    void shouldReturnNullWhenNoAutoDetectedConfigExists() throws Exception {
         final Path projectDirectory = Files.createTempDirectory("allure3-project-config");
         try {
             final TestGenerateMojo mojo = new TestGenerateMojo();
             mojo.projectDirectory = projectDirectory.toString();
 
-            assertThat(mojo.resolveAllure3ConfigPath(), is(nullValue()));
+            assertThat(mojo.resolveAllure3ConfigPath()).isNull();
         } finally {
             FileUtils.deleteQuietly(projectDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldResolveExplicitRelativeAllurePackagePath() throws Exception {
+    void shouldResolveExplicitRelativeAllurePackagePath() throws Exception {
         final Path projectDirectory = Files.createTempDirectory("allure3-project-package");
         try {
             final Path configured =
@@ -113,21 +113,21 @@ public class AllureGenerateMojoTest {
             mojo.projectDirectory = projectDirectory.toString();
             mojo.packagePath = "packages/custom-allure.tgz";
 
-            assertThat(mojo.resolveAllurePackagePath(), is(configured));
+            assertThat(mojo.resolveAllurePackagePath()).isEqualTo(configured);
         } finally {
             FileUtils.deleteQuietly(projectDirectory.toFile());
         }
     }
 
     @Test
-    public void shouldRejectExplicitConfigPathForAllure2() throws Exception {
+    void shouldRejectExplicitConfigPathForAllure2() throws Exception {
         final TestGenerateMojo mojo = new TestGenerateMojo();
         mojo.configPath = "config/custom.yml";
 
         try {
             mojo.validateConfiguredParameters(AllureVersion.resolve("2.30.0"));
         } catch (MavenReportException e) {
-            assertThat(e.getMessage(), containsString("only supported for Allure 3"));
+            assertThat(e).hasMessageContaining("only supported for Allure 3");
             return;
         }
 
@@ -135,14 +135,14 @@ public class AllureGenerateMojoTest {
     }
 
     @Test
-    public void shouldRejectExplicitPackagePathForAllure2() throws Exception {
+    void shouldRejectExplicitPackagePathForAllure2() throws Exception {
         final TestGenerateMojo mojo = new TestGenerateMojo();
         mojo.packagePath = "packages/custom-allure.tgz";
 
         try {
             mojo.validateConfiguredParameters(AllureVersion.resolve("2.30.0"));
         } catch (MavenReportException e) {
-            assertThat(e.getMessage(), containsString("allure.package.path"));
+            assertThat(e).hasMessageContaining("allure.package.path");
             return;
         }
 

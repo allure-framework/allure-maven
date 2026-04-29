@@ -25,11 +25,11 @@ import java.nio.file.Paths;
  * Shared setup helpers for Allure 3 integration tests.
  */
 @SuppressWarnings({"MultipleStringLiterals", "PMD.AvoidDuplicateLiterals"})
-public final class Allure3SetupHelper {
+final class Allure3SetupHelper {
 
     private Allure3SetupHelper() {}
 
-    public static void prepareFakeReportRuntime(final Path installDirectory, final Path captureFile,
+    static void prepareFakeReportRuntime(final Path installDirectory, final Path captureFile,
             final Path reportDirectory, final boolean createDataFiles) throws IOException {
         final Allure3Platform platform = Allure3Platform.detect();
         final Path nodeExecutable = platform.getNodeExecutable(installDirectory,
@@ -55,8 +55,8 @@ public final class Allure3SetupHelper {
         nodeExecutable.toFile().setExecutable(true);
     }
 
-    public static void prepareFakeInstallRuntime(final Path installDirectory,
-            final Path captureFile) throws IOException {
+    static void prepareFakeInstallRuntime(final Path installDirectory, final Path captureFile)
+            throws IOException {
         final Allure3Platform platform = Allure3Platform.detect();
         final Path nodeExecutable = platform.getNodeExecutable(installDirectory,
                 Allure3Commandline.NODE_DEFAULT_VERSION);
@@ -78,7 +78,7 @@ public final class Allure3SetupHelper {
         nodeExecutable.toFile().setExecutable(true);
     }
 
-    public static void prepareFakePackageArchive(final Path packageArchive) throws IOException {
+    static void prepareFakePackageArchive(final Path packageArchive) throws IOException {
         if (packageArchive.getParent() != null) {
             Files.createDirectories(packageArchive.getParent());
         }
