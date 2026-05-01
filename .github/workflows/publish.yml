@@ -31,11 +31,11 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
       - name: "Maven Build"
-        run: ./mvnw -Dinvoker.skip=true install
+        run: ./mvnw install
 
       - name: "Maven Publish"
         run: |
-          ./mvnw -Dinvoker.skip=true -Pgpg deploy \
+          ./mvnw -Pgpg deploy \
                  -Dgpg.keyname=${GPG_KEY_ID} \
         env:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}

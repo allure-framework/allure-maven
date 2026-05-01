@@ -15,49 +15,54 @@
  */
 package io.qameta.allure.maven;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class Allure3PlatformTest {
+@Tag("unit")
+@Tag("allure3")
+@Tag("platform")
+class Allure3PlatformTest {
 
     @Test
-    public void shouldResolveMacArm64ArchiveName() {
+    void shouldResolveMacArm64ArchiveName() {
         final Allure3Platform platform = Allure3Platform.detect("Mac OS X", "aarch64");
 
-        assertThat(platform.getArchiveFileName("24.14.1"), is("node-v24.14.1-darwin-arm64.tar.gz"));
+        assertThat(platform.getArchiveFileName("24.14.1"))
+                .isEqualTo("node-v24.14.1-darwin-arm64.tar.gz");
     }
 
     @Test
-    public void shouldResolveLinuxX64ArchiveName() {
+    void shouldResolveLinuxX64ArchiveName() {
         final Allure3Platform platform = Allure3Platform.detect("Linux", "amd64");
 
-        assertThat(platform.getArchiveFileName("24.14.1"), is("node-v24.14.1-linux-x64.tar.gz"));
+        assertThat(platform.getArchiveFileName("24.14.1"))
+                .isEqualTo("node-v24.14.1-linux-x64.tar.gz");
     }
 
     @Test
-    public void shouldResolveWindowsX64ArchiveName() {
+    void shouldResolveWindowsX64ArchiveName() {
         final Allure3Platform platform = Allure3Platform.detect("Windows 11", "x86_64");
 
-        assertThat(platform.getArchiveFileName("24.14.1"), is("node-v24.14.1-win-x64.zip"));
+        assertThat(platform.getArchiveFileName("24.14.1")).isEqualTo("node-v24.14.1-win-x64.zip");
     }
 
     @Test
-    public void shouldResolveUnixLauncherPath() {
+    void shouldResolveUnixLauncherPath() {
         final Allure3Platform platform = Allure3Platform.detect("Linux", "amd64");
 
-        assertThat(platform.getAllureExecutable(Paths.get("/tmp/allure")),
-                is(Paths.get("/tmp/allure", "bin", "allure")));
+        assertThat(platform.getAllureExecutable(Paths.get("/tmp/allure")))
+                .isEqualTo(Paths.get("/tmp/allure", "bin", "allure"));
     }
 
     @Test
-    public void shouldResolveWindowsLauncherPath() {
+    void shouldResolveWindowsLauncherPath() {
         final Allure3Platform platform = Allure3Platform.detect("Windows 11", "x86_64");
 
-        assertThat(platform.getAllureExecutable(Paths.get("C:\\allure")),
-                is(Paths.get("C:\\allure", "bin", "allure.bat")));
+        assertThat(platform.getAllureExecutable(Paths.get("C:\\allure")))
+                .isEqualTo(Paths.get("C:\\allure", "bin", "allure.bat"));
     }
 }

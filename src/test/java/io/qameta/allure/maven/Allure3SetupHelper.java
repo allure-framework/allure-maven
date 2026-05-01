@@ -16,20 +16,31 @@
 package io.qameta.allure.maven;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 /**
  * Shared setup helpers for Allure 3 integration tests.
  */
 @SuppressWarnings({"MultipleStringLiterals", "PMD.AvoidDuplicateLiterals"})
-public final class Allure3SetupHelper {
+final class Allure3SetupHelper {
+
+    private static final String WINDOWS_REPORT_NODE_TEMPLATE =
+            "/verifier-data/allure3-report-node-windows.cmd";
+
+    private static final String WINDOWS_REPORT_NODE_DATA_TEMPLATE =
+            "/verifier-data/allure3-report-node-data-windows.cmd";
+
+    private static final String WINDOWS_INSTALL_NODE_TEMPLATE =
+            "/verifier-data/allure3-install-node-windows.cmd";
 
     private Allure3SetupHelper() {}
 
-    public static void prepareFakeReportRuntime(final Path installDirectory, final Path captureFile,
+    static void prepareFakeReportRuntime(final Path installDirectory, final Path captureFile,
             final Path reportDirectory, final boolean createDataFiles) throws IOException {
         final Allure3Platform platform = Allure3Platform.detect();
         final Path nodeExecutable = platform.getNodeExecutable(installDirectory,
@@ -43,7 +54,8 @@ public final class Allure3SetupHelper {
         Files.write(allureCli, "console.log(\"fake allure\");\n".getBytes(StandardCharsets.UTF_8));
 
         if (platform.isWindows()) {
-            Files.write(nodeExecutable,
+            Files.write(nodeExecutable, "fake node marker\r\n".getBytes(StandardCharsets.UTF_8));
+            Files.write(nodeExecutable.resolveSibling("node.cmd"),
                     createWindowsReportNode(captureFile, reportDirectory, createDataFiles)
                             .getBytes(StandardCharsets.UTF_8));
             return;
@@ -55,8 +67,8 @@ public final class Allure3SetupHelper {
         nodeExecutable.toFile().setExecutable(true);
     }
 
-    public static void prepareFakeInstallRuntime(final Path installDirectory,
-            final Path captureFile) throws IOException {
+    static void prepareFakeInstallRuntime(final Path installDirectory, final Path captureFile)
+            throws IOException {
         final Allure3Platform platform = Allure3Platform.detect();
         final Path nodeExecutable = platform.getNodeExecutable(installDirectory,
                 Allure3Commandline.NODE_DEFAULT_VERSION);
@@ -68,7 +80,8 @@ public final class Allure3SetupHelper {
         Files.write(npmCli, "console.log(\"fake npm\");\n".getBytes(StandardCharsets.UTF_8));
 
         if (platform.isWindows()) {
-            Files.write(nodeExecutable,
+            Files.write(nodeExecutable, "fake node marker\r\n".getBytes(StandardCharsets.UTF_8));
+            Files.write(nodeExecutable.resolveSibling("node.cmd"),
                     createWindowsInstallNode(captureFile).getBytes(StandardCharsets.UTF_8));
             return;
         }
@@ -78,7 +91,7 @@ public final class Allure3SetupHelper {
         nodeExecutable.toFile().setExecutable(true);
     }
 
-    public static void prepareFakePackageArchive(final Path packageArchive) throws IOException {
+    static void prepareFakePackageArchive(final Path packageArchive) throws IOException {
         if (packageArchive.getParent() != null) {
             Files.createDirectories(packageArchive.getParent());
         }
@@ -126,46 +139,16 @@ public final class Allure3SetupHelper {
     }
 
     private static String createWindowsReportNode(final Path captureFile,
-            final Path reportDirectory, final boolean createDataFiles) {
-        final StringBuilder builder = new StringBuilder().append("@echo off\r\n")
-                .append("setlocal EnableExtensions DisableDelayedExpansion\r\n")
-                .append("if not exist \"").append(captureFile.getParent()).append("\" mkdir \"")
-                .append(captureFile.getParent()).append("\"\r\n").append(">> \"")
-                .append(captureFile).append("\" echo(cli=%~1\r\n").append("set \"COMMAND=%~2\"\r\n")
-                .append(">> \"").append(captureFile).append("\" echo(command=%COMMAND%\r\n")
-                .append(":loop\r\n").append("if \"%~1\"==\"\" goto afterCapture\r\n")
-                .append(">> \"").append(captureFile).append("\" echo(arg=%~1\r\n")
-                .append("shift\r\n").append("goto loop\r\n").append(":afterCapture\r\n")
-                .append(">> \"").append(captureFile).append("\" echo(---\r\n")
-                .append("if /I not \"%COMMAND%\"==\"generate\" exit /b 0\r\n");
-
-        appendWindowsReportFiles(builder, reportDirectory, createDataFiles);
-        builder.append("exit /b 0\r\n");
-        return builder.toString();
-    }
-
-    private static void appendWindowsReportFiles(final StringBuilder builder,
-            final Path reportDirectory, final boolean createDataFiles) {
-        if (createDataFiles) {
-            final String dataDirectory =
-                    reportDirectory.resolve("data").toAbsolutePath().toString();
-            final String casesDirectory = reportDirectory.resolve(Paths.get("data", "test-cases"))
-                    .toAbsolutePath().toString();
-            builder.append("if not exist \"").append(casesDirectory).append("\" mkdir \"")
-                    .append(casesDirectory).append("\"\r\n").append("type nul > \"")
-                    .append(reportDirectory.resolve("index.html")).append("\"\r\n")
-                    .append("type nul > \"").append(dataDirectory).append("\\behaviors.json\"\r\n")
-                    .append("type nul > \"").append(dataDirectory).append("\\categories.json\"\r\n")
-                    .append("type nul > \"").append(dataDirectory).append("\\packages.json\"\r\n")
-                    .append("type nul > \"").append(dataDirectory).append("\\timeline.json\"\r\n")
-                    .append("type nul > \"").append(dataDirectory).append("\\suites.json\"\r\n")
-                    .append("echo {} > \"").append(casesDirectory).append("\\case.json\"\r\n");
-            return;
-        }
-
-        builder.append("if not exist \"").append(reportDirectory).append("\" mkdir \"")
-                .append(reportDirectory).append("\"\r\n").append("type nul > \"")
-                .append(reportDirectory.resolve("index.html")).append("\"\r\n");
+            final Path reportDirectory, final boolean createDataFiles) throws IOException {
+        final String template =
+                createDataFiles ? WINDOWS_REPORT_NODE_DATA_TEMPLATE : WINDOWS_REPORT_NODE_TEMPLATE;
+        return renderWindowsTemplate(template,
+                Map.of("@capture.parent@", windowsPath(captureFile.getParent()), "@capture.file@",
+                        windowsPath(captureFile), "@report.directory@",
+                        windowsPath(reportDirectory), "@index.file@",
+                        windowsPath(reportDirectory.resolve("index.html")), "@data.directory@",
+                        windowsPath(reportDirectory.resolve("data")), "@cases.directory@",
+                        windowsPath(reportDirectory.resolve(Paths.get("data", "test-cases")))));
     }
 
     private static String createUnixInstallNode(final Path captureFile) {
@@ -182,23 +165,30 @@ public final class Allure3SetupHelper {
                 .append("\"$prefix/node_modules/allure/cli.js\"\n").append("exit 0\n").toString();
     }
 
-    private static String createWindowsInstallNode(final Path captureFile) {
-        return new StringBuilder().append("@echo off\r\n")
-                .append("setlocal EnableExtensions DisableDelayedExpansion\r\n")
-                .append("if not exist \"").append(captureFile.getParent()).append("\" mkdir \"")
-                .append(captureFile.getParent()).append("\"\r\n").append("type nul > \"")
-                .append(captureFile).append("\"\r\n").append(">> \"").append(captureFile)
-                .append("\" echo(cli=%~1\r\n").append("set \"PREFIX=\"\r\n").append(":loop\r\n")
-                .append("shift\r\n").append("if \"%~1\"==\"\" goto done\r\n").append(">> \"")
-                .append(captureFile).append("\" echo(arg=%~1\r\n")
-                .append("if \"%~1\"==\"--prefix\" (\r\n").append("  shift\r\n")
-                .append("  set \"PREFIX=%~1\"\r\n").append("  >> \"").append(captureFile)
-                .append("\" echo(arg=%~1\r\n").append(")\r\n").append("goto loop\r\n")
-                .append(":done\r\n").append("if not defined PREFIX exit /b 1\r\n")
-                .append("if not exist \"%PREFIX%\\node_modules\\allure\" mkdir ")
-                .append("\"%PREFIX%\\node_modules\\allure\"\r\n")
-                .append("echo console.log(\"fake allure\") > ")
-                .append("\"%PREFIX%\\node_modules\\allure\\cli.js\"\r\n").append("exit /b 0\r\n")
-                .toString();
+    private static String createWindowsInstallNode(final Path captureFile) throws IOException {
+        return renderWindowsTemplate(WINDOWS_INSTALL_NODE_TEMPLATE, Map.of("@capture.parent@",
+                windowsPath(captureFile.getParent()), "@capture.file@", windowsPath(captureFile)));
+    }
+
+    private static String renderWindowsTemplate(final String resourcePath,
+            final Map<String, String> placeholders) throws IOException {
+        String template = readResource(resourcePath);
+        for (Map.Entry<String, String> placeholder : placeholders.entrySet()) {
+            template = template.replace(placeholder.getKey(), placeholder.getValue());
+        }
+        return template.replace("\r\n", "\n").replace("\n", "\r\n");
+    }
+
+    private static String readResource(final String resourcePath) throws IOException {
+        try (InputStream stream = Allure3SetupHelper.class.getResourceAsStream(resourcePath)) {
+            if (stream == null) {
+                throw new IOException("Resource not found: " + resourcePath);
+            }
+            return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private static String windowsPath(final Path path) {
+        return path.toAbsolutePath().toString();
     }
 }

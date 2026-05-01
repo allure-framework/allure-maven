@@ -1,8 +1,10 @@
 name: Build
 
-permissions: {}
+permissions:
+  contents: read
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - '*'
@@ -11,25 +13,85 @@ on:
       - 'main'
       - 'hotfix-*'
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   build:
-    name: "Build (${{ matrix.os }}, JDK ${{ matrix.java-version }})"
-    runs-on: ${{ matrix.os }}
+    name: 'Build (JDK ${{ matrix.java-version }}, ${{ matrix.os }})'
+    runs-on: ${{ matrix.os }}-latest
     strategy:
+      fail-fast: false
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ 'ubuntu', 'windows' ]
         java-version: [ '17', '21', '25' ]
+    env:
+      MATRIX_OS: ${{ matrix.os }}
+      MATRIX_JAVA_VERSION: ${{ matrix.java-version }}
+      ALLURE_MATRIX_ENV: ${{ matrix.os }}-jdk-${{ matrix.java-version }}
+      ALLURE_DUMP_NAME: allure-results-build-${{ matrix.os }}-jdk-${{ matrix.java-version }}
+      MVNW_CMD: ${{ matrix.os == 'windows' && '.\\mvnw.cmd' || './mvnw' }}
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
-      - name: Maven Build
-        if: runner.os != 'Windows'
-        run:  ./mvnw -Dmaven.test.failure.ignore=true clean verify --no-transfer-progress
-      - name: Maven Build
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: mvnw.cmd -Dmaven.test.failure.ignore=true clean verify --no-transfer-progress
+          cache: 'maven'
+
+      - name: Build without tests
+        run: ${{ env.MVNW_CMD }} -B --no-transfer-progress -DskipTests clean verify
+
+      - name: Test with Allure
+        run: npx -y allure@3 run --config ./allurerc.mjs --rerun 2 --environment="${{ env.ALLURE_MATRIX_ENV }}" --dump="${{ env.ALLURE_DUMP_NAME }}" -- ${{ env.MVNW_CMD }} -B --no-transfer-progress verify
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ env.ALLURE_DUMP_NAME }}
+          path: ./${{ env.ALLURE_DUMP_NAME }}.zip
+          if-no-files-found: error
+
+  report:
+    needs: [ build ]
+    name: Build and publish report
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+    env:
+      ALLURE_SERVICE_TOKEN: ${{ secrets.ALLURE_SERVICE_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Download Allure dumps
+        uses: actions/download-artifact@v6
+        continue-on-error: true
+        with:
+          pattern: allure-results-*
+          path: ./
+          merge-multiple: true
+
+      - name: Generate and publish Allure report
+        run: npx -y allure@3 generate --config ./allurerc.mjs --dump="allure-results-*.zip" --output=./target/allure-report
+
+      - name: Post Allure summary
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
+        uses: allure-framework/allure-action@v0
+        with:
+          report-directory: ./target/allure-report
+          github-token: ${{ secrets.GITHUB_TOKEN }}
