@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <compiler.version>17</compiler.version>
 
-        <maven.version>3.9.14</maven.version>
+        <maven.version>3.9.15</maven.version>
         <maven-plugin.version>3.15.2</maven-plugin.version>
         <maven-verifier.version>1.8.0</maven-verifier.version>
 
