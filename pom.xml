@@ -4,7 +4,7 @@
 
     <groupId>io.qameta.allure</groupId>
     <artifactId>allure-maven</artifactId>
-    <version>2.19-SNAPSHOT</version>
+    <version>3.0.0</version>
 
     <packaging>maven-plugin</packaging>
 
