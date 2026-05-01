@@ -20,7 +20,7 @@
         <maven-plugin.version>3.15.2</maven-plugin.version>
         <maven-verifier.version>1.8.0</maven-verifier.version>
 
-        <pmd.version>7.23.0</pmd.version>
+        <pmd.version>7.24.0</pmd.version>
         <allure.version>2.34.0</allure.version>
         <aspectj.version>1.9.25.1</aspectj.version>
         <aspectj.weaver.argLine>
