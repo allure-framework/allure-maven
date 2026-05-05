@@ -44,7 +44,7 @@ jobs:
       - name: "Sonatype Release"
         uses: fjogeleit/http-request-action@v2
         with:
-          url: 'https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/io.qameta'
+          url: 'https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/io.qameta?publishing_type=automatic'
           method: 'POST'
           username: ${{ secrets.OSSRH_USERNAME }}
           password: ${{ secrets.OSSRH_PASSWORD }}
