@@ -54,7 +54,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.ALLURE_DUMP_NAME }}
           path: ./${{ env.ALLURE_DUMP_NAME }}.zip
