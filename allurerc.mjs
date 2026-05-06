@@ -4,6 +4,7 @@ const allureService =
     ALLURE_SERVICE_TOKEN
         ? {
             accessToken: ALLURE_SERVICE_TOKEN,
+            legacy: true,
         }
         : undefined;
 
