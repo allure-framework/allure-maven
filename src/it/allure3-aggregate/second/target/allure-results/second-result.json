@@ -1,0 +1,11 @@
+{
+  "uuid": "00000000-0000-0000-0000-000000000003",
+  "historyId": "second-smoke",
+  "testCaseId": "second-smoke",
+  "fullName": "io.qameta.allure.maven.smoke.second-smoke",
+  "name": "second-smoke",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1700000000000,
+  "stop": 1700000001000
+}
