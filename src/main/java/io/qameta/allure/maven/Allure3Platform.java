@@ -34,7 +34,7 @@ final class Allure3Platform {
     private final boolean windows;
 
     private Allure3Platform(final String classifier, final String archiveExtension,
-            final boolean windows) {
+                            final boolean windows) {
         this.classifier = classifier;
         this.archiveExtension = archiveExtension;
         this.windows = windows;
@@ -86,13 +86,15 @@ final class Allure3Platform {
 
     Path getNodeExecutable(final Path installationDirectory, final String nodeVersion) {
         final Path nodeHome = getNodeHome(installationDirectory, nodeVersion);
-        return windows ? nodeHome.resolve("node.exe")
+        return windows
+                ? nodeHome.resolve("node.exe")
                 : nodeHome.resolve(BIN_DIRECTORY).resolve("node");
     }
 
     Path getNpmExecutable(final Path installationDirectory, final String nodeVersion) {
         final Path nodeHome = getNodeHome(installationDirectory, nodeVersion);
-        return windows ? nodeHome.resolve("npm.cmd")
+        return windows
+                ? nodeHome.resolve("npm.cmd")
                 : nodeHome.resolve(BIN_DIRECTORY).resolve("npm");
     }
 

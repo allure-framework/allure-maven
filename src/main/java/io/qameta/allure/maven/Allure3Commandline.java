@@ -52,15 +52,15 @@ import java.util.stream.Collectors;
 /**
  * Allure 3 commandline runner backed by a plugin-managed Node.js runtime.
  */
-@SuppressWarnings({"PMD.GodClass", "ClassDataAbstractionCoupling", "ClassFanOutComplexity",
-        "MultipleStringLiterals", "ParameterNumber", "PMD.CouplingBetweenObjects",
-        "PMD.TooManyMethods", "PMD.CyclomaticComplexity", "PMD.ExcessiveParameterList"})
+@SuppressWarnings(
+    {"PMD.GodClass", "MultipleStringLiterals", "PMD.TooManyMethods",
+            "PMD.ExcessiveParameterList"}
+)
 public class Allure3Commandline {
 
     public static final String NODE_DEFAULT_VERSION = "24.14.1";
 
-    public static final String NODE_DEFAULT_DOWNLOAD_URL =
-            "https://nodejs.org/dist/v%s/node-v%s-%s.%s";
+    public static final String NODE_DEFAULT_DOWNLOAD_URL = "https://nodejs.org/dist/v%s/node-v%s-%s.%s";
 
     public static final String NPM_DEFAULT_REGISTRY = "https://registry.npmjs.org";
 
@@ -93,22 +93,23 @@ public class Allure3Commandline {
     private final Log log;
 
     public Allure3Commandline(final Path installationDirectory, final String allureVersion,
-            final String nodeVersion, final String nodeDownloadUrl, final String npmRegistry,
-            final Path allurePackagePath, final Proxy proxy, final Properties downloadProperties,
-            final boolean offline, final int timeout) {
-        this(installationDirectory, allureVersion, nodeVersion, nodeDownloadUrl, npmRegistry,
-                allurePackagePath, proxy, downloadProperties, offline, timeout, null);
+                              final String nodeVersion, final String nodeDownloadUrl, final String npmRegistry,
+                              final Path allurePackagePath, final Proxy proxy, final Properties downloadProperties,
+                              final boolean offline, final int timeout) {
+        this(
+                installationDirectory, allureVersion, nodeVersion, nodeDownloadUrl, npmRegistry,
+                allurePackagePath, proxy, downloadProperties, offline, timeout, null
+        );
     }
 
     public Allure3Commandline(final Path installationDirectory, final String allureVersion,
-            final String nodeVersion, final String nodeDownloadUrl, final String npmRegistry,
-            final Path allurePackagePath, final Proxy proxy, final Properties downloadProperties,
-            final boolean offline, final int timeout, final Log log) {
+                              final String nodeVersion, final String nodeDownloadUrl, final String npmRegistry,
+                              final Path allurePackagePath, final Proxy proxy, final Properties downloadProperties,
+                              final boolean offline, final int timeout, final Log log) {
         this.installationDirectory = installationDirectory;
         this.allureVersion = allureVersion;
         this.nodeVersion = StringUtils.defaultIfBlank(nodeVersion, NODE_DEFAULT_VERSION);
-        this.nodeDownloadUrl =
-                StringUtils.defaultIfBlank(nodeDownloadUrl, NODE_DEFAULT_DOWNLOAD_URL);
+        this.nodeDownloadUrl = StringUtils.defaultIfBlank(nodeDownloadUrl, NODE_DEFAULT_DOWNLOAD_URL);
         this.npmRegistry = StringUtils.defaultIfBlank(npmRegistry, NPM_DEFAULT_REGISTRY);
         this.allurePackagePath = allurePackagePath;
         this.proxy = proxy;
@@ -126,36 +127,45 @@ public class Allure3Commandline {
     }
 
     public int generateReport(final List<Path> resultsPaths, final Path reportPath,
-            final boolean singleFile, final Path buildDirectory, final String reportName,
-            final Path userConfigPath) throws IOException {
-        return generateReport(resultsPaths, reportPath, singleFile, buildDirectory, reportName,
-                userConfigPath, Collections.<String, Object>emptyMap());
+                              final boolean singleFile, final Path buildDirectory, final String reportName,
+                              final Path userConfigPath)
+            throws IOException {
+        return generateReport(
+                resultsPaths, reportPath, singleFile, buildDirectory, reportName,
+                userConfigPath, Collections.<String, Object>emptyMap()
+        );
     }
 
     public int generateReport(final List<Path> resultsPaths, final Path reportPath,
-            final boolean singleFile, final Path buildDirectory, final String reportName,
-            final Path userConfigPath, final Map<String, Object> defaultConfig) throws IOException {
+                              final boolean singleFile, final Path buildDirectory, final String reportName,
+                              final Path userConfigPath, final Map<String, Object> defaultConfig)
+            throws IOException {
         checkAllureExists();
         ensureLaunchers();
         FileUtils.deleteQuietly(reportPath.toFile());
 
         final Path workDirectory = prepareWorkDirectory(buildDirectory);
-        final Path config = writeConfig(workDirectory, reportPath, singleFile, reportName,
-                userConfigPath, defaultConfig);
+        final Path config = writeConfig(
+                workDirectory, reportPath, singleFile, reportName,
+                userConfigPath, defaultConfig
+        );
 
         return executeGenerate(resultsPaths, config);
     }
 
     public int serve(final List<Path> resultsPaths, final Path reportPath, final boolean singleFile,
-            final Path buildDirectory, final String reportName, final Integer servePort,
-            final Path userConfigPath) throws IOException {
+                     final Path buildDirectory, final String reportName, final Integer servePort,
+                     final Path userConfigPath)
+            throws IOException {
         checkAllureExists();
         ensureLaunchers();
         FileUtils.deleteQuietly(reportPath.toFile());
 
         final Path workDirectory = prepareWorkDirectory(buildDirectory);
-        final Path config = writeConfig(workDirectory, reportPath, singleFile, reportName,
-                userConfigPath, Collections.<String, Object>emptyMap());
+        final Path config = writeConfig(
+                workDirectory, reportPath, singleFile, reportName,
+                userConfigPath, Collections.<String, Object>emptyMap()
+        );
 
         executeGenerate(resultsPaths, config);
         return executeOpen(reportPath, config, servePort);
@@ -206,15 +216,22 @@ public class Allure3Commandline {
             return;
         }
         if (offline) {
-            throw new IOException(String.format(
-                    "Cannot install Node.js %s for Allure 3 while Maven is offline. "
-                            + "Pre-populate %s and rerun without offline mode to download it.",
-                    nodeVersion, installationDirectory));
+            throw new IOException(
+                    String.format(
+                            "Cannot install Node.js %s for Allure 3 while Maven is offline. "
+                                    + "Pre-populate %s and rerun without offline mode to download it.",
+                            nodeVersion, installationDirectory
+                    )
+            );
         }
 
         final String archiveFileName = platform.getArchiveFileName(nodeVersion);
-        final URL archiveUrl = new URL(String.format(nodeDownloadUrl, nodeVersion, nodeVersion,
-                platform.getClassifier(), platform.getArchiveExtension()));
+        final URL archiveUrl = new URL(
+                String.format(
+                        nodeDownloadUrl, nodeVersion, nodeVersion,
+                        platform.getClassifier(), platform.getArchiveExtension()
+                )
+        );
         final URL checksumUrl = new URL(String.format(NODE_CHECKSUM_URL, nodeVersion));
         final String expectedChecksum = readChecksum(checksumUrl, archiveFileName);
 
@@ -223,7 +240,8 @@ public class Allure3Commandline {
             AllureDownloadUtils.copy(archiveUrl, archive, proxy, downloadProperties);
             verifyChecksum(archive, expectedChecksum, archiveFileName);
             FileUtils.deleteQuietly(
-                    platform.getNodeHome(installationDirectory, nodeVersion).toFile());
+                    platform.getNodeHome(installationDirectory, nodeVersion).toFile()
+            );
             unpackNode(archive.toFile());
         } finally {
             Files.deleteIfExists(archive);
@@ -238,10 +256,13 @@ public class Allure3Commandline {
             return;
         }
         if (allurePackagePath == null && offline) {
-            throw new IOException(String.format(
-                    "Cannot install allure@%s while Maven is offline. Pre-populate %s "
-                            + "and rerun without offline mode to install it.",
-                    allureVersion, getAllureHome()));
+            throw new IOException(
+                    String.format(
+                            "Cannot install allure@%s while Maven is offline. Pre-populate %s "
+                                    + "and rerun without offline mode to install it.",
+                            allureVersion, getAllureHome()
+                    )
+            );
         }
 
         FileUtils.deleteQuietly(getAllureHome().toFile());
@@ -253,7 +274,8 @@ public class Allure3Commandline {
         final CommandLine commandLine = new CommandLine(
                 platform.isWindows() && Files.exists(getNodeExecutable().resolveSibling("node.cmd"))
                         ? getNodeExecutable().resolveSibling("node.cmd").toFile()
-                        : getNodeExecutable().toFile());
+                        : getNodeExecutable().toFile()
+        );
         addPathArgument(commandLine, getNpmCliPath());
         commandLine.addArgument("--prefix");
         addPathArgument(commandLine, getAllureHome());
@@ -277,8 +299,12 @@ public class Allure3Commandline {
 
     private void writePackageJson() throws IOException {
         final Path packageJson = getAllureHome().resolve("package.json");
-        Files.write(packageJson, Arrays.asList("{", "  \"name\": \"allure-maven-runtime\",",
-                "  \"private\": true", "}"), StandardCharsets.UTF_8);
+        Files.write(
+                packageJson, Arrays.asList(
+                        "{", "  \"name\": \"allure-maven-runtime\",",
+                        "  \"private\": true", "}"
+                ), StandardCharsets.UTF_8
+        );
     }
 
     private Path resolveInstallTarget() {
@@ -309,11 +335,14 @@ public class Allure3Commandline {
             return null;
         }
         final String protocol = StringUtils.defaultIfBlank(mavenProxy.getProtocol(), "http");
-        final String credentials = StringUtils.isBlank(mavenProxy.getUsername()) ? ""
+        final String credentials = StringUtils.isBlank(mavenProxy.getUsername())
+                ? ""
                 : mavenProxy.getUsername() + ":"
                         + StringUtils.defaultString(mavenProxy.getPassword()) + "@";
-        return String.format("%s://%s%s:%d", protocol, credentials, mavenProxy.getHost(),
-                mavenProxy.getPort());
+        return String.format(
+                "%s://%s%s:%d", protocol, credentials, mavenProxy.getHost(),
+                mavenProxy.getPort()
+        );
     }
 
     private String readChecksum(final URL checksumUrl, final String archiveFileName)
@@ -323,12 +352,15 @@ public class Allure3Commandline {
             AllureDownloadUtils.copy(checksumUrl, checksumFile, proxy, downloadProperties);
             try (BufferedReader reader = Files.newBufferedReader(checksumFile)) {
                 final List<String> matches = reader.lines()
-                        .filter(line -> line.endsWith("  " + archiveFileName)
-                                || line.endsWith(" *" + archiveFileName))
+                        .filter(
+                                line -> line.endsWith("  " + archiveFileName)
+                                        || line.endsWith(" *" + archiveFileName)
+                        )
                         .collect(Collectors.toList());
                 if (matches.isEmpty()) {
                     throw new IOException(
-                            "Cannot find checksum for Node.js archive " + archiveFileName);
+                            "Cannot find checksum for Node.js archive " + archiveFileName
+                    );
                 }
                 return matches.get(0).split("\\s+")[0];
             }
@@ -338,7 +370,8 @@ public class Allure3Commandline {
     }
 
     private static void verifyChecksum(final Path file, final String expected,
-            final String archiveFileName) throws IOException {
+                                       final String archiveFileName)
+            throws IOException {
         try {
             final MessageDigest digest = MessageDigest.getInstance("SHA-256");
             try (InputStream input = new DigestInputStream(Files.newInputStream(file), digest)) {
@@ -351,8 +384,11 @@ public class Allure3Commandline {
             final String actual = toHex(digest.digest());
             if (!expected.equalsIgnoreCase(actual)) {
                 throw new IOException(
-                        String.format("Checksum mismatch for %s. Expected %s but got %s.",
-                                archiveFileName, expected, actual));
+                        String.format(
+                                "Checksum mismatch for %s. Expected %s but got %s.",
+                                archiveFileName, expected, actual
+                        )
+                );
             }
         } catch (NoSuchAlgorithmException e) {
             throw new IOException("SHA-256 is not available", e);
@@ -392,8 +428,10 @@ public class Allure3Commandline {
             throws IOException {
         final Path target = installationDirectory.resolve(entry.getName()).normalize();
         if (!target.startsWith(installationDirectory.normalize())) {
-            throw new IOException("Refusing to unpack archive entry outside "
-                    + installationDirectory + ": " + entry.getName());
+            throw new IOException(
+                    "Refusing to unpack archive entry outside "
+                            + installationDirectory + ": " + entry.getName()
+            );
         }
         if (entry.isDirectory()) {
             Files.createDirectories(target);
@@ -411,11 +449,14 @@ public class Allure3Commandline {
     }
 
     private Path writeConfig(final Path workDirectory, final Path reportPath,
-            final boolean singleFile, final String reportName, final Path userConfigPath,
-            final Map<String, Object> defaultConfig) throws IOException {
+                             final boolean singleFile, final String reportName, final Path userConfigPath,
+                             final Map<String, Object> defaultConfig)
+            throws IOException {
         if (isScriptConfig(userConfigPath)) {
-            return writeScriptConfig(workDirectory, reportPath, singleFile, reportName,
-                    userConfigPath, defaultConfig);
+            return writeScriptConfig(
+                    workDirectory, reportPath, singleFile, reportName,
+                    userConfigPath, defaultConfig
+            );
         }
 
         final Map<String, Object> config = readConfig(userConfigPath);
@@ -425,8 +466,7 @@ public class Allure3Commandline {
 
         final Map<String, Object> plugins = getOrCreateMap(config, "plugins", userConfigPath);
         final Map<String, Object> awesome = getOrCreateMap(plugins, "awesome", userConfigPath);
-        final Map<String, Object> awesomeOptions =
-                getOrCreateMap(awesome, "options", userConfigPath);
+        final Map<String, Object> awesomeOptions = getOrCreateMap(awesome, "options", userConfigPath);
         awesomeOptions.put("singleFile", singleFile);
 
         final Path configPath = workDirectory.resolve("allurerc.json");
@@ -435,36 +475,47 @@ public class Allure3Commandline {
     }
 
     private Path writeScriptConfig(final Path workDirectory, final Path reportPath,
-            final boolean singleFile, final String reportName, final Path userConfigPath,
-            final Map<String, Object> defaultConfig) throws IOException {
+                                   final boolean singleFile, final String reportName, final Path userConfigPath,
+                                   final Map<String, Object> defaultConfig)
+            throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
         final Path configPath = workDirectory.resolve("allurerc.mjs");
-        final List<String> lines = new java.util.ArrayList<>(Arrays.asList(
-                "import userConfig from " + mapper.writeValueAsString(
-                        userConfigPath.toAbsolutePath().toUri().toString()) + ";",
-                "", "const config = userConfig ?? {};",
-                "const plugins = typeof config.plugins === \"object\" && config.plugins !== null",
-                "  ? config.plugins", "  : {};",
-                "const awesome = typeof plugins.awesome === \"object\" && plugins.awesome !== null",
-                "  ? plugins.awesome", "  : {};",
-                "const awesomeOptions = typeof awesome.options === \"object\" "
-                        + "&& awesome.options !== null",
-                "  ? awesome.options", "  : {};", "", "export default {", "  ...config,",
-                "  name: " + mapper.writeValueAsString(reportName) + ",", "  output: "
-                        + mapper.writeValueAsString(reportPath.toAbsolutePath().toString()) + ","));
+        final List<String> lines = new java.util.ArrayList<>(
+                Arrays.asList(
+                        "import userConfig from " + mapper.writeValueAsString(
+                                userConfigPath.toAbsolutePath().toUri().toString()
+                        ) + ";",
+                        "", "const config = userConfig ?? {};",
+                        "const plugins = typeof config.plugins === \"object\" && config.plugins !== null",
+                        "  ? config.plugins", "  : {};",
+                        "const awesome = typeof plugins.awesome === \"object\" && plugins.awesome !== null",
+                        "  ? plugins.awesome", "  : {};",
+                        "const awesomeOptions = typeof awesome.options === \"object\" "
+                                + "&& awesome.options !== null",
+                        "  ? awesome.options", "  : {};", "", "export default {", "  ...config,",
+                        "  name: " + mapper.writeValueAsString(reportName) + ",", "  output: "
+                                + mapper.writeValueAsString(reportPath.toAbsolutePath().toString()) + ","
+                )
+        );
         for (Map.Entry<String, Object> entry : defaultConfig.entrySet()) {
-            lines.add("  " + entry.getKey() + ": config." + entry.getKey() + " ?? "
-                    + mapper.writeValueAsString(entry.getValue()) + ",");
+            lines.add(
+                    "  " + entry.getKey() + ": config." + entry.getKey() + " ?? "
+                            + mapper.writeValueAsString(entry.getValue()) + ","
+            );
         }
-        lines.addAll(Arrays.asList("  plugins: {", "    ...plugins,", "    awesome: {",
-                "      ...awesome,", "      options: {", "        ...awesomeOptions,",
-                "        singleFile: " + singleFile + ",", "      },", "    },", "  },", "};", ""));
+        lines.addAll(
+                Arrays.asList(
+                        "  plugins: {", "    ...plugins,", "    awesome: {",
+                        "      ...awesome,", "      options: {", "        ...awesomeOptions,",
+                        "        singleFile: " + singleFile + ",", "      },", "    },", "  },", "};", ""
+                )
+        );
         Files.write(configPath, lines, StandardCharsets.UTF_8);
         return configPath;
     }
 
     private void applyDefaultConfig(final Map<String, Object> config,
-            final Map<String, Object> defaultConfig) {
+                                    final Map<String, Object> defaultConfig) {
         for (Map.Entry<String, Object> entry : defaultConfig.entrySet()) {
             if (!config.containsKey(entry.getKey())) {
                 config.put(entry.getKey(), entry.getValue());
@@ -484,8 +535,10 @@ public class Allure3Commandline {
         } else if (fileName.endsWith(".json")) {
             mapper = new ObjectMapper();
         } else {
-            throw new IOException("Unsupported Allure 3 config file extension for " + userConfigPath
-                    + ". Supported extensions: .json, .yml, .yaml");
+            throw new IOException(
+                    "Unsupported Allure 3 config file extension for " + userConfigPath
+                            + ". Supported extensions: .json, .yml, .yaml"
+            );
         }
 
         final Map<String, Object> config = mapper.readValue(userConfigPath.toFile(), MAP_TYPE);
@@ -502,7 +555,8 @@ public class Allure3Commandline {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> getOrCreateMap(final Map<String, Object> parent, final String key,
-            final Path userConfigPath) throws IOException {
+                                               final Path userConfigPath)
+            throws IOException {
         final Object value = parent.get(key);
         if (value == null) {
             final Map<String, Object> child = new LinkedHashMap<>();
@@ -512,10 +566,13 @@ public class Allure3Commandline {
         if (value instanceof Map) {
             return (Map<String, Object>) value;
         }
-        final String source = userConfigPath == null ? "generated config"
+        final String source = userConfigPath == null
+                ? "generated config"
                 : "user config " + userConfigPath.toAbsolutePath();
-        throw new IOException(String
-                .format("Invalid Allure 3 config in %s: '%s' must be an object.", source, key));
+        throw new IOException(
+                String
+                        .format("Invalid Allure 3 config in %s: '%s' must be an object.", source, key)
+        );
     }
 
     private int executeGenerate(final List<Path> resultsPaths, final Path config)
@@ -544,9 +601,11 @@ public class Allure3Commandline {
 
     private void checkAllureExists() throws IOException {
         if (allureNotExists()) {
-            throw new IOException("There is no valid Allure 3 installation. "
-                    + "Run allure:install first or allow the plugin to install allure@"
-                    + allureVersion + ".");
+            throw new IOException(
+                    "There is no valid Allure 3 installation. "
+                            + "Run allure:install first or allow the plugin to install allure@"
+                            + allureVersion + "."
+            );
         }
     }
 

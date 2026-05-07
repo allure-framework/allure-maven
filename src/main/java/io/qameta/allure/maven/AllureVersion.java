@@ -47,8 +47,12 @@ public final class AllureVersion {
         }
 
         throw new IllegalArgumentException(
-                String.format("Unsupported Allure report version '%s'. Use 2.x to keep Allure 2 "
-                        + "or 3.x to use Allure 3.", version));
+                String.format(
+                        "Unsupported Allure report version '%s'. Use 2.x to keep Allure 2 "
+                                + "or 3.x to use Allure 3.",
+                        version
+                )
+        );
     }
 
     public String getVersion() {
@@ -64,6 +68,7 @@ public final class AllureVersion {
     }
 
     private enum Runtime {
-        ALLURE2, ALLURE3
+        ALLURE2,
+        ALLURE3
     }
 }

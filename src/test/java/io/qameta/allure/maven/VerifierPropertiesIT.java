@@ -57,8 +57,7 @@ class VerifierPropertiesIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldLoadPropertiesFromCompileClasspath() throws Exception {
-        final Path projectDirectory =
-                preparePropertiesProject("properties-file-support-compile-classpath");
+        final Path projectDirectory = preparePropertiesProject("properties-file-support-compile-classpath");
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -75,8 +74,7 @@ class VerifierPropertiesIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldLoadPropertiesFromPluginConfiguration() throws Exception {
-        final Path projectDirectory =
-                preparePropertiesProject("properties-file-support-configuration");
+        final Path projectDirectory = preparePropertiesProject("properties-file-support-configuration");
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -94,8 +92,7 @@ class VerifierPropertiesIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldLoadPropertiesFromDefaultReportPropertiesLocation() throws Exception {
-        final Path projectDirectory =
-                preparePropertiesProject("properties-file-support-default-location");
+        final Path projectDirectory = preparePropertiesProject("properties-file-support-default-location");
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -112,8 +109,7 @@ class VerifierPropertiesIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldResolvePlaceholdersInPropertiesFile() throws Exception {
-        final Path projectDirectory =
-                preparePropertiesProject("properties-file-support-placeholder");
+        final Path projectDirectory = preparePropertiesProject("properties-file-support-placeholder");
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -130,8 +126,7 @@ class VerifierPropertiesIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldLoadPropertiesFromTestClasspath() throws Exception {
-        final Path projectDirectory =
-                preparePropertiesProject("properties-file-support-test-classpath");
+        final Path projectDirectory = preparePropertiesProject("properties-file-support-test-classpath");
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -149,8 +144,7 @@ class VerifierPropertiesIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldLoadCategoriesFromTestClasspath() throws Exception {
-        final Path projectDirectory =
-                preparePropertiesProject("categories-file-support-test-classpath", 2);
+        final Path projectDirectory = preparePropertiesProject("categories-file-support-test-classpath", 2);
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -165,10 +159,11 @@ class VerifierPropertiesIT extends VerifierTestSupport {
     private Path preparePropertiesProject(final String scenario, final int testCases)
             throws Exception {
         final Path projectDirectory = prepareProject(scenario, rootPom(scenario));
-        final Path captureFile =
-                projectDirectory.resolve(Path.of("target", scenario + "-allure2-args.txt"));
-        Allure2SetupHelper.installFakeCommandlineArtifact(absoluteLocalRepository(),
-                ALLURE2_VERSION, captureFile, null, Allure2SetupHelper.Mode.FULL, testCases);
+        final Path captureFile = projectDirectory.resolve(Path.of("target", scenario + "-allure2-args.txt"));
+        Allure2SetupHelper.installFakeCommandlineArtifact(
+                absoluteLocalRepository(),
+                ALLURE2_VERSION, captureFile, null, Allure2SetupHelper.Mode.FULL, testCases
+        );
         return projectDirectory;
     }
 

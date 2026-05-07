@@ -43,30 +43,28 @@ import javax.net.ssl.X509TrustManager;
  * Utility methods for downloading the Allure command line archive while honoring Maven proxy and
  * Wagon SSL-related system properties.
  */
-@SuppressWarnings("ClassDataAbstractionCoupling")
 final class AllureDownloadUtils {
 
     private static final String WAGON_HTTP_SSL_INSECURE = "maven.wagon.http.ssl.insecure";
 
     private static final String WAGON_HTTP_SSL_ALLOW_ALL = "maven.wagon.http.ssl.allowall";
 
-    private static final String WAGON_HTTP_SSL_IGNORE_VALIDITY_DATES =
-            "maven.wagon.http.ssl.ignore.validity.dates";
+    private static final String WAGON_HTTP_SSL_IGNORE_VALIDITY_DATES = "maven.wagon.http.ssl.ignore.validity.dates";
 
     private AllureDownloadUtils() {
         throw new IllegalStateException("Do not instance");
     }
 
     static void copy(final URL url, final Path destination, final Proxy mavenProxy,
-            final Properties downloadProperties) throws IOException {
+                     final Properties downloadProperties)
+            throws IOException {
         final AuthenticatorState authenticatorState = AuthenticatorState.capture();
         boolean proxyAuthenticatorConfigured = false;
 
         try {
             java.net.Proxy proxy = null;
             if (mavenProxy != null) {
-                final InetSocketAddress proxyAddress =
-                        new InetSocketAddress(mavenProxy.getHost(), mavenProxy.getPort());
+                final InetSocketAddress proxyAddress = new InetSocketAddress(mavenProxy.getHost(), mavenProxy.getPort());
                 proxy = new java.net.Proxy(java.net.Proxy.Type.HTTP, proxyAddress);
                 if (StringUtils.isNotBlank(mavenProxy.getUsername())
                         && StringUtils.isNotBlank(mavenProxy.getPassword())) {
@@ -75,8 +73,10 @@ final class AllureDownloadUtils {
                     Authenticator.setDefault(new Authenticator() {
                         @Override
                         public PasswordAuthentication getPasswordAuthentication() {
-                            return new PasswordAuthentication(proxyUser,
-                                    proxyPassword.toCharArray());
+                            return new PasswordAuthentication(
+                                    proxyUser,
+                                    proxyPassword.toCharArray()
+                            );
                         }
                     });
                     proxyAuthenticatorConfigured = true;
@@ -105,11 +105,10 @@ final class AllureDownloadUtils {
         return properties;
     }
 
-    @SuppressWarnings("WhitespaceAfter")
     private static URLConnection openConnection(final URL url, final java.net.Proxy proxy,
-            final WagonSslProperties sslProperties) throws IOException {
-        final URLConnection connection =
-                proxy == null ? url.openConnection() : url.openConnection(proxy);
+                                                final WagonSslProperties sslProperties)
+            throws IOException {
+        final URLConnection connection = proxy == null ? url.openConnection() : url.openConnection(proxy);
         if (!(connection instanceof HttpsURLConnection) || !sslProperties.isInsecure()) {
             return connection;
         }
@@ -117,10 +116,12 @@ final class AllureDownloadUtils {
         try {
             final HttpsURLConnection httpsConnection = (HttpsURLConnection) connection;
             final SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null,
-                    new TrustManager[] {
+            sslContext.init(
+                    null,
+                    new TrustManager[]{
                             new RelaxedX509TrustManager(sslProperties.isIgnoreValidityDates()),},
-                    new SecureRandom());
+                    new SecureRandom()
+            );
             httpsConnection.setSSLSocketFactory(sslContext.getSocketFactory());
             if (sslProperties.isAllowAll()) {
                 httpsConnection.setHostnameVerifier((hostname, session) -> true);
@@ -143,20 +144,22 @@ final class AllureDownloadUtils {
         private final boolean ignoreValidityDates;
 
         private WagonSslProperties(final boolean insecure, final boolean allowAll,
-                final boolean ignoreValidityDates) {
+                                   final boolean ignoreValidityDates) {
             this.insecure = insecure;
             this.allowAll = allowAll;
             this.ignoreValidityDates = ignoreValidityDates;
         }
 
         static WagonSslProperties from(final Properties properties) {
-            return new WagonSslProperties(getBooleanProperty(properties, WAGON_HTTP_SSL_INSECURE),
+            return new WagonSslProperties(
+                    getBooleanProperty(properties, WAGON_HTTP_SSL_INSECURE),
                     getBooleanProperty(properties, WAGON_HTTP_SSL_ALLOW_ALL),
-                    getBooleanProperty(properties, WAGON_HTTP_SSL_IGNORE_VALIDITY_DATES));
+                    getBooleanProperty(properties, WAGON_HTTP_SSL_IGNORE_VALIDITY_DATES)
+            );
         }
 
         private static boolean getBooleanProperty(final Properties properties,
-                final String propertyName) {
+                                                  final String propertyName) {
             return Boolean.parseBoolean(properties.getProperty(propertyName));
         }
 

@@ -50,23 +50,31 @@ class AllureVersionTest {
     @Test
     void shouldRejectUnsupportedMajorVersions() {
         step("Reject unsupported major version 1.5.4", () -> {
-            final IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
-                    () -> AllureVersion.resolve("1.5.4"));
+            final IllegalArgumentException error = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> AllureVersion.resolve("1.5.4")
+            );
             addAttachment("Unsupported version error", String.valueOf(error.getMessage()));
         });
     }
 
     private static void assertResolvedVersion(final String requestedVersion,
-            final boolean expectedAllure3, final String expectedVersion) {
+                                              final boolean expectedAllure3, final String expectedVersion) {
         final String requested = describeRequestedVersion(requestedVersion);
-        final AllureVersion resolvedVersion = step("Resolve report version " + requested,
-                () -> AllureVersion.resolve(requestedVersion));
+        final AllureVersion resolvedVersion = step(
+                "Resolve report version " + requested,
+                () -> AllureVersion.resolve(requestedVersion)
+        );
 
         step("Verify selected runtime and normalized version", () -> {
-            addAttachment("Version resolution",
-                    String.join(System.lineSeparator(), "requested=" + requested,
+            addAttachment(
+                    "Version resolution",
+                    String.join(
+                            System.lineSeparator(), "requested=" + requested,
                             "resolved=" + resolvedVersion.getVersion(),
-                            "runtime=" + (resolvedVersion.isAllure3() ? "allure3" : "allure2")));
+                            "runtime=" + (resolvedVersion.isAllure3() ? "allure3" : "allure2")
+                    )
+            );
             assertThat(resolvedVersion.isAllure3()).isEqualTo(expectedAllure3);
             assertThat(resolvedVersion.isAllure2()).isEqualTo(!expectedAllure3);
             assertThat(resolvedVersion.getVersion()).isEqualTo(expectedVersion);

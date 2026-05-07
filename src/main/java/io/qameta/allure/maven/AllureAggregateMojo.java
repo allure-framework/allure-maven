@@ -30,8 +30,12 @@ import java.util.List;
 /**
  * @author Dmitry Baev dmitry.baev@qameta.io Date: 04.08.15
  */
-@Mojo(name = "aggregate", defaultPhase = LifecyclePhase.SITE, inheritByDefault = false,
-        aggregator = true)
+@Mojo(
+        name = "aggregate",
+        defaultPhase = LifecyclePhase.SITE,
+        inheritByDefault = false,
+        aggregator = true
+)
 @SuppressWarnings("PMD.GodClass")
 public class AllureAggregateMojo extends AllureGenerateMojo {
 
@@ -47,8 +51,7 @@ public class AllureAggregateMojo extends AllureGenerateMojo {
      */
     @SuppressWarnings("unused")
     public void setReactorProjects(final List<MavenProject> reactorProjects) {
-        this.reactorProjects =
-                reactorProjects == null ? Collections.<MavenProject>emptyList() : reactorProjects;
+        this.reactorProjects = reactorProjects == null ? Collections.<MavenProject>emptyList() : reactorProjects;
     }
 
     /**
@@ -158,9 +161,11 @@ public class AllureAggregateMojo extends AllureGenerateMojo {
             if (buildDirectory != null && relativeDirectory != null) {
                 resolvedDirectory = buildDirectory.resolve(relativeDirectory).normalize();
                 if (!resolvedDirectory.startsWith(moduleDirectory)) {
-                    logInvalidResultsDirectory(project,
+                    logInvalidResultsDirectory(
+                            project,
                             "results directory resolves outside module: " + resolvedDirectory,
-                            logWarnings);
+                            logWarnings
+                    );
                     resolvedDirectory = null;
                 }
             }
@@ -169,28 +174,32 @@ public class AllureAggregateMojo extends AllureGenerateMojo {
     }
 
     private Path getRelativeResultsDirectory(final MavenProject project,
-            final boolean logWarnings) {
+                                             final boolean logWarnings) {
         final String configuredResultsDirectory = getConfiguredResultsDirectory(project);
         try {
             final Path relativeDirectory = Paths.get(configuredResultsDirectory);
             if (relativeDirectory.isAbsolute()) {
-                logInvalidResultsDirectory(project,
+                logInvalidResultsDirectory(
+                        project,
                         "results directory should not be absolute for aggregate goal: "
                                 + configuredResultsDirectory,
-                        logWarnings);
+                        logWarnings
+                );
                 return null;
             }
             return relativeDirectory;
         } catch (InvalidPathException e) {
-            logInvalidResultsDirectory(project,
+            logInvalidResultsDirectory(
+                    project,
                     "results directory path is invalid: " + configuredResultsDirectory,
-                    logWarnings);
+                    logWarnings
+            );
             return null;
         }
     }
 
     private Path getBuildDirectory(final MavenProject project, final Path moduleDirectory,
-            final boolean logWarnings) {
+                                   final boolean logWarnings) {
         if (project.getBuild() == null || StringUtils.isBlank(project.getBuild().getDirectory())) {
             logInvalidResultsDirectory(project, "build directory is not available", logWarnings);
             return null;
@@ -203,9 +212,11 @@ public class AllureAggregateMojo extends AllureGenerateMojo {
             }
             return buildDirectory.toAbsolutePath().normalize();
         } catch (InvalidPathException e) {
-            logInvalidResultsDirectory(project,
+            logInvalidResultsDirectory(
+                    project,
                     "build directory path is invalid: " + project.getBuild().getDirectory(),
-                    logWarnings);
+                    logWarnings
+            );
             return null;
         }
     }
@@ -219,8 +230,7 @@ public class AllureAggregateMojo extends AllureGenerateMojo {
 
     private String getConfiguredResultsDirectory(final MavenProject project) {
         if (project != null && project.getProperties() != null) {
-            final String propertyOverride =
-                    project.getProperties().getProperty(RESULTS_DIRECTORY_PROPERTY);
+            final String propertyOverride = project.getProperties().getProperty(RESULTS_DIRECTORY_PROPERTY);
             if (StringUtils.isNotBlank(propertyOverride)) {
                 return propertyOverride;
             }
@@ -229,10 +239,12 @@ public class AllureAggregateMojo extends AllureGenerateMojo {
     }
 
     private void logInvalidResultsDirectory(final MavenProject project, final String reason,
-            final boolean logWarnings) {
+                                            final boolean logWarnings) {
         if (logWarnings) {
-            getLog().warn(MODULE_RESULTS_DIRECTORY_PREFIX + getProjectLabel(project)
-                    + " is invalid for aggregate goal: " + reason + ".");
+            getLog().warn(
+                    MODULE_RESULTS_DIRECTORY_PREFIX + getProjectLabel(project)
+                            + " is invalid for aggregate goal: " + reason + "."
+            );
         }
     }
 

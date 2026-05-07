@@ -28,7 +28,10 @@ import java.util.Locale;
  */
 public abstract class AllureBaseMojo extends AbstractMavenReport {
 
-    @Parameter(defaultValue = "${plugin}", readonly = true)
+    @Parameter(
+            defaultValue = "${plugin}",
+            readonly = true
+    )
     protected PluginDescriptor pluginDescriptor;
 
     /**

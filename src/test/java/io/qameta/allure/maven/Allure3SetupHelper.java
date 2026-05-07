@@ -26,28 +26,28 @@ import java.util.Map;
 /**
  * Shared setup helpers for Allure 3 integration tests.
  */
-@SuppressWarnings({"MultipleStringLiterals", "PMD.AvoidDuplicateLiterals"})
+@SuppressWarnings("MultipleStringLiterals")
 final class Allure3SetupHelper {
 
-    private static final String WINDOWS_REPORT_NODE_TEMPLATE =
-            "/verifier-data/allure3-report-node-windows.cmd";
+    private static final String WINDOWS_REPORT_NODE_TEMPLATE = "/verifier-data/allure3-report-node-windows.cmd";
 
-    private static final String WINDOWS_REPORT_NODE_DATA_TEMPLATE =
-            "/verifier-data/allure3-report-node-data-windows.cmd";
+    private static final String WINDOWS_REPORT_NODE_DATA_TEMPLATE = "/verifier-data/allure3-report-node-data-windows.cmd";
 
-    private static final String WINDOWS_INSTALL_NODE_TEMPLATE =
-            "/verifier-data/allure3-install-node-windows.cmd";
+    private static final String WINDOWS_INSTALL_NODE_TEMPLATE = "/verifier-data/allure3-install-node-windows.cmd";
 
-    private Allure3SetupHelper() {}
+    private Allure3SetupHelper() {
+    }
 
     static void prepareFakeReportRuntime(final Path installDirectory, final Path captureFile,
-            final Path reportDirectory, final boolean createDataFiles) throws IOException {
+                                         final Path reportDirectory, final boolean createDataFiles)
+            throws IOException {
         final Allure3Platform platform = Allure3Platform.detect();
-        final Path nodeExecutable = platform.getNodeExecutable(installDirectory,
-                Allure3Commandline.NODE_DEFAULT_VERSION);
-        final Path allureCli =
-                installDirectory.resolve("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION)
-                        .resolve(Paths.get("node_modules", "allure", "cli.js"));
+        final Path nodeExecutable = platform.getNodeExecutable(
+                installDirectory,
+                Allure3Commandline.NODE_DEFAULT_VERSION
+        );
+        final Path allureCli = installDirectory.resolve("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION)
+                .resolve(Paths.get("node_modules", "allure", "cli.js"));
 
         Files.createDirectories(nodeExecutable.getParent());
         Files.createDirectories(allureCli.getParent());
@@ -55,25 +55,30 @@ final class Allure3SetupHelper {
 
         if (platform.isWindows()) {
             Files.write(nodeExecutable, "fake node marker\r\n".getBytes(StandardCharsets.UTF_8));
-            Files.write(nodeExecutable.resolveSibling("node.cmd"),
+            Files.write(
+                    nodeExecutable.resolveSibling("node.cmd"),
                     createWindowsReportNode(captureFile, reportDirectory, createDataFiles)
-                            .getBytes(StandardCharsets.UTF_8));
+                            .getBytes(StandardCharsets.UTF_8)
+            );
             return;
         }
 
-        Files.write(nodeExecutable,
+        Files.write(
+                nodeExecutable,
                 createUnixReportNode(captureFile, reportDirectory, createDataFiles)
-                        .getBytes(StandardCharsets.UTF_8));
+                        .getBytes(StandardCharsets.UTF_8)
+        );
         nodeExecutable.toFile().setExecutable(true);
     }
 
     static void prepareFakeInstallRuntime(final Path installDirectory, final Path captureFile)
             throws IOException {
         final Allure3Platform platform = Allure3Platform.detect();
-        final Path nodeExecutable = platform.getNodeExecutable(installDirectory,
-                Allure3Commandline.NODE_DEFAULT_VERSION);
-        final Path npmCli =
-                platform.getNpmCliPath(installDirectory, Allure3Commandline.NODE_DEFAULT_VERSION);
+        final Path nodeExecutable = platform.getNodeExecutable(
+                installDirectory,
+                Allure3Commandline.NODE_DEFAULT_VERSION
+        );
+        final Path npmCli = platform.getNpmCliPath(installDirectory, Allure3Commandline.NODE_DEFAULT_VERSION);
 
         Files.createDirectories(nodeExecutable.getParent());
         Files.createDirectories(npmCli.getParent());
@@ -81,13 +86,17 @@ final class Allure3SetupHelper {
 
         if (platform.isWindows()) {
             Files.write(nodeExecutable, "fake node marker\r\n".getBytes(StandardCharsets.UTF_8));
-            Files.write(nodeExecutable.resolveSibling("node.cmd"),
-                    createWindowsInstallNode(captureFile).getBytes(StandardCharsets.UTF_8));
+            Files.write(
+                    nodeExecutable.resolveSibling("node.cmd"),
+                    createWindowsInstallNode(captureFile).getBytes(StandardCharsets.UTF_8)
+            );
             return;
         }
 
-        Files.write(nodeExecutable,
-                createUnixInstallNode(captureFile).getBytes(StandardCharsets.UTF_8));
+        Files.write(
+                nodeExecutable,
+                createUnixInstallNode(captureFile).getBytes(StandardCharsets.UTF_8)
+        );
         nodeExecutable.toFile().setExecutable(true);
     }
 
@@ -99,7 +108,7 @@ final class Allure3SetupHelper {
     }
 
     private static String createUnixReportNode(final Path captureFile, final Path reportDirectory,
-            final boolean createDataFiles) {
+                                               final boolean createDataFiles) {
         final StringBuilder builder = new StringBuilder().append("#!/bin/sh\n").append("set -eu\n")
                 .append("mkdir -p '").append(captureFile.getParent()).append("'\n")
                 .append("cli=\"$1\"\n").append("shift\n").append("command=\"${1-}\"\n")
@@ -116,7 +125,7 @@ final class Allure3SetupHelper {
     }
 
     private static void appendUnixReportFiles(final StringBuilder builder,
-            final Path reportDirectory, final boolean createDataFiles) {
+                                              final Path reportDirectory, final boolean createDataFiles) {
         if (createDataFiles) {
             final Path dataDirectory = reportDirectory.resolve("data");
             builder.append("  mkdir -p '").append(dataDirectory.resolve("test-cases")).append("'\n")
@@ -139,16 +148,20 @@ final class Allure3SetupHelper {
     }
 
     private static String createWindowsReportNode(final Path captureFile,
-            final Path reportDirectory, final boolean createDataFiles) throws IOException {
-        final String template =
-                createDataFiles ? WINDOWS_REPORT_NODE_DATA_TEMPLATE : WINDOWS_REPORT_NODE_TEMPLATE;
-        return renderWindowsTemplate(template,
-                Map.of("@capture.parent@", windowsPath(captureFile.getParent()), "@capture.file@",
+                                                  final Path reportDirectory, final boolean createDataFiles)
+            throws IOException {
+        final String template = createDataFiles ? WINDOWS_REPORT_NODE_DATA_TEMPLATE : WINDOWS_REPORT_NODE_TEMPLATE;
+        return renderWindowsTemplate(
+                template,
+                Map.of(
+                        "@capture.parent@", windowsPath(captureFile.getParent()), "@capture.file@",
                         windowsPath(captureFile), "@report.directory@",
                         windowsPath(reportDirectory), "@index.file@",
                         windowsPath(reportDirectory.resolve("index.html")), "@data.directory@",
                         windowsPath(reportDirectory.resolve("data")), "@cases.directory@",
-                        windowsPath(reportDirectory.resolve(Paths.get("data", "test-cases")))));
+                        windowsPath(reportDirectory.resolve(Paths.get("data", "test-cases")))
+                )
+        );
     }
 
     private static String createUnixInstallNode(final Path captureFile) {
@@ -166,12 +179,17 @@ final class Allure3SetupHelper {
     }
 
     private static String createWindowsInstallNode(final Path captureFile) throws IOException {
-        return renderWindowsTemplate(WINDOWS_INSTALL_NODE_TEMPLATE, Map.of("@capture.parent@",
-                windowsPath(captureFile.getParent()), "@capture.file@", windowsPath(captureFile)));
+        return renderWindowsTemplate(
+                WINDOWS_INSTALL_NODE_TEMPLATE, Map.of(
+                        "@capture.parent@",
+                        windowsPath(captureFile.getParent()), "@capture.file@", windowsPath(captureFile)
+                )
+        );
     }
 
     private static String renderWindowsTemplate(final String resourcePath,
-            final Map<String, String> placeholders) throws IOException {
+                                                final Map<String, String> placeholders)
+            throws IOException {
         String template = readResource(resourcePath);
         for (Map.Entry<String, String> placeholder : placeholders.entrySet()) {
             template = template.replace(placeholder.getKey(), placeholder.getValue());

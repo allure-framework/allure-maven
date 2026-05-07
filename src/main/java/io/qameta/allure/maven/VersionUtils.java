@@ -35,8 +35,7 @@ public final class VersionUtils {
             i++;
         }
         if (i < firstVersions.length && i < secondVersions.length) {
-            final int diff =
-                    Integer.valueOf(firstVersions[i]).compareTo(Integer.valueOf(secondVersions[i]));
+            final int diff = Integer.valueOf(firstVersions[i]).compareTo(Integer.valueOf(secondVersions[i]));
             return Integer.signum(diff);
         } else {
             return Integer.signum(firstVersions.length - secondVersions.length);

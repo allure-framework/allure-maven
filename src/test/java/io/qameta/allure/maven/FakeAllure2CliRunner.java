@@ -32,7 +32,8 @@ public final class FakeAllure2CliRunner {
     private static final String MODE_COMMANDS = "COMMANDS";
     private static final String MODE_SINGLE_FILE = "SINGLE_FILE";
 
-    private FakeAllure2CliRunner() {}
+    private FakeAllure2CliRunner() {
+    }
 
     public static void main(final String[] args) throws Exception {
         if (args.length < 4) {
@@ -78,8 +79,10 @@ public final class FakeAllure2CliRunner {
         final List<Path> inputDirectories = findInputDirectories(commandArgs);
         final Path projectDirectory = findProjectDirectory(captureFile);
         final boolean hasProperties = inputDirectories.stream()
-                .anyMatch(thisDirectory -> Files.exists(thisDirectory.resolve("allure.properties"))
-                        || Files.exists(thisDirectory.resolve("report.properties")))
+                .anyMatch(
+                        thisDirectory -> Files.exists(thisDirectory.resolve("allure.properties"))
+                                || Files.exists(thisDirectory.resolve("report.properties"))
+                )
                 || projectHasProperties(projectDirectory);
         final boolean hasCategories = inputDirectories.stream()
                 .anyMatch(directory -> Files.exists(directory.resolve("categories.json")))
@@ -95,15 +98,19 @@ public final class FakeAllure2CliRunner {
         Files.writeString(dataDirectory.resolve("suites.json"), "[]", StandardCharsets.UTF_8);
 
         final String categories = hasCategories ? "[{\"children\":[{}]}]" : "[]";
-        Files.writeString(dataDirectory.resolve("categories.json"), categories,
-                StandardCharsets.UTF_8);
+        Files.writeString(
+                dataDirectory.resolve("categories.json"), categories,
+                StandardCharsets.UTF_8
+        );
 
         for (int index = 1; index <= testCases; index++) {
             final String json = hasProperties && index == 1
                     ? "{\"links\":[{\"name\":\"issue-123\",\"url\":\"http://example.com/issue-123\"}]}"
                     : "{}";
-            Files.writeString(testCasesDirectory.resolve("case-" + index + ".json"), json,
-                    StandardCharsets.UTF_8);
+            Files.writeString(
+                    testCasesDirectory.resolve("case-" + index + ".json"), json,
+                    StandardCharsets.UTF_8
+            );
         }
     }
 
@@ -126,7 +133,8 @@ public final class FakeAllure2CliRunner {
                 || Files.exists(projectDirectory.resolve("report.properties"))
                 || Files.exists(projectDirectory.resolve("target/classes/allure.properties"))
                 || Files.exists(
-                        projectDirectory.resolve("target/test-classes/report.properties"))) {
+                        projectDirectory.resolve("target/test-classes/report.properties")
+                )) {
             return true;
         }
         final Path pom = projectDirectory.resolve("pom.xml");
@@ -163,7 +171,7 @@ public final class FakeAllure2CliRunner {
     }
 
     private static Path findOutputDirectory(final List<String> commandArgs,
-            final Path defaultReportDirectory) {
+                                            final Path defaultReportDirectory) {
         for (int index = 1; index < commandArgs.size() - 1; index++) {
             final String arg = commandArgs.get(index);
             if ("-o".equals(arg) || "--output".equals(arg)) {
@@ -184,8 +192,11 @@ public final class FakeAllure2CliRunner {
         if (file.getParent() != null) {
             Files.createDirectories(file.getParent());
         }
-        Files.write(file, lines, StandardCharsets.UTF_8,
-                Files.exists(file) ? java.nio.file.StandardOpenOption.APPEND
-                        : java.nio.file.StandardOpenOption.CREATE);
+        Files.write(
+                file, lines, StandardCharsets.UTF_8,
+                Files.exists(file)
+                        ? java.nio.file.StandardOpenOption.APPEND
+                        : java.nio.file.StandardOpenOption.CREATE
+        );
     }
 }

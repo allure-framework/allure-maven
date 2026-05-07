@@ -36,7 +36,10 @@ import static java.lang.String.format;
 /**
  * @author Dmitry Baev dmitry.baev@qameta.io Date: 30.07.15
  */
-@Mojo(name = "report", defaultPhase = LifecyclePhase.SITE)
+@Mojo(
+        name = "report",
+        defaultPhase = LifecyclePhase.SITE
+)
 public class AllureReportMojo extends AllureGenerateMojo {
 
     private static final String FOUND_DIRECTORY = "Found results directory %s";
@@ -53,7 +56,10 @@ public class AllureReportMojo extends AllureGenerateMojo {
     @Parameter(property = "allure.results.inputDirectories")
     protected String inputDirectories;
 
-    @Parameter(property = "allure.history.enabled", defaultValue = "true")
+    @Parameter(
+            property = "allure.history.enabled",
+            defaultValue = "true"
+    )
     protected boolean historyEnabled;
 
     /**
@@ -96,7 +102,8 @@ public class AllureReportMojo extends AllureGenerateMojo {
 
     @Override
     protected List<Path> prepareInputDirectoriesForGenerate(final List<Path> inputDirectories,
-            final AllureVersion allureVersion) throws IOException {
+                                                            final AllureVersion allureVersion)
+            throws IOException {
         if (!historyEnabled || allureVersion.isAllure3()) {
             return inputDirectories;
         }
@@ -110,20 +117,22 @@ public class AllureReportMojo extends AllureGenerateMojo {
         final Path historyInputDirectory = restoreCachedHistoryInput(cachedHistoryDirectory);
         final List<Path> generationInputDirectories = new ArrayList<>(inputDirectories);
         generationInputDirectories.add(historyInputDirectory);
-        getLog().info("Restored cached Allure history from " + cachedHistoryDirectory
-                + TO_PATH_SEPARATOR + historyInputDirectory.resolve(HISTORY_DIRECTORY_NAME));
+        getLog().info(
+                "Restored cached Allure history from " + cachedHistoryDirectory
+                        + TO_PATH_SEPARATOR + historyInputDirectory.resolve(HISTORY_DIRECTORY_NAME)
+        );
         return generationInputDirectories;
     }
 
     @Override
     protected void afterGenerateReport(final List<Path> inputDirectories,
-            final AllureVersion allureVersion) throws IOException {
+                                       final AllureVersion allureVersion)
+            throws IOException {
         if (!historyEnabled || allureVersion.isAllure3()) {
             return;
         }
 
-        final Path generatedHistoryDirectory =
-                Paths.get(getReportDirectory()).resolve(HISTORY_DIRECTORY_NAME);
+        final Path generatedHistoryDirectory = Paths.get(getReportDirectory()).resolve(HISTORY_DIRECTORY_NAME);
         if (!isDirectoryExists(generatedHistoryDirectory)) {
             return;
         }
@@ -132,10 +141,14 @@ public class AllureReportMojo extends AllureGenerateMojo {
         final Path cachedHistoryDirectory = cacheRoot.resolve(HISTORY_DIRECTORY_NAME);
         FileUtils.deleteQuietly(cacheRoot.toFile());
         Files.createDirectories(cacheRoot);
-        FileUtils.copyDirectory(generatedHistoryDirectory.toFile(),
-                cachedHistoryDirectory.toFile());
-        getLog().info("Refreshed cached Allure history from " + generatedHistoryDirectory
-                + TO_PATH_SEPARATOR + cachedHistoryDirectory);
+        FileUtils.copyDirectory(
+                generatedHistoryDirectory.toFile(),
+                cachedHistoryDirectory.toFile()
+        );
+        getLog().info(
+                "Refreshed cached Allure history from " + generatedHistoryDirectory
+                        + TO_PATH_SEPARATOR + cachedHistoryDirectory
+        );
     }
 
     @Override
@@ -160,8 +173,7 @@ public class AllureReportMojo extends AllureGenerateMojo {
     }
 
     private Path restoreCachedHistoryInput(final Path cachedHistoryDirectory) throws IOException {
-        final Path historyInputRoot =
-                Paths.get(buildDirectory).resolve(Paths.get("allure-maven", "history-input"));
+        final Path historyInputRoot = Paths.get(buildDirectory).resolve(Paths.get("allure-maven", "history-input"));
         final Path historyInputDirectory = historyInputRoot.resolve("allure-results");
         final Path restoredHistoryDirectory = historyInputDirectory.resolve(HISTORY_DIRECTORY_NAME);
         FileUtils.deleteQuietly(historyInputRoot.toFile());

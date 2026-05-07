@@ -40,13 +40,13 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldInstallAllure3FromPackageArchiveUsingVerifier() throws Exception {
-        final Path projectDirectory = prepareProject("allure3-package-path-install",
-                rootPom("allure3-package-path-install"));
+        final Path projectDirectory = prepareProject(
+                "allure3-package-path-install",
+                rootPom("allure3-package-path-install")
+        );
         final Path installDirectory = projectDirectory.resolve(".allure install");
-        final Path captureFile =
-                projectDirectory.resolve(Path.of("target", "allure3 package install args.txt"));
-        final Path packageArchive =
-                projectDirectory.resolve(Path.of("packages", "custom-allure.tgz"));
+        final Path captureFile = projectDirectory.resolve(Path.of("target", "allure3 package install args.txt"));
+        final Path packageArchive = projectDirectory.resolve(Path.of("packages", "custom-allure.tgz"));
 
         Allure3SetupHelper.prepareFakeInstallRuntime(installDirectory, captureFile);
         Allure3SetupHelper.prepareFakePackageArchive(packageArchive);
@@ -60,10 +60,11 @@ class VerifierAllure3IT extends VerifierTestSupport {
         assertCommandLinesContain(args, "arg=" + canonical(packageArchive));
         assertThat(args).doesNotContain("arg=--registry");
         assertThat(args).doesNotContain("arg=allure@" + AllureVersion.ALLURE3_DEFAULT_VERSION);
-        final Path expectedInstallDirectory =
-                installDirectory.resolve("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION);
-        assertCommandLines(List.of(args.get(2)),
-                List.of("arg=" + canonical(expectedInstallDirectory)));
+        final Path expectedInstallDirectory = installDirectory.resolve("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION);
+        assertCommandLines(
+                List.of(args.get(2)),
+                List.of("arg=" + canonical(expectedInstallDirectory))
+        );
     }
 
     /**
@@ -76,33 +77,38 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldInstallAllure3WithBundledPrivateNode() throws Exception {
-        final Path projectDirectory = prepareProject("allure3-install-private-node",
-                rootPom("allure3-install-private-node"));
+        final Path projectDirectory = prepareProject(
+                "allure3-install-private-node",
+                rootPom("allure3-install-private-node")
+        );
         final Path installDirectory = projectDirectory.resolve(".allure install");
-        final Path captureFile =
-                projectDirectory.resolve(Path.of("target", "allure3 install args.txt"));
+        final Path captureFile = projectDirectory.resolve(Path.of("target", "allure3 install args.txt"));
 
         Allure3SetupHelper.prepareFakeInstallRuntime(installDirectory, captureFile);
 
         runGoals(projectDirectory, List.of("site"));
 
         final Allure3Platform platform = Allure3Platform.detect();
-        final Path nodeHome =
-                platform.getNodeHome(installDirectory, Allure3Commandline.NODE_DEFAULT_VERSION);
-        final Path npmCli =
-                platform.getNpmCliPath(installDirectory, Allure3Commandline.NODE_DEFAULT_VERSION);
+        final Path nodeHome = platform.getNodeHome(installDirectory, Allure3Commandline.NODE_DEFAULT_VERSION);
+        final Path npmCli = platform.getNpmCliPath(installDirectory, Allure3Commandline.NODE_DEFAULT_VERSION);
         final Path allureExecutable = platform.getAllureExecutable(installDirectory);
 
         assertThat(allureCli(installDirectory)).exists();
         assertThat(allureExecutable).exists();
-        assertCommandLines(readLines(captureFile),
-                List.of("cli=" + canonical(npmCli), "arg=--prefix",
-                        "arg=" + canonical(installDirectory
-                                .resolve("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION)),
+        assertCommandLines(
+                readLines(captureFile),
+                List.of(
+                        "cli=" + canonical(npmCli), "arg=--prefix",
+                        "arg=" + canonical(
+                                installDirectory
+                                        .resolve("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION)
+                        ),
                         "arg=install", "arg=--no-package-lock", "arg=--no-save",
                         "arg=--ignore-scripts",
                         "arg=allure@" + AllureVersion.ALLURE3_DEFAULT_VERSION, "arg=--registry",
-                        "arg=https://registry.npmjs.org"));
+                        "arg=https://registry.npmjs.org"
+                )
+        );
         assertThat(nodeHome).exists();
     }
 
@@ -116,17 +122,23 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldUsePluginConfiguredAllure3ConfigPath() throws Exception {
-        final Path projectDirectory = prepareProject("allure3-config-path-plugin-property",
-                rootPom("allure3-config-path-plugin-property"));
-        prepareAllure3ReportRuntime(projectDirectory, ".allure", "allure3 args.txt",
-                outputDirectory(projectDirectory), true);
+        final Path projectDirectory = prepareProject(
+                "allure3-config-path-plugin-property",
+                rootPom("allure3-config-path-plugin-property")
+        );
+        prepareAllure3ReportRuntime(
+                projectDirectory, ".allure", "allure3 args.txt",
+                outputDirectory(projectDirectory), true
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
         TestHelper.checkRegularReportMojoOnly(projectDirectory);
         final JsonNode config = readJson(configPath(projectDirectory));
-        assertThat(config.path("plugins").path("plugin-config").path("options").path("enabled")
-                .asBoolean()).isTrue();
+        assertThat(
+                config.path("plugins").path("plugin-config").path("options").path("enabled")
+                        .asBoolean()
+        ).isTrue();
         assertThat(config.path("plugins").has("root-config")).isFalse();
     }
 
@@ -140,18 +152,26 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldUseSystemPropertyConfiguredAllure3ConfigPath() throws Exception {
-        final Path projectDirectory = prepareProject("allure3-config-path-system-property",
-                rootPom("allure3-config-path-system-property"));
-        prepareAllure3ReportRuntime(projectDirectory, ".allure", "allure3 args.txt",
-                outputDirectory(projectDirectory), true);
+        final Path projectDirectory = prepareProject(
+                "allure3-config-path-system-property",
+                rootPom("allure3-config-path-system-property")
+        );
+        prepareAllure3ReportRuntime(
+                projectDirectory, ".allure", "allure3 args.txt",
+                outputDirectory(projectDirectory), true
+        );
 
-        runGoals(projectDirectory, List.of("site"),
-                List.of("-Dallure.config.path=config/system-allure.yml"));
+        runGoals(
+                projectDirectory, List.of("site"),
+                List.of("-Dallure.config.path=config/system-allure.yml")
+        );
 
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
         final JsonNode config = readJson(configPath(projectDirectory));
-        assertThat(config.path("plugins").path("system-config").path("options").path("enabled")
-                .asBoolean()).isTrue();
+        assertThat(
+                config.path("plugins").path("system-config").path("options").path("enabled")
+                        .asBoolean()
+        ).isTrue();
         assertThat(config.path("plugins").has("root-config")).isFalse();
     }
 
@@ -165,23 +185,34 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldUseRootAllureYamlConfigForAllure3Report() throws Exception {
-        final Path projectDirectory = prepareProject("feature-root-allure-yaml-config",
-                rootPom("feature-root-allure-yaml-config"));
-        final Path captureFile = prepareAllure3ReportRuntime(projectDirectory, ".allure",
-                "allure3 args.txt", outputDirectory(projectDirectory), true);
+        final Path projectDirectory = prepareProject(
+                "feature-root-allure-yaml-config",
+                rootPom("feature-root-allure-yaml-config")
+        );
+        final Path captureFile = prepareAllure3ReportRuntime(
+                projectDirectory, ".allure",
+                "allure3 args.txt", outputDirectory(projectDirectory), true
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
         final Path results = projectDirectory.resolve(Path.of("target", "allure-results"));
         final JsonNode config = readJson(configPath(projectDirectory));
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
-        assertCommandLines(readLines(captureFile), generateInvocation(
-                projectDirectory.resolve(".allure"), results, configPath(projectDirectory)));
+        assertCommandLines(
+                readLines(captureFile), generateInvocation(
+                        projectDirectory.resolve(".allure"), results, configPath(projectDirectory)
+                )
+        );
         assertThat(config.path("plugins").path("custom").path("enabled").asBoolean()).isTrue();
-        assertThat(config.path("plugins").path("awesome").path("options").path("reportLanguage")
-                .asText()).isEqualTo("en");
-        assertThat(config.path("plugins").path("awesome").path("options").path("singleFile")
-                .asBoolean()).isFalse();
+        assertThat(
+                config.path("plugins").path("awesome").path("options").path("reportLanguage")
+                        .asText()
+        ).isEqualTo("en");
+        assertThat(
+                config.path("plugins").path("awesome").path("options").path("singleFile")
+                        .asBoolean()
+        ).isFalse();
     }
 
     /**
@@ -194,17 +225,24 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldUseDefaultAllure3VersionWhenReportVersionIsOmitted() throws Exception {
-        final Path projectDirectory = prepareProject("feature-without-version-property",
-                rootPom("feature-without-version-property"));
-        final Path captureFile = prepareAllure3ReportRuntime(projectDirectory, ".allure",
-                "allure3 args.txt", outputDirectory(projectDirectory), true);
+        final Path projectDirectory = prepareProject(
+                "feature-without-version-property",
+                rootPom("feature-without-version-property")
+        );
+        final Path captureFile = prepareAllure3ReportRuntime(
+                projectDirectory, ".allure",
+                "allure3 args.txt", outputDirectory(projectDirectory), true
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
         final Path results = projectDirectory.resolve(Path.of("target", "allure-results"));
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
-        assertCommandLines(readLines(captureFile), generateInvocation(
-                projectDirectory.resolve(".allure"), results, configPath(projectDirectory)));
+        assertCommandLines(
+                readLines(captureFile), generateInvocation(
+                        projectDirectory.resolve(".allure"), results, configPath(projectDirectory)
+                )
+        );
     }
 
     /**
@@ -217,21 +255,24 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldWriteHistoryConfigForAllure3Reports() throws Exception {
-        final Path projectDirectory =
-                prepareProject("report-history-allure3", rootPom("report-history-allure3"));
-        final Path captureFile = prepareAllure3ReportRuntime(projectDirectory, ".allure",
-                "allure3 history args.txt", outputDirectory(projectDirectory), true);
+        final Path projectDirectory = prepareProject("report-history-allure3", rootPom("report-history-allure3"));
+        final Path captureFile = prepareAllure3ReportRuntime(
+                projectDirectory, ".allure",
+                "allure3 history args.txt", outputDirectory(projectDirectory), true
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
         final Path results = projectDirectory.resolve(Path.of("target", "allure-results"));
-        final Path historyFile =
-                projectDirectory.resolve(Path.of(".allure", "history", "report", "history.jsonl"));
+        final Path historyFile = projectDirectory.resolve(Path.of(".allure", "history", "report", "history.jsonl"));
         final JsonNode config = readJson(configPath(projectDirectory));
         TestHelper.checkRegularReportMojoOnly(projectDirectory);
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
-        assertCommandLines(readLines(captureFile), generateInvocation(
-                projectDirectory.resolve(".allure"), results, configPath(projectDirectory)));
+        assertCommandLines(
+                readLines(captureFile), generateInvocation(
+                        projectDirectory.resolve(".allure"), results, configPath(projectDirectory)
+                )
+        );
         final Path historyPath = Path.of(config.path("historyPath").asText());
         assertThat(historyPath.getFileName()).isEqualTo(historyFile.getFileName());
         assertSamePath(historyPath.getParent().toString(), historyFile.getParent());
@@ -249,22 +290,28 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGenerateSingleFileAllure3Reports() throws Exception {
-        final Path projectDirectory =
-                prepareProject("report-single-file", rootPom("report-single-file"));
-        final Path captureFile = prepareAllure3ReportRuntime(projectDirectory, ".allure",
-                "allure3 args.txt", outputDirectory(projectDirectory), false);
+        final Path projectDirectory = prepareProject("report-single-file", rootPom("report-single-file"));
+        final Path captureFile = prepareAllure3ReportRuntime(
+                projectDirectory, ".allure",
+                "allure3 args.txt", outputDirectory(projectDirectory), false
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
         final Path results = projectDirectory.resolve(Path.of("target", "allure-results"));
         final List<String> expectedInvocation = generateInvocation(
-                projectDirectory.resolve(".allure"), results, configPath(projectDirectory));
+                projectDirectory.resolve(".allure"), results, configPath(projectDirectory)
+        );
         final JsonNode config = readJson(configPath(projectDirectory));
         TestHelper.checkSingleFile(outputDirectory(projectDirectory));
-        assertCommandLines(readLines(captureFile),
-                concatenate(expectedInvocation, expectedInvocation));
-        assertThat(config.path("plugins").path("awesome").path("options").path("singleFile")
-                .asBoolean()).isTrue();
+        assertCommandLines(
+                readLines(captureFile),
+                concatenate(expectedInvocation, expectedInvocation)
+        );
+        assertThat(
+                config.path("plugins").path("awesome").path("options").path("singleFile")
+                        .asBoolean()
+        ).isTrue();
     }
 
     /**
@@ -278,32 +325,42 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldServeAllure3ReportWhenPathsContainSpaces() throws Exception {
-        final Path projectDirectory = prepareProject("allure3-serve-paths-with-spaces",
-                "allure3 serve paths with spaces", rootPom("allure3-serve-paths-with-spaces"));
-        final Path captureFile = prepareAllure3ReportRuntime(projectDirectory, ".allure install",
+        final Path projectDirectory = prepareProject(
+                "allure3-serve-paths-with-spaces",
+                "allure3 serve paths with spaces", rootPom("allure3-serve-paths-with-spaces")
+        );
+        final Path captureFile = prepareAllure3ReportRuntime(
+                projectDirectory, ".allure install",
                 "allure3 serve args.txt",
-                projectDirectory.resolve(Path.of("target", "site", "allure serve report")), false);
+                projectDirectory.resolve(Path.of("target", "site", "allure serve report")), false
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
         final Path installDirectory = projectDirectory.resolve(".allure install");
         final Path results = projectDirectory.resolve(Path.of("target", "my results"));
-        final Path reportDirectory =
-                projectDirectory.resolve(Path.of("target", "site", "allure serve report"));
+        final Path reportDirectory = projectDirectory.resolve(Path.of("target", "site", "allure serve report"));
         final Path config = configPath(projectDirectory);
 
-        assertCommandLines(readLines(captureFile),
-                concatenate(generateInvocation(installDirectory, results, config),
-                        openInvocation(installDirectory, reportDirectory, config)));
+        assertCommandLines(
+                readLines(captureFile),
+                concatenate(
+                        generateInvocation(installDirectory, results, config),
+                        openInvocation(installDirectory, reportDirectory, config)
+                )
+        );
     }
 
     private Path prepareAllure3ReportRuntime(final Path projectDirectory,
-            final String installDirectoryName, final String captureFileName,
-            final Path reportDirectory, final boolean createDataFiles) throws Exception {
+                                             final String installDirectoryName, final String captureFileName,
+                                             final Path reportDirectory, final boolean createDataFiles)
+            throws Exception {
         final Path installDirectory = projectDirectory.resolve(installDirectoryName);
         final Path captureFile = projectDirectory.resolve(Path.of("target", captureFileName));
-        Allure3SetupHelper.prepareFakeReportRuntime(installDirectory, captureFile, reportDirectory,
-                createDataFiles);
+        Allure3SetupHelper.prepareFakeReportRuntime(
+                installDirectory, captureFile, reportDirectory,
+                createDataFiles
+        );
         return captureFile;
     }
 
@@ -317,22 +374,32 @@ class VerifierAllure3IT extends VerifierTestSupport {
     }
 
     private Path allureCli(final Path installDirectory) {
-        return installDirectory.resolve(Path.of("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION,
-                "node_modules", "allure", "cli.js"));
+        return installDirectory.resolve(
+                Path.of(
+                        "allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION,
+                        "node_modules", "allure", "cli.js"
+                )
+        );
     }
 
     private List<String> generateInvocation(final Path installDirectory, final Path results,
-            final Path config) throws Exception {
-        return List.of("cli=" + canonical(allureCli(installDirectory)), "command=generate",
+                                            final Path config)
+            throws Exception {
+        return List.of(
+                "cli=" + canonical(allureCli(installDirectory)), "command=generate",
                 "arg=generate", "arg=" + canonical(results), "arg=--config",
-                "arg=" + canonical(config), "---");
+                "arg=" + canonical(config), "---"
+        );
     }
 
     private List<String> openInvocation(final Path installDirectory, final Path reportDirectory,
-            final Path config) throws Exception {
-        return List.of("cli=" + canonical(allureCli(installDirectory)), "command=open", "arg=open",
+                                        final Path config)
+            throws Exception {
+        return List.of(
+                "cli=" + canonical(allureCli(installDirectory)), "command=open", "arg=open",
                 "arg=" + canonical(reportDirectory), "arg=--config", "arg=" + canonical(config),
-                "---");
+                "---"
+        );
     }
 
     private List<String> concatenate(final List<String> first, final List<String> second) {
