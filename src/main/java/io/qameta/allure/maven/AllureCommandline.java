@@ -45,8 +45,7 @@ import java.util.Properties;
 
 import static io.qameta.allure.maven.VersionUtils.versionCompare;
 
-@SuppressWarnings({"PMD.GodClass", "ClassDataAbstractionCoupling", "ClassFanOutComplexity",
-        "MultipleStringLiterals"})
+@SuppressWarnings({"PMD.GodClass", "MultipleStringLiterals"})
 public class AllureCommandline {
 
     public static final String ALLURE_DEFAULT_VERSION = "2.36.0";
@@ -66,17 +65,17 @@ public class AllureCommandline {
     }
 
     public AllureCommandline(final Path installationDirectory, final String version,
-            final Log log) {
+                             final Log log) {
         this(installationDirectory, version, DEFAULT_TIMEOUT, log);
     }
 
     public AllureCommandline(final Path installationDirectory, final String version,
-            final int timeout) {
+                             final int timeout) {
         this(installationDirectory, version, timeout, null);
     }
 
     public AllureCommandline(final Path installationDirectory, final String version,
-            final int timeout, final Log log) {
+                             final int timeout, final Log log) {
         this.installationDirectory = installationDirectory;
         this.version = StringUtils.isBlank(version) || versionCompare(version, "2.8.0") < 0
                 ? ALLURE_DEFAULT_VERSION
@@ -86,7 +85,8 @@ public class AllureCommandline {
     }
 
     public int generateReport(final List<Path> resultsPaths, final Path reportPath,
-            final boolean singleFile) throws IOException {
+                              final boolean singleFile)
+            throws IOException {
 
         this.checkAllureExists();
 
@@ -129,8 +129,10 @@ public class AllureCommandline {
 
     private void checkAllureExists() throws FileNotFoundException {
         if (allureNotExists()) {
-            throw new FileNotFoundException("There is no valid allure installation."
-                    + " Make sure you're using allure version not less then 2.x.");
+            throw new FileNotFoundException(
+                    "There is no valid allure installation."
+                            + " Make sure you're using allure version not less then 2.x."
+            );
         }
     }
 
@@ -140,8 +142,7 @@ public class AllureCommandline {
     }
 
     private CommandLine createCommandLine(final String command) {
-        final CommandLine commandLine =
-                new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
+        final CommandLine commandLine = new CommandLine(getAllureExecutablePath().toAbsolutePath().toFile());
         if (log != null && log.isDebugEnabled()) {
             commandLine.addArgument("--verbose");
         }
@@ -178,9 +179,9 @@ public class AllureCommandline {
     }
 
     public void downloadWithMaven(final MavenSession session,
-            final DependencyResolver dependencyResolver) throws IOException {
-        final ProjectBuildingRequest buildingRequest =
-                new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+                                  final DependencyResolver dependencyResolver)
+            throws IOException {
+        final ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
         buildingRequest.setResolveDependencies(false);
 
         final Dependency cliDep = new Dependency();
@@ -190,9 +191,10 @@ public class AllureCommandline {
         cliDep.setType("zip");
 
         try {
-            final Iterator<ArtifactResult> resolved =
-                    dependencyResolver.resolveDependencies(buildingRequest,
-                            Collections.singletonList(cliDep), null, null).iterator();
+            final Iterator<ArtifactResult> resolved = dependencyResolver.resolveDependencies(
+                    buildingRequest,
+                    Collections.singletonList(cliDep), null, null
+            ).iterator();
 
             if (resolved.hasNext()) {
                 unpack(resolved.next().getArtifact().getFile());
@@ -211,7 +213,8 @@ public class AllureCommandline {
     }
 
     void download(final String allureDownloadUrl, final Proxy mavenProxy,
-            final Properties downloadProperties) throws IOException {
+                  final Properties downloadProperties)
+            throws IOException {
         if (allureExists()) {
             return;
         }

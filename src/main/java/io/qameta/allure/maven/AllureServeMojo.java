@@ -31,13 +31,20 @@ import java.util.List;
  * Calls allure serve command.
  */
 @SuppressWarnings({"unused", "MultipleStringLiterals"})
-@Mojo(name = "serve", defaultPhase = LifecyclePhase.SITE, inheritByDefault = false)
+@Mojo(
+        name = "serve",
+        defaultPhase = LifecyclePhase.SITE,
+        inheritByDefault = false
+)
 public class AllureServeMojo extends AllureGenerateMojo {
 
     /**
      * Serve timeout parameter in seconds.
      */
-    @Parameter(property = "allure.serve.timeout", defaultValue = "3600")
+    @Parameter(
+            property = "allure.serve.timeout",
+            defaultValue = "3600"
+    )
     private int serveTimeout;
 
     /**
@@ -49,7 +56,10 @@ public class AllureServeMojo extends AllureGenerateMojo {
     /**
      * Serve port parameter.
      */
-    @Parameter(property = "allure.serve.port", defaultValue = "0")
+    @Parameter(
+            property = "allure.serve.port",
+            defaultValue = "0"
+    )
     private Integer servePort;
 
     /**
@@ -84,9 +94,10 @@ public class AllureServeMojo extends AllureGenerateMojo {
     private void serveAllure2(final List<Path> resultsPaths, final AllureVersion allureVersion)
             throws MavenReportException {
         try {
-            final AllureCommandline commandline =
-                    new AllureCommandline(Paths.get(getInstallDirectory()),
-                            allureVersion.getVersion(), this.serveTimeout, getLog());
+            final AllureCommandline commandline = new AllureCommandline(
+                    Paths.get(getInstallDirectory()),
+                    allureVersion.getVersion(), this.serveTimeout, getLog()
+            );
 
             getLog().info("Serve Allure report using a temporary directory managed by the CLI.");
             commandline.serve(resultsPaths, this.serveHost, this.servePort);
@@ -102,22 +113,27 @@ public class AllureServeMojo extends AllureGenerateMojo {
         try {
             validateAllure3Configuration();
             if (StringUtils.isNotBlank(serveHost)) {
-                throw new MavenReportException("Allure 3 does not support allure.serve.host. "
-                        + "Configure reportVersion 2.x if you need host binding.");
+                throw new MavenReportException(
+                        "Allure 3 does not support allure.serve.host. "
+                                + "Configure reportVersion 2.x if you need host binding."
+                );
             }
             if (Boolean.TRUE.equals(singleFile)) {
-                getLog().warn("Ignoring singleFile for Allure 3 serve. Use allure:report or "
-                        + "allure:aggregate to generate a single-file report.");
+                getLog().warn(
+                        "Ignoring singleFile for Allure 3 serve. Use allure:report or "
+                                + "allure:aggregate to generate a single-file report."
+                );
             }
 
             final Path reportPath = Paths.get(getReportDirectory());
-            final Allure3Commandline commandline =
-                    createAllure3Commandline(allureVersion, this.serveTimeout);
+            final Allure3Commandline commandline = createAllure3Commandline(allureVersion, this.serveTimeout);
             final Path allureConfig = resolveAllure3ConfigPath();
 
             getLog().info("Generate report to " + reportPath);
-            commandline.serve(resultsPaths, reportPath, false, Paths.get(buildDirectory),
-                    getName(Locale.getDefault()), this.servePort, allureConfig);
+            commandline.serve(
+                    resultsPaths, reportPath, false, Paths.get(buildDirectory),
+                    getName(Locale.getDefault()), this.servePort, allureConfig
+            );
             getLog().info("Report generated successfully.");
         } catch (MavenReportException e) {
             throw e;

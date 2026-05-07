@@ -42,12 +42,16 @@ class AllureServeMojoTest {
     void shouldRejectServeHostForAllure3() throws Exception {
         final AllureServeMojo mojo = new AllureServeMojo();
         setField(mojo, "serveHost", "127.0.0.1");
-        addAttachment("Serve host override",
-                String.join(System.lineSeparator(), "serveHost=127.0.0.1", "allureVersion=3.4.1"));
+        addAttachment(
+                "Serve host override",
+                String.join(System.lineSeparator(), "serveHost=127.0.0.1", "allureVersion=3.4.1")
+        );
 
         step("Verify Allure 3 rejects serveHost", () -> {
-            final MavenReportException error = assertThrows(MavenReportException.class, () -> mojo
-                    .generateReport(Collections.emptyList(), AllureVersion.resolve("3.4.1")));
+            final MavenReportException error = assertThrows(
+                    MavenReportException.class, () -> mojo
+                            .generateReport(Collections.emptyList(), AllureVersion.resolve("3.4.1"))
+            );
             addAttachment("Serve host rejection", String.valueOf(error.getMessage()));
             assertThat(error).hasMessageContaining("does not support allure.serve.host");
         });
@@ -68,20 +72,30 @@ class AllureServeMojoTest {
                 mojo.reportDirectory = projectDirectory.resolve("report").toString();
                 mojo.projectDirectory = projectDirectory.toString();
                 mojo.setLog(log);
-                addAttachment("Serve mojo inputs",
-                        String.join(System.lineSeparator(), "projectDirectory=" + projectDirectory,
+                addAttachment(
+                        "Serve mojo inputs",
+                        String.join(
+                                System.lineSeparator(), "projectDirectory=" + projectDirectory,
                                 "resultsDirectory=" + resultsDirectory,
                                 "reportDirectory=" + mojo.reportDirectory,
-                                "singleFile=" + mojo.singleFile));
+                                "singleFile=" + mojo.singleFile
+                        )
+                );
             });
 
-            step("Generate report through Allure 3 serve flow",
-                    () -> mojo.generateReport(Collections.singletonList(resultsDirectory),
-                            AllureVersion.resolve("3.4.1")));
+            step(
+                    "Generate report through Allure 3 serve flow",
+                    () -> mojo.generateReport(
+                            Collections.singletonList(resultsDirectory),
+                            AllureVersion.resolve("3.4.1")
+                    )
+            );
 
             step("Verify single-file flag is ignored and warning is logged", () -> {
-                addAttachment("Serve warning log",
-                        String.join(System.lineSeparator(), log.warnMessages));
+                addAttachment(
+                        "Serve warning log",
+                        String.join(System.lineSeparator(), log.warnMessages)
+                );
                 assertThat(commandline.singleFile).isFalse();
                 assertThat(log.warnMessages.get(0))
                         .contains("Ignoring singleFile for Allure 3 serve");
@@ -108,7 +122,7 @@ class AllureServeMojoTest {
 
         @Override
         protected Allure3Commandline createAllure3Commandline(final AllureVersion allureVersion,
-                final int timeout) {
+                                                              final int timeout) {
             return commandline;
         }
     }
@@ -118,14 +132,16 @@ class AllureServeMojoTest {
         private boolean singleFile;
 
         private FakeAllure3Commandline(final Path installDirectory) {
-            super(installDirectory, "3.4.1", NODE_DEFAULT_VERSION, NODE_DEFAULT_DOWNLOAD_URL,
-                    NPM_DEFAULT_REGISTRY, null, null, new Properties(), false, 10);
+            super(
+                    installDirectory, "3.4.1", NODE_DEFAULT_VERSION, NODE_DEFAULT_DOWNLOAD_URL,
+                    NPM_DEFAULT_REGISTRY, null, null, new Properties(), false, 10
+            );
         }
 
         @Override
         public int serve(final List<Path> resultsPaths, final Path reportPath,
-                final boolean singleFile, final Path buildDirectory, final String reportName,
-                final Integer servePort, final Path userConfigPath) {
+                         final boolean singleFile, final Path buildDirectory, final String reportName,
+                         final Integer servePort, final Path userConfigPath) {
             this.singleFile = singleFile;
             return 0;
         }
@@ -141,13 +157,16 @@ class AllureServeMojoTest {
         }
 
         @Override
-        public void debug(final CharSequence content) {}
+        public void debug(final CharSequence content) {
+        }
 
         @Override
-        public void debug(final CharSequence content, final Throwable error) {}
+        public void debug(final CharSequence content, final Throwable error) {
+        }
 
         @Override
-        public void debug(final Throwable error) {}
+        public void debug(final Throwable error) {
+        }
 
         @Override
         public boolean isInfoEnabled() {
@@ -155,13 +174,16 @@ class AllureServeMojoTest {
         }
 
         @Override
-        public void info(final CharSequence content) {}
+        public void info(final CharSequence content) {
+        }
 
         @Override
-        public void info(final CharSequence content, final Throwable error) {}
+        public void info(final CharSequence content, final Throwable error) {
+        }
 
         @Override
-        public void info(final Throwable error) {}
+        public void info(final Throwable error) {
+        }
 
         @Override
         public boolean isWarnEnabled() {
@@ -189,12 +211,15 @@ class AllureServeMojoTest {
         }
 
         @Override
-        public void error(final CharSequence content) {}
+        public void error(final CharSequence content) {
+        }
 
         @Override
-        public void error(final CharSequence content, final Throwable error) {}
+        public void error(final CharSequence content, final Throwable error) {
+        }
 
         @Override
-        public void error(final Throwable error) {}
+        public void error(final Throwable error) {
+        }
     }
 }

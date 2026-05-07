@@ -303,7 +303,7 @@
                 <configuration>
                     <java>
                         <eclipse>
-                            <file>${project.basedir}/maven/quality-configs/format.xml</file>
+                            <file>${project.basedir}/maven/quality-configs/spotless/eclipse-jdt.prefs</file>
                         </eclipse>
                         <removeUnusedImports />
                         <trimTrailingWhitespace/>

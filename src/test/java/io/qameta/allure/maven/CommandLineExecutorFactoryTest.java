@@ -34,12 +34,16 @@ class CommandLineExecutorFactoryTest {
 
     @Test
     void shouldConfigureShutdownHookProcessDestroyer() {
-        final DefaultExecutor executor = step("Create executor with 10 second timeout",
-                () -> CommandLineExecutorFactory.newExecutor(10));
+        final DefaultExecutor executor = step(
+                "Create executor with 10 second timeout",
+                () -> CommandLineExecutorFactory.newExecutor(10)
+        );
 
         step("Verify shutdown hook process destroyer", () -> {
-            addAttachment("Executor destroyer",
-                    executor.getProcessDestroyer().getClass().getName());
+            addAttachment(
+                    "Executor destroyer",
+                    executor.getProcessDestroyer().getClass().getName()
+            );
             assertThat(executor.getProcessDestroyer())
                     .isInstanceOf(ShutdownHookProcessDestroyer.class);
         });
@@ -47,16 +51,20 @@ class CommandLineExecutorFactoryTest {
 
     @Test
     void shouldConfigureWatchdogTimeoutInSeconds() {
-        final DefaultExecutor executor = step("Create executor with 10 second timeout",
-                () -> CommandLineExecutorFactory.newExecutor(10));
-        final ExecuteWatchdog watchdog =
-                step("Capture watchdog from executor", executor::getWatchdog);
-        final Duration timeout =
-                step("Inspect watchdog timeout via reflection", () -> getTimeout(watchdog));
+        final DefaultExecutor executor = step(
+                "Create executor with 10 second timeout",
+                () -> CommandLineExecutorFactory.newExecutor(10)
+        );
+        final ExecuteWatchdog watchdog = step("Capture watchdog from executor", executor::getWatchdog);
+        final Duration timeout = step("Inspect watchdog timeout via reflection", () -> getTimeout(watchdog));
 
         step("Verify watchdog timeout", () -> {
-            addAttachment("Watchdog timeout", String.join(System.lineSeparator(),
-                    "timeout=" + timeout, "watchdogClass=" + watchdog.getClass().getName()));
+            addAttachment(
+                    "Watchdog timeout", String.join(
+                            System.lineSeparator(),
+                            "timeout=" + timeout, "watchdogClass=" + watchdog.getClass().getName()
+                    )
+            );
             assertThat(watchdog).isNotNull();
             assertThat(timeout).isEqualTo(Duration.ofSeconds(10));
         });
@@ -64,14 +72,20 @@ class CommandLineExecutorFactoryTest {
 
     @Test
     void shouldTreatOnlyZeroExitCodeAsSuccess() {
-        final DefaultExecutor executor = step("Create executor with 10 second timeout",
-                () -> CommandLineExecutorFactory.newExecutor(10));
+        final DefaultExecutor executor = step(
+                "Create executor with 10 second timeout",
+                () -> CommandLineExecutorFactory.newExecutor(10)
+        );
 
         step("Verify exit-code failure mapping", () -> {
             final boolean zeroExitFailure = executor.isFailure(0);
             final boolean oneExitFailure = executor.isFailure(1);
-            addAttachment("Failure decisions", String.join(System.lineSeparator(),
-                    "exitCode=0 -> " + zeroExitFailure, "exitCode=1 -> " + oneExitFailure));
+            addAttachment(
+                    "Failure decisions", String.join(
+                            System.lineSeparator(),
+                            "exitCode=0 -> " + zeroExitFailure, "exitCode=1 -> " + oneExitFailure
+                    )
+            );
             assertThat(zeroExitFailure).isFalse();
             assertThat(oneExitFailure).isTrue();
         });

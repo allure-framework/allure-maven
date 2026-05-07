@@ -34,10 +34,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SuppressWarnings("unused")
 final class TestHelper {
 
-    public static final List<String> FILE_NAMES = Arrays.asList("behaviors.json", "categories.json",
-            "packages.json", "timeline.json", "suites.json");
+    public static final List<String> FILE_NAMES = Arrays.asList(
+            "behaviors.json", "categories.json",
+            "packages.json", "timeline.json", "suites.json"
+    );
 
-    TestHelper() {}
+    TestHelper() {
+    }
 
     static void checkReportDirectory(Path outputDirectory, int testCasesCount) {
         Path index = outputDirectory.resolve("index.html");
@@ -92,8 +95,12 @@ final class TestHelper {
         assertThat(content).contains("Generate Allure report (report)");
         assertThat(content).doesNotContain("Generate Allure report (aggregate)");
         assertThat(content).doesNotContain("Generate Allure report to ");
-        assertThat(countMatches(content,
-                "^\\[INFO\\] Generate Allure report \\(report\\) with version ", Pattern.MULTILINE))
+        assertThat(
+                countMatches(
+                        content,
+                        "^\\[INFO\\] Generate Allure report \\(report\\) with version ", Pattern.MULTILINE
+                )
+        )
                 .isEqualTo(1);
         assertThat(countMatches(content, "^\\[INFO\\] Generate report to ", Pattern.MULTILINE))
                 .isEqualTo(1);

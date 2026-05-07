@@ -43,8 +43,10 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Description
     void shouldGenerateReportFromAllure2JsonResults() throws Exception {
         final Path projectDirectory = prepareAllure2Project("allure-2-results");
-        installAllure2Commandline(projectDirectory, "allure2-report-args.txt",
-                Allure2SetupHelper.Mode.FULL, 1);
+        installAllure2Commandline(
+                projectDirectory, "allure2-report-args.txt",
+                Allure2SetupHelper.Mode.FULL, 1
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -61,10 +63,11 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGenerateReportWhenAllure2VersionIsConfigured() throws Exception {
-        final Path projectDirectory =
-                prepareAllure2Project("allure2-feature-without-version-property");
-        installAllure2Commandline(projectDirectory, "allure2-version-args.txt",
-                Allure2SetupHelper.Mode.FULL, 1);
+        final Path projectDirectory = prepareAllure2Project("allure2-feature-without-version-property");
+        installAllure2Commandline(
+                projectDirectory, "allure2-version-args.txt",
+                Allure2SetupHelper.Mode.FULL, 1
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -82,8 +85,10 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Description
     void shouldSupportConfiguredAllurePluginsForAllure2Report() throws Exception {
         final Path projectDirectory = prepareAllure2Project("feature-plugins-support");
-        installAllure2Commandline(projectDirectory, "allure2-plugins-args.txt",
-                Allure2SetupHelper.Mode.FULL, 1);
+        installAllure2Commandline(
+                projectDirectory, "allure2-plugins-args.txt",
+                Allure2SetupHelper.Mode.FULL, 1
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -101,8 +106,10 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Description
     void shouldMergeMultipleInputDirectoriesIntoOneReport() throws Exception {
         final Path projectDirectory = prepareAllure2Project("input-directory-sample");
-        installAllure2Commandline(projectDirectory, "allure2-input-directory-args.txt",
-                Allure2SetupHelper.Mode.FULL, 2);
+        installAllure2Commandline(
+                projectDirectory, "allure2-input-directory-args.txt",
+                Allure2SetupHelper.Mode.FULL, 2
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -120,8 +127,10 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Description
     void shouldRespectConfiguredReportDirectory() throws Exception {
         final Path projectDirectory = prepareAllure2Project("report-change-report-directory");
-        installAllure2Commandline(projectDirectory, "allure2-report-dir-args.txt",
-                Allure2SetupHelper.Mode.FULL, 1);
+        installAllure2Commandline(
+                projectDirectory, "allure2-report-dir-args.txt",
+                Allure2SetupHelper.Mode.FULL, 1
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -139,8 +148,10 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Description
     void shouldRespectConfiguredResultsDirectory() throws Exception {
         final Path projectDirectory = prepareAllure2Project("report-change-results-directory");
-        installAllure2Commandline(projectDirectory, "allure2-results-dir-args.txt",
-                Allure2SetupHelper.Mode.FULL, 1);
+        installAllure2Commandline(
+                projectDirectory, "allure2-results-dir-args.txt",
+                Allure2SetupHelper.Mode.FULL, 1
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -157,15 +168,20 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGenerateReportWhenProjectPathContainsSpaces() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("report-paths-with-spaces",
-                "allure2 report paths with spaces");
-        installAllure2Commandline(projectDirectory, "allure2-paths-with-spaces-args.txt",
-                Allure2SetupHelper.Mode.FULL, 1);
+        final Path projectDirectory = prepareAllure2Project(
+                "report-paths-with-spaces",
+                "allure2 report paths with spaces"
+        );
+        installAllure2Commandline(
+                projectDirectory, "allure2-paths-with-spaces-args.txt",
+                Allure2SetupHelper.Mode.FULL, 1
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
         TestHelper.checkReportDirectory(
-                projectDirectory.resolve(Path.of("target", "site", "allure report")), 1);
+                projectDirectory.resolve(Path.of("target", "site", "allure report")), 1
+        );
     }
 
     /**
@@ -179,13 +195,16 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Description
     void shouldGenerateReportFromBuildPluginAndReportingPlugin() throws Exception {
         final Path projectDirectory = prepareAllure2Project("report-as-build-plugin");
-        installAllure2Commandline(projectDirectory, "allure2-build-plugin-args.txt",
-                Allure2SetupHelper.Mode.FULL, 1);
+        installAllure2Commandline(
+                projectDirectory, "allure2-build-plugin-args.txt",
+                Allure2SetupHelper.Mode.FULL, 1
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
         TestHelper.checkReportDirectory(
-                projectDirectory.resolve(Path.of("target", "site", "allure")), 1);
+                projectDirectory.resolve(Path.of("target", "site", "allure")), 1
+        );
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
     }
 
@@ -199,10 +218,12 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGenerateReportFromHermeticCustomDownloadUrl() throws Exception {
-        final Path projectDirectory = prepareProject("custom-url-report",
+        final Path projectDirectory = prepareProject(
+                "custom-url-report",
                 "custom-url-report project",
                 downloadUrlReplacement("custom-url-report", "allure2-custom-url-args.txt", 1),
-                rootPom("custom-url-report"));
+                rootPom("custom-url-report")
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -220,14 +241,17 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Description
     void shouldGenerateBundledAndReportingReportsTogether() throws Exception {
         final Path projectDirectory = prepareAllure2Project("report-with-bundled-version");
-        installAllure2Commandline(projectDirectory, "allure2-bundled-version-args.txt",
-                Allure2SetupHelper.Mode.FULL, 1);
+        installAllure2Commandline(
+                projectDirectory, "allure2-bundled-version-args.txt",
+                Allure2SetupHelper.Mode.FULL, 1
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
         assertThat(
-                projectDirectory.resolve(Path.of("target", "site", "allure", "allure-maven.html")))
+                projectDirectory.resolve(Path.of("target", "site", "allure", "allure-maven.html"))
+        )
                 .exists();
     }
 
@@ -242,8 +266,10 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Description
     void shouldGenerateSingleFileReportForAllure2() throws Exception {
         final Path projectDirectory = prepareAllure2Project("allure2-report-single-file");
-        installAllure2Commandline(projectDirectory, "allure2-single-file-args.txt",
-                Allure2SetupHelper.Mode.SINGLE_FILE, 1);
+        installAllure2Commandline(
+                projectDirectory, "allure2-single-file-args.txt",
+                Allure2SetupHelper.Mode.SINGLE_FILE, 1
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -260,21 +286,24 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldPreserveConfiguredReportDirectoryWhenServingAfterReport() throws Exception {
-        final Path projectDirectory =
-                prepareAllure2Project("allure2-report-then-serve-preserves-report-directory");
-        final Path captureFile = installAllure2Commandline(projectDirectory,
-                "captured commands.txt", Allure2SetupHelper.Mode.COMMANDS, 1);
+        final Path projectDirectory = prepareAllure2Project("allure2-report-then-serve-preserves-report-directory");
+        final Path captureFile = installAllure2Commandline(
+                projectDirectory,
+                "captured commands.txt", Allure2SetupHelper.Mode.COMMANDS, 1
+        );
 
         runGoals(projectDirectory, List.of(pluginGoal("report"), pluginGoal("serve")));
 
-        final Path resultsDirectory =
-                canonical(projectDirectory.resolve(Path.of("target", "allure-results")));
-        final Path reportDirectory =
-                canonical(projectDirectory.resolve(Path.of("target", "site", "preserved-report")));
-        assertCommandLines(readLines(captureFile),
-                List.of("command=generate", "arg=generate", "arg=--clean",
+        final Path resultsDirectory = canonical(projectDirectory.resolve(Path.of("target", "allure-results")));
+        final Path reportDirectory = canonical(projectDirectory.resolve(Path.of("target", "site", "preserved-report")));
+        assertCommandLines(
+                readLines(captureFile),
+                List.of(
+                        "command=generate", "arg=generate", "arg=--clean",
                         "arg=" + resultsDirectory, "arg=-o", "arg=" + reportDirectory, "---",
-                        "command=serve", "arg=serve", "arg=" + resultsDirectory, "---"));
+                        "command=serve", "arg=serve", "arg=" + resultsDirectory, "---"
+                )
+        );
         assertThat(reportDirectory.resolve("index.html")).exists();
     }
 
@@ -288,10 +317,14 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldPassResultsDirectoryWithSpacesToServe() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("allure2-serve-paths-with-spaces",
-                "allure2 serve paths with spaces");
-        final Path captureFile = installAllure2Commandline(projectDirectory, "captured args.txt",
-                Allure2SetupHelper.Mode.ARGS, 1);
+        final Path projectDirectory = prepareAllure2Project(
+                "allure2-serve-paths-with-spaces",
+                "allure2 serve paths with spaces"
+        );
+        final Path captureFile = installAllure2Commandline(
+                projectDirectory, "captured args.txt",
+                Allure2SetupHelper.Mode.ARGS, 1
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
@@ -330,11 +363,13 @@ class VerifierAllure2IT extends VerifierTestSupport {
     }
 
     private Path installAllure2Commandline(final Path projectDirectory,
-            final String captureFileName, final Allure2SetupHelper.Mode mode, final int testCases)
+                                           final String captureFileName, final Allure2SetupHelper.Mode mode, final int testCases)
             throws Exception {
         final Path captureFile = projectDirectory.resolve(Path.of("target", captureFileName));
-        Allure2SetupHelper.installFakeCommandlineArtifact(absoluteLocalRepository(),
-                ALLURE2_VERSION, captureFile, null, mode, testCases);
+        Allure2SetupHelper.installFakeCommandlineArtifact(
+                absoluteLocalRepository(),
+                ALLURE2_VERSION, captureFile, null, mode, testCases
+        );
         return captureFile;
     }
 
@@ -343,12 +378,14 @@ class VerifierAllure2IT extends VerifierTestSupport {
     }
 
     private java.util.Map<String, String> downloadUrlReplacement(final String scenario,
-            final String captureFileName, final int testCases) throws Exception {
+                                                                 final String captureFileName, final int testCases)
+            throws Exception {
         final Path downloadDirectory = tempDir.resolve("downloads").resolve(scenario);
-        final Path captureFile =
-                tempDir.resolve("downloads").resolve("captures").resolve(captureFileName);
-        final Path archive = Allure2SetupHelper.createFakeCommandlineArchive(downloadDirectory,
-                ALLURE2_VERSION, captureFile, null, Allure2SetupHelper.Mode.FULL, testCases);
+        final Path captureFile = tempDir.resolve("downloads").resolve("captures").resolve(captureFileName);
+        final Path archive = Allure2SetupHelper.createFakeCommandlineArchive(
+                downloadDirectory,
+                ALLURE2_VERSION, captureFile, null, Allure2SetupHelper.Mode.FULL, testCases
+        );
         return java.util.Map.of("@allureDownloadUrl@", archive.toUri().toString());
     }
 }

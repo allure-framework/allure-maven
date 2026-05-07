@@ -36,8 +36,10 @@ class AllureGenerateMojoTest {
     void shouldDetectAllureRcYmlInProjectRoot() throws Exception {
         final Path projectDirectory = Files.createTempDirectory("allure3-project-config");
         try {
-            Files.write(projectDirectory.resolve("allurerc.yml"),
-                    Collections.singletonList("plugins: {}"), StandardCharsets.UTF_8);
+            Files.write(
+                    projectDirectory.resolve("allurerc.yml"),
+                    Collections.singletonList("plugins: {}"), StandardCharsets.UTF_8
+            );
 
             final TestGenerateMojo mojo = new TestGenerateMojo();
             mojo.projectDirectory = projectDirectory.toString();
@@ -53,10 +55,14 @@ class AllureGenerateMojoTest {
     void shouldPreferAllureRcJsBeforeYaml() throws Exception {
         final Path projectDirectory = Files.createTempDirectory("allure3-project-config");
         try {
-            Files.write(projectDirectory.resolve("allurerc.js"),
-                    Collections.singletonList("export default {};"), StandardCharsets.UTF_8);
-            Files.write(projectDirectory.resolve("allurerc.yml"),
-                    Collections.singletonList("plugins: {}"), StandardCharsets.UTF_8);
+            Files.write(
+                    projectDirectory.resolve("allurerc.js"),
+                    Collections.singletonList("export default {};"), StandardCharsets.UTF_8
+            );
+            Files.write(
+                    projectDirectory.resolve("allurerc.yml"),
+                    Collections.singletonList("plugins: {}"), StandardCharsets.UTF_8
+            );
 
             final TestGenerateMojo mojo = new TestGenerateMojo();
             mojo.projectDirectory = projectDirectory.toString();
@@ -74,8 +80,10 @@ class AllureGenerateMojoTest {
         try {
             final Path configured = projectDirectory.resolve("config").resolve("custom.yml");
             Files.createDirectories(configured.getParent());
-            Files.write(configured, Collections.singletonList("plugins: {}"),
-                    StandardCharsets.UTF_8);
+            Files.write(
+                    configured, Collections.singletonList("plugins: {}"),
+                    StandardCharsets.UTF_8
+            );
 
             final TestGenerateMojo mojo = new TestGenerateMojo();
             mojo.projectDirectory = projectDirectory.toString();
@@ -104,8 +112,7 @@ class AllureGenerateMojoTest {
     void shouldResolveExplicitRelativeAllurePackagePath() throws Exception {
         final Path projectDirectory = Files.createTempDirectory("allure3-project-package");
         try {
-            final Path configured =
-                    projectDirectory.resolve("packages").resolve("custom-allure.tgz");
+            final Path configured = projectDirectory.resolve("packages").resolve("custom-allure.tgz");
             Files.createDirectories(configured.getParent());
             Files.write(configured, Collections.singletonList("fake"), StandardCharsets.UTF_8);
 
@@ -158,7 +165,9 @@ class AllureGenerateMojoTest {
 
         @Override
         protected void generateReport(final List<Path> resultsPaths,
-                final AllureVersion allureVersion) throws MavenReportException {}
+                                      final AllureVersion allureVersion)
+                throws MavenReportException {
+        }
 
         @Override
         protected String getMojoName() {

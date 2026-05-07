@@ -42,43 +42,54 @@ class AllureReportMojoTest {
         final Path workspace = Files.createTempDirectory("allure-report-history-restore");
         try {
             final Path resultsDirectory = workspace.resolve(Paths.get("build", "allure-results"));
-            final Path cachedHistoryDirectory =
-                    workspace.resolve(Paths.get("install", "history", "report", "history"));
+            final Path cachedHistoryDirectory = workspace.resolve(Paths.get("install", "history", "report", "history"));
             step("Prepare results directory and cached Allure 2 history", () -> {
                 Files.createDirectories(resultsDirectory);
                 Files.createDirectories(cachedHistoryDirectory);
-                Files.writeString(cachedHistoryDirectory.resolve("history-trend.json"),
-                        "{\"cached\":true}", StandardCharsets.UTF_8);
-                attachValues("History restore workspace",
-                        Map.of("workspace", workspace, "resultsDirectory", resultsDirectory,
-                                "cachedHistoryDirectory", cachedHistoryDirectory));
+                Files.writeString(
+                        cachedHistoryDirectory.resolve("history-trend.json"),
+                        "{\"cached\":true}", StandardCharsets.UTF_8
+                );
+                attachValues(
+                        "History restore workspace",
+                        Map.of(
+                                "workspace", workspace, "resultsDirectory", resultsDirectory,
+                                "cachedHistoryDirectory", cachedHistoryDirectory
+                        )
+                );
             });
 
-            final TestReportMojo mojo =
-                    step("Create report mojo with history cache enabled", () -> {
-                        final TestReportMojo reportMojo = new TestReportMojo();
-                        reportMojo.buildDirectory = workspace.resolve("build").toString();
-                        reportMojo.installDirectory = workspace.resolve("install").toString();
-                        reportMojo.historyEnabled = true;
-                        return reportMojo;
-                    });
+            final TestReportMojo mojo = step("Create report mojo with history cache enabled", () -> {
+                final TestReportMojo reportMojo = new TestReportMojo();
+                reportMojo.buildDirectory = workspace.resolve("build").toString();
+                reportMojo.installDirectory = workspace.resolve("install").toString();
+                reportMojo.historyEnabled = true;
+                return reportMojo;
+            });
 
-            final List<Path> preparedInputDirectories =
-                    step("Prepare input directories for Allure 2 generation",
-                            () -> mojo.prepareInputDirectoriesForGeneratePublic(
-                                    java.util.Collections.singletonList(resultsDirectory),
-                                    AllureVersion.resolve("2.30.0")));
+            final List<Path> preparedInputDirectories = step(
+                    "Prepare input directories for Allure 2 generation",
+                    () -> mojo.prepareInputDirectoriesForGeneratePublic(
+                            java.util.Collections.singletonList(resultsDirectory),
+                            AllureVersion.resolve("2.30.0")
+                    )
+            );
 
             final Path historyInputDirectory = workspace
                     .resolve(Paths.get("build", "allure-maven", "history-input", "allure-results"));
             step("Verify cached history is restored into a dedicated input directory", () -> {
-                addAttachment("Prepared input directories", String.join(System.lineSeparator(),
-                        preparedInputDirectories.stream().map(Path::toString).toList()));
+                addAttachment(
+                        "Prepared input directories", String.join(
+                                System.lineSeparator(),
+                                preparedInputDirectories.stream().map(Path::toString).toList()
+                        )
+                );
                 assertThat(preparedInputDirectories).hasSize(2);
                 assertThat(preparedInputDirectories.get(0)).isEqualTo(resultsDirectory);
                 assertThat(preparedInputDirectories.get(1)).isEqualTo(historyInputDirectory);
                 assertThat(
-                        historyInputDirectory.resolve(Paths.get("history", "history-trend.json")))
+                        historyInputDirectory.resolve(Paths.get("history", "history-trend.json"))
+                )
                         .exists();
                 assertThat(resultsDirectory.resolve("history")).doesNotExist();
             });
@@ -92,36 +103,46 @@ class AllureReportMojoTest {
         final Path workspace = Files.createTempDirectory("allure-report-history-disabled");
         try {
             final Path resultsDirectory = workspace.resolve(Paths.get("build", "allure-results"));
-            final Path cachedHistoryDirectory =
-                    workspace.resolve(Paths.get("install", "history", "report", "history"));
+            final Path cachedHistoryDirectory = workspace.resolve(Paths.get("install", "history", "report", "history"));
             step("Prepare results directory and cached history with restore disabled", () -> {
                 Files.createDirectories(resultsDirectory);
                 Files.createDirectories(cachedHistoryDirectory);
-                Files.writeString(cachedHistoryDirectory.resolve("history-trend.json"),
-                        "{\"cached\":true}", StandardCharsets.UTF_8);
-                attachValues("History disabled workspace",
-                        Map.of("workspace", workspace, "resultsDirectory", resultsDirectory,
-                                "cachedHistoryDirectory", cachedHistoryDirectory));
+                Files.writeString(
+                        cachedHistoryDirectory.resolve("history-trend.json"),
+                        "{\"cached\":true}", StandardCharsets.UTF_8
+                );
+                attachValues(
+                        "History disabled workspace",
+                        Map.of(
+                                "workspace", workspace, "resultsDirectory", resultsDirectory,
+                                "cachedHistoryDirectory", cachedHistoryDirectory
+                        )
+                );
             });
 
-            final TestReportMojo mojo =
-                    step("Create report mojo with history cache disabled", () -> {
-                        final TestReportMojo reportMojo = new TestReportMojo();
-                        reportMojo.buildDirectory = workspace.resolve("build").toString();
-                        reportMojo.installDirectory = workspace.resolve("install").toString();
-                        reportMojo.historyEnabled = false;
-                        return reportMojo;
-                    });
+            final TestReportMojo mojo = step("Create report mojo with history cache disabled", () -> {
+                final TestReportMojo reportMojo = new TestReportMojo();
+                reportMojo.buildDirectory = workspace.resolve("build").toString();
+                reportMojo.installDirectory = workspace.resolve("install").toString();
+                reportMojo.historyEnabled = false;
+                return reportMojo;
+            });
 
-            final List<Path> preparedInputDirectories =
-                    step("Prepare input directories without history restore",
-                            () -> mojo.prepareInputDirectoriesForGeneratePublic(
-                                    java.util.Collections.singletonList(resultsDirectory),
-                                    AllureVersion.resolve("2.30.0")));
+            final List<Path> preparedInputDirectories = step(
+                    "Prepare input directories without history restore",
+                    () -> mojo.prepareInputDirectoriesForGeneratePublic(
+                            java.util.Collections.singletonList(resultsDirectory),
+                            AllureVersion.resolve("2.30.0")
+                    )
+            );
 
             step("Verify history input directory is not created", () -> {
-                addAttachment("Prepared input directories", String.join(System.lineSeparator(),
-                        preparedInputDirectories.stream().map(Path::toString).toList()));
+                addAttachment(
+                        "Prepared input directories", String.join(
+                                System.lineSeparator(),
+                                preparedInputDirectories.stream().map(Path::toString).toList()
+                        )
+                );
                 assertThat(preparedInputDirectories).hasSize(1);
                 assertThat(preparedInputDirectories.get(0)).isEqualTo(resultsDirectory);
                 assertThat(workspace.resolve(Paths.get("build", "allure-maven", "history-input")))
@@ -142,36 +163,55 @@ class AllureReportMojoTest {
             step("Prepare generated report history and stale cached history", () -> {
                 Files.createDirectories(reportHistoryDirectory);
                 Files.createDirectories(cachedHistoryDirectory);
-                Files.writeString(cachedHistoryDirectory.resolve("obsolete.json"), "obsolete",
-                        StandardCharsets.UTF_8);
-                Files.writeString(reportHistoryDirectory.resolve("history-trend.json"),
-                        "{\"generated\":true}", StandardCharsets.UTF_8);
-                attachValues("History refresh workspace",
-                        Map.of("workspace", workspace, "reportHistoryDirectory",
+                Files.writeString(
+                        cachedHistoryDirectory.resolve("obsolete.json"), "obsolete",
+                        StandardCharsets.UTF_8
+                );
+                Files.writeString(
+                        reportHistoryDirectory.resolve("history-trend.json"),
+                        "{\"generated\":true}", StandardCharsets.UTF_8
+                );
+                attachValues(
+                        "History refresh workspace",
+                        Map.of(
+                                "workspace", workspace, "reportHistoryDirectory",
                                 reportHistoryDirectory, "cachedHistoryDirectory",
-                                cachedHistoryDirectory));
+                                cachedHistoryDirectory
+                        )
+                );
             });
 
-            final TestReportMojo mojo =
-                    step("Create report mojo with history refresh enabled", () -> {
-                        final TestReportMojo reportMojo = new TestReportMojo();
-                        reportMojo.installDirectory = workspace.resolve("install").toString();
-                        reportMojo.reportDirectory = workspace.resolve("report").toString();
-                        reportMojo.historyEnabled = true;
-                        return reportMojo;
-                    });
+            final TestReportMojo mojo = step("Create report mojo with history refresh enabled", () -> {
+                final TestReportMojo reportMojo = new TestReportMojo();
+                reportMojo.installDirectory = workspace.resolve("install").toString();
+                reportMojo.reportDirectory = workspace.resolve("report").toString();
+                reportMojo.historyEnabled = true;
+                return reportMojo;
+            });
 
-            step("Refresh cached history after report generation",
-                    () -> mojo.afterGenerateReportPublic(java.util.Collections.<Path>emptyList(),
-                            AllureVersion.resolve("2.30.0")));
+            step(
+                    "Refresh cached history after report generation",
+                    () -> mojo.afterGenerateReportPublic(
+                            java.util.Collections.<Path>emptyList(),
+                            AllureVersion.resolve("2.30.0")
+                    )
+            );
 
             step("Verify stale cache is replaced with generated history", () -> {
-                addAttachment("Refreshed cached history",
-                        Files.readString(cachedHistoryDirectory.resolve("history-trend.json"),
-                                StandardCharsets.UTF_8));
+                addAttachment(
+                        "Refreshed cached history",
+                        Files.readString(
+                                cachedHistoryDirectory.resolve("history-trend.json"),
+                                StandardCharsets.UTF_8
+                        )
+                );
                 assertThat(cachedHistoryDirectory.resolve("obsolete.json")).doesNotExist();
-                assertThat(Files.readString(cachedHistoryDirectory.resolve("history-trend.json"),
-                        StandardCharsets.UTF_8)).isEqualTo("{\"generated\":true}");
+                assertThat(
+                        Files.readString(
+                                cachedHistoryDirectory.resolve("history-trend.json"),
+                                StandardCharsets.UTF_8
+                        )
+                ).isEqualTo("{\"generated\":true}");
             });
         } finally {
             FileUtils.deleteQuietly(workspace.toFile());
@@ -183,24 +223,23 @@ class AllureReportMojoTest {
         final Path workspace = Files.createTempDirectory("allure-report-history-allure3");
         try {
             final RecordingLog log = new RecordingLog();
-            final TestReportMojo mojo =
-                    step("Create Allure 3 report mojo with history enabled", () -> {
-                        final TestReportMojo reportMojo = new TestReportMojo();
-                        reportMojo.installDirectory = workspace.resolve("install").toString();
-                        reportMojo.historyEnabled = true;
-                        reportMojo.setLog(log);
-                        return reportMojo;
-                    });
+            final TestReportMojo mojo = step("Create Allure 3 report mojo with history enabled", () -> {
+                final TestReportMojo reportMojo = new TestReportMojo();
+                reportMojo.installDirectory = workspace.resolve("install").toString();
+                reportMojo.historyEnabled = true;
+                reportMojo.setLog(log);
+                return reportMojo;
+            });
 
-            final Map<String, Object> defaults =
-                    step("Resolve Allure 3 history defaults", mojo::getAllure3ConfigDefaultsPublic);
-            final Path historyFile =
-                    workspace.resolve(Paths.get("install", "history", "report", "history.jsonl"));
+            final Map<String, Object> defaults = step("Resolve Allure 3 history defaults", mojo::getAllure3ConfigDefaultsPublic);
+            final Path historyFile = workspace.resolve(Paths.get("install", "history", "report", "history.jsonl"));
 
             step("Verify Allure 3 history defaults and log message", () -> {
                 attachValues("Allure 3 history defaults", defaults);
-                addAttachment("History log messages",
-                        String.join(System.lineSeparator(), log.infoMessages));
+                addAttachment(
+                        "History log messages",
+                        String.join(System.lineSeparator(), log.infoMessages)
+                );
                 assertThat(defaults.get("historyPath"))
                         .isEqualTo(historyFile.toAbsolutePath().toString());
                 assertThat(defaults.get("appendHistory")).isEqualTo(Boolean.TRUE);
@@ -213,20 +252,25 @@ class AllureReportMojoTest {
     }
 
     private static void attachValues(final String name, final Map<String, ?> values) {
-        addAttachment(name, String.join(System.lineSeparator(), values.entrySet().stream()
-                .map(entry -> entry.getKey() + "=" + entry.getValue()).toList()));
+        addAttachment(
+                name, String.join(
+                        System.lineSeparator(), values.entrySet().stream()
+                                .map(entry -> entry.getKey() + "=" + entry.getValue()).toList()
+                )
+        );
     }
 
     private static final class TestReportMojo extends AllureReportMojo {
 
         private List<Path> prepareInputDirectoriesForGeneratePublic(
-                final List<Path> inputDirectories, final AllureVersion allureVersion)
+                                                                    final List<Path> inputDirectories, final AllureVersion allureVersion)
                 throws IOException {
             return super.prepareInputDirectoriesForGenerate(inputDirectories, allureVersion);
         }
 
         private void afterGenerateReportPublic(final List<Path> inputDirectories,
-                final AllureVersion allureVersion) throws IOException {
+                                               final AllureVersion allureVersion)
+                throws IOException {
             super.afterGenerateReport(inputDirectories, allureVersion);
         }
 
@@ -245,13 +289,16 @@ class AllureReportMojoTest {
         }
 
         @Override
-        public void debug(final CharSequence content) {}
+        public void debug(final CharSequence content) {
+        }
 
         @Override
-        public void debug(final CharSequence content, final Throwable error) {}
+        public void debug(final CharSequence content, final Throwable error) {
+        }
 
         @Override
-        public void debug(final Throwable error) {}
+        public void debug(final Throwable error) {
+        }
 
         @Override
         public boolean isInfoEnabled() {
@@ -279,13 +326,16 @@ class AllureReportMojoTest {
         }
 
         @Override
-        public void warn(final CharSequence content) {}
+        public void warn(final CharSequence content) {
+        }
 
         @Override
-        public void warn(final CharSequence content, final Throwable error) {}
+        public void warn(final CharSequence content, final Throwable error) {
+        }
 
         @Override
-        public void warn(final Throwable error) {}
+        public void warn(final Throwable error) {
+        }
 
         @Override
         public boolean isErrorEnabled() {
@@ -293,12 +343,15 @@ class AllureReportMojoTest {
         }
 
         @Override
-        public void error(final CharSequence content) {}
+        public void error(final CharSequence content) {
+        }
 
         @Override
-        public void error(final CharSequence content, final Throwable error) {}
+        public void error(final CharSequence content, final Throwable error) {
+        }
 
         @Override
-        public void error(final Throwable error) {}
+        public void error(final Throwable error) {
+        }
     }
 }

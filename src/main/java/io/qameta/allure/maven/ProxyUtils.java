@@ -38,9 +38,7 @@ final class ProxyUtils {
         throw new IllegalStateException("Do not instance");
     }
 
-    @SuppressWarnings({"ModifiedControlVariable", "EmptyBlock",
-            "PMD.AvoidInstantiatingObjectsInLoops", "PMD.EmptyControlStatement",
-            "PMD.UnusedLocalVariable"})
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     static Proxy getProxy(final MavenSession mavenSession, final SettingsDecrypter decrypter) {
         if (mavenSession == null || mavenSession.getSettings() == null
                 || mavenSession.getSettings().getProxies() == null
@@ -52,14 +50,27 @@ final class ProxyUtils {
                 if (proxy.isActive()) {
                     final Proxy decrypted = decryptProxy(proxy, decrypter);
                     try (Socket socket = new Socket(decrypted.getHost(), decrypted.getPort())) {
-                        // do nothing
+                        LOGGER.debug(
+                                String.format(
+                                        "Proxy: %s:%s is available: %s",
+                                        decrypted.getHost(), decrypted.getPort(), socket.isConnected()
+                                )
+                        );
                     } catch (IOException e) {
-                        LOGGER.info(String.format("Proxy: %s:%s is not available",
-                                decrypted.getHost(), decrypted.getPort()));
+                        LOGGER.info(
+                                String.format(
+                                        "Proxy: %s:%s is not available",
+                                        decrypted.getHost(), decrypted.getPort()
+                                )
+                        );
                         continue;
                     }
-                    LOGGER.info(String.format("Found proxy: %s:%s", decrypted.getHost(),
-                            decrypted.getPort()));
+                    LOGGER.info(
+                            String.format(
+                                    "Found proxy: %s:%s", decrypted.getHost(),
+                                    decrypted.getPort()
+                            )
+                    );
                     return proxy;
                 }
             }
@@ -69,8 +80,7 @@ final class ProxyUtils {
     }
 
     private static Proxy decryptProxy(final Proxy proxy, final SettingsDecrypter decrypter) {
-        final DefaultSettingsDecryptionRequest decryptionRequest =
-                new DefaultSettingsDecryptionRequest(proxy);
+        final DefaultSettingsDecryptionRequest decryptionRequest = new DefaultSettingsDecryptionRequest(proxy);
         final SettingsDecryptionResult decryptedResult = decrypter.decrypt(decryptionRequest);
         return decryptedResult.getProxy();
     }

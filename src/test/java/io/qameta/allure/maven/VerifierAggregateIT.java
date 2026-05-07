@@ -59,12 +59,13 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldAggregateMultiModuleAllure2ResultsFromDirectGoal() throws Exception {
-        final Path projectDirectory =
-                prepareAllure2MultiModuleProject("aggregate-multi-module-cli");
+        final Path projectDirectory = prepareAllure2MultiModuleProject("aggregate-multi-module-cli");
         installAllure2Commandline(projectDirectory, "aggregate-cli-allure2-args.txt", 2);
 
-        runGoals(projectDirectory, List.of(pluginGoal("aggregate")),
-                List.of("-Dreport.version=" + ALLURE2_VERSION));
+        runGoals(
+                projectDirectory, List.of(pluginGoal("aggregate")),
+                List.of("-Dreport.version=" + ALLURE2_VERSION)
+        );
 
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 2);
     }
@@ -79,8 +80,7 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldSkipRegularReportWhenAggregateReportIsConfigured() throws Exception {
-        final Path projectDirectory =
-                prepareAllure2MultiModuleProject("aggregate-multi-module-exclude-report");
+        final Path projectDirectory = prepareAllure2MultiModuleProject("aggregate-multi-module-exclude-report");
         installAllure2Commandline(projectDirectory, "aggregate-exclude-report-args.txt", 2);
 
         runGoals(projectDirectory, List.of("site"));
@@ -99,8 +99,7 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldPreserveChildExecutorFilesWhenAggregating() throws Exception {
-        final Path projectDirectory =
-                prepareAllure2MultiModuleProject("aggregate-multi-module-preserve-child-executor");
+        final Path projectDirectory = prepareAllure2MultiModuleProject("aggregate-multi-module-preserve-child-executor");
         installAllure2Commandline(projectDirectory, "aggregate-preserve-executor-args.txt", 2);
 
         runGoals(projectDirectory, List.of("site"));
@@ -129,8 +128,7 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldAggregateSingleModuleAllure2Results() throws Exception {
-        final Path projectDirectory =
-                prepareProject("aggregate-sample", rootPom("aggregate-sample"));
+        final Path projectDirectory = prepareProject("aggregate-sample", rootPom("aggregate-sample"));
         installAllure2Commandline(projectDirectory, "aggregate-sample-allure2-args.txt", 1);
 
         runGoals(projectDirectory, List.of("site"));
@@ -149,20 +147,22 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldAggregateSingleModuleAllure3Results() throws Exception {
-        final Path projectDirectory =
-                prepareProject("allure3-aggregate-sample", rootPom("allure3-aggregate-sample"));
-        final Path captureFile =
-                prepareAllure3ReportRuntime(projectDirectory, "allure3 aggregate args.txt");
+        final Path projectDirectory = prepareProject("allure3-aggregate-sample", rootPom("allure3-aggregate-sample"));
+        final Path captureFile = prepareAllure3ReportRuntime(projectDirectory, "allure3 aggregate args.txt");
 
         runGoals(projectDirectory, List.of("site"));
 
         final Path results = projectDirectory.resolve(Path.of("target", "allure-results"));
         TestHelper.checkAggregateMojoOnly(projectDirectory);
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
-        assertCommandLines(readLines(captureFile),
-                List.of("cli=" + canonical(allureCli(projectDirectory.resolve(".allure"))),
+        assertCommandLines(
+                readLines(captureFile),
+                List.of(
+                        "cli=" + canonical(allureCli(projectDirectory.resolve(".allure"))),
                         "command=generate", "arg=generate", "arg=" + canonical(results),
-                        "arg=--config", "arg=" + canonical(configPath(projectDirectory)), "---"));
+                        "arg=--config", "arg=" + canonical(configPath(projectDirectory)), "---"
+                )
+        );
     }
 
     /**
@@ -175,27 +175,29 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldAggregateAllure3ResultsFromConfiguredModuleDirectories() throws Exception {
-        final Path projectDirectory =
-                prepareProject("allure3-aggregate-multi-module-results-directory",
-                        rootPom("allure3-aggregate-multi-module-results-directory"),
-                        modulePom("allure3-aggregate-multi-module-results-directory", "first"),
-                        modulePom("allure3-aggregate-multi-module-results-directory", "second"));
-        final Path captureFile =
-                prepareAllure3ReportRuntime(projectDirectory, "allure3 aggregate results args.txt");
+        final Path projectDirectory = prepareProject(
+                "allure3-aggregate-multi-module-results-directory",
+                rootPom("allure3-aggregate-multi-module-results-directory"),
+                modulePom("allure3-aggregate-multi-module-results-directory", "first"),
+                modulePom("allure3-aggregate-multi-module-results-directory", "second")
+        );
+        final Path captureFile = prepareAllure3ReportRuntime(projectDirectory, "allure3 aggregate results args.txt");
 
         runGoals(projectDirectory, List.of("site"));
 
-        final Path firstResults =
-                projectDirectory.resolve(Path.of("first", "target", "module-results"));
-        final Path secondResults =
-                projectDirectory.resolve(Path.of("second", "target", "override-results"));
+        final Path firstResults = projectDirectory.resolve(Path.of("first", "target", "module-results"));
+        final Path secondResults = projectDirectory.resolve(Path.of("second", "target", "override-results"));
         TestHelper.checkAggregateMojoOnly(projectDirectory);
         TestHelper.checkReportDirectory(outputDirectory(projectDirectory), 1);
-        assertCommandLines(readLines(captureFile),
-                List.of("cli=" + canonical(allureCli(projectDirectory.resolve(".allure"))),
+        assertCommandLines(
+                readLines(captureFile),
+                List.of(
+                        "cli=" + canonical(allureCli(projectDirectory.resolve(".allure"))),
                         "command=generate", "arg=generate", "arg=" + canonical(firstResults),
                         "arg=" + canonical(secondResults), "arg=--config",
-                        "arg=" + canonical(configPath(projectDirectory)), "---"));
+                        "arg=" + canonical(configPath(projectDirectory)), "---"
+                )
+        );
     }
 
     /**
@@ -208,37 +210,51 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGeneratePerModuleReportsForRegularMultiModuleBuilds() throws Exception {
-        final Path projectDirectory = prepareProject("report-multi-module",
+        final Path projectDirectory = prepareProject(
+                "report-multi-module",
                 rootPom("report-multi-module"), modulePom("report-multi-module", "first"),
-                modulePom("report-multi-module", "second"));
+                modulePom("report-multi-module", "second")
+        );
         installAllure2Commandline(projectDirectory, "report-multi-module-allure2-args.txt", 1);
 
         runGoals(projectDirectory, List.of("site"));
 
         TestHelper.checkReportDirectory(
                 projectDirectory.resolve(Path.of("first", "target", "site", "allure-maven-plugin")),
-                1);
-        TestHelper.checkReportDirectory(projectDirectory
-                .resolve(Path.of("second", "target", "site", "allure-maven-plugin")), 1);
+                1
+        );
+        TestHelper.checkReportDirectory(
+                projectDirectory
+                        .resolve(Path.of("second", "target", "site", "allure-maven-plugin")),
+                1
+        );
     }
 
     private Path prepareAllure2MultiModuleProject(final String scenario) throws Exception {
-        return prepareProject(scenario, rootPom(scenario), modulePom(scenario, "first"),
-                modulePom(scenario, "second"));
+        return prepareProject(
+                scenario, rootPom(scenario), modulePom(scenario, "first"),
+                modulePom(scenario, "second")
+        );
     }
 
     private void installAllure2Commandline(final Path projectDirectory,
-            final String captureFileName, final int testCases) throws Exception {
+                                           final String captureFileName, final int testCases)
+            throws Exception {
         final Path captureFile = projectDirectory.resolve(Path.of("target", captureFileName));
-        Allure2SetupHelper.installFakeCommandlineArtifact(absoluteLocalRepository(),
-                ALLURE2_VERSION, captureFile, null, Allure2SetupHelper.Mode.FULL, testCases);
+        Allure2SetupHelper.installFakeCommandlineArtifact(
+                absoluteLocalRepository(),
+                ALLURE2_VERSION, captureFile, null, Allure2SetupHelper.Mode.FULL, testCases
+        );
     }
 
     private Path prepareAllure3ReportRuntime(final Path projectDirectory,
-            final String captureFileName) throws Exception {
+                                             final String captureFileName)
+            throws Exception {
         final Path captureFile = projectDirectory.resolve(Path.of("target", captureFileName));
-        Allure3SetupHelper.prepareFakeReportRuntime(projectDirectory.resolve(".allure"),
-                captureFile, outputDirectory(projectDirectory), true);
+        Allure3SetupHelper.prepareFakeReportRuntime(
+                projectDirectory.resolve(".allure"),
+                captureFile, outputDirectory(projectDirectory), true
+        );
         return captureFile;
     }
 
@@ -252,7 +268,11 @@ class VerifierAggregateIT extends VerifierTestSupport {
     }
 
     private Path allureCli(final Path installDirectory) {
-        return installDirectory.resolve(Path.of("allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION,
-                "node_modules", "allure", "cli.js"));
+        return installDirectory.resolve(
+                Path.of(
+                        "allure-" + AllureVersion.ALLURE3_DEFAULT_VERSION,
+                        "node_modules", "allure", "cli.js"
+                )
+        );
     }
 }
