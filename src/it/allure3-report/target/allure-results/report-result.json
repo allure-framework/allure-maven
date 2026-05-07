@@ -1,0 +1,11 @@
+{
+  "uuid": "00000000-0000-0000-0000-000000000001",
+  "historyId": "report-smoke",
+  "testCaseId": "report-smoke",
+  "fullName": "io.qameta.allure.maven.smoke.report-smoke",
+  "name": "report-smoke",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1700000000000,
+  "stop": 1700000001000
+}
