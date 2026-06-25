@@ -21,7 +21,7 @@
         <maven-verifier.version>1.8.0</maven-verifier.version>
 
         <pmd.version>7.25.0</pmd.version>
-        <allure.version>2.34.0</allure.version>
+        <allure.version>2.35.2</allure.version>
         <aspectj.version>1.9.25.1</aspectj.version>
         <aspectj.weaver.argLine>
             -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
