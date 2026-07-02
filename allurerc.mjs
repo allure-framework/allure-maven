@@ -13,9 +13,14 @@ export default {
     plugins: {
         awesome: {
             options: {
-                publish: true
-            }
-        }
+                publish: true,
+            },
+        },
+        testops: {
+            options: {
+                launchName: `Allure Maven GitHub actions run (${new Date().toISOString()})`,
+            },
+        },
     },
     ...(allureService ? { allureService } : {}),
 };
