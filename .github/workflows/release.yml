@@ -30,7 +30,7 @@ jobs:
           token: ${{ secrets.QAMETA_CI }}
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '17'
