@@ -73,7 +73,7 @@ class Allure3CommandlineTest {
                                 "cli=" + commandline.getNpmCliPath().toAbsolutePath(), "arg=--prefix",
                                 "arg=" + commandline.getAllureHome().toAbsolutePath(), "arg=install",
                                 "arg=--no-package-lock", "arg=--no-save", "arg=--ignore-scripts",
-                                "arg=allure@3.4.1", "arg=--registry", "arg=https://registry.npmjs.org"
+                                "arg=allure@3.17.0", "arg=--registry", "arg=https://registry.npmjs.org"
                         )
                 );
                 assertThat(commandline.getAllureCliPath()).exists();
@@ -116,7 +116,7 @@ class Allure3CommandlineTest {
                 );
                 assertThat(args).contains("arg=" + packageArchive.toAbsolutePath());
                 assertThat(args).doesNotContain("arg=--registry");
-                assertThat(args).doesNotContain("arg=allure@3.4.1");
+                assertThat(args).doesNotContain("arg=allure@3.17.0");
                 assertThat(commandline.getAllureCliPath()).exists();
                 assertThat(commandline.getAllureExecutablePath()).exists();
             });
@@ -597,7 +597,7 @@ class Allure3CommandlineTest {
     private static Allure3Commandline newCommandline(final Path installDirectory,
                                                      final Path packageArchive, final boolean offline, final int timeout, final Log log) {
         return new Allure3Commandline(
-                installDirectory, "3.4.1",
+                installDirectory, "3.17.0",
                 Allure3Commandline.NODE_DEFAULT_VERSION,
                 Allure3Commandline.NODE_DEFAULT_DOWNLOAD_URL,
                 Allure3Commandline.NPM_DEFAULT_REGISTRY, packageArchive, null, new Properties(),
