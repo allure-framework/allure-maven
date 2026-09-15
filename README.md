@@ -95,6 +95,25 @@ Relevant Allure 3 parameters:
 `allure.package.path` is an optional local `.tgz` or `.tar.gz` archive that is installed instead of
 `allure@<reportVersion>`. This is mainly useful for tests and custom local package builds.
 
+### Downloading Node.js from a mirror
+
+`allure.node.download.url` accepts a complete Node.js archive URL or a URL template. In a template,
+the four `%s` placeholders are replaced with the Node.js version, the Node.js version again, the
+platform classifier (for example, `linux-x64`), and the archive extension (`tar.gz` or `zip`).
+The plugin does not append a version or archive filename to a repository root URL.
+
+For a mirror of the Node.js distribution directory:
+
+```bash
+mvn allure:report \
+  '-Dallure.node.download.url=https://nexus.example.com/repository/nodejs/v%s/node-v%s-%s.%s' \
+  -Dallure.npm.registry=https://nexus.example.com/repository/npmjs_registry/
+```
+
+The plugin downloads `SHASUMS256.txt` from the same directory as the configured archive. The mirror
+must provide this file with the matching archive checksum; missing or incorrect checksums stop
+installation.
+
 ### Allure 2 compatibility
 
 Allure 2 remains available when `reportVersion` is set to a `2.x` release.

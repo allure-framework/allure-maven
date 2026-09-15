@@ -64,8 +64,6 @@ public class Allure3Commandline {
 
     public static final String NPM_DEFAULT_REGISTRY = "https://registry.npmjs.org";
 
-    private static final String NODE_CHECKSUM_URL = "https://nodejs.org/dist/v%s/SHASUMS256.txt";
-
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new MapTypeReference();
 
     private final Path installationDirectory;
@@ -232,7 +230,7 @@ public class Allure3Commandline {
                         platform.getClassifier(), platform.getArchiveExtension()
                 )
         );
-        final URL checksumUrl = new URL(String.format(NODE_CHECKSUM_URL, nodeVersion));
+        final URL checksumUrl = new URL(archiveUrl, "SHASUMS256.txt");
         final String expectedChecksum = readChecksum(checksumUrl, archiveFileName);
 
         final Path archive = Files.createTempFile("node-" + nodeVersion, "-" + archiveFileName);
