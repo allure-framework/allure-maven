@@ -20,6 +20,8 @@ import io.qameta.allure.Description;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -243,6 +245,43 @@ class VerifierAllure3IT extends VerifierTestSupport {
                         projectDirectory.resolve(".allure"), results, configPath(projectDirectory)
                 )
         );
+    }
+
+    /**
+     * Project structure: a single-module Maven project with a local Allure 3 runtime and a
+     * relative report directory supplied through the command line.
+     * <p>
+     * Verifies that a direct report goal succeeds, configures the intended output directory,
+     * and renders the redirect to the generated report (issue 459).
+     */
+    @Test
+    @Description
+    void shouldGenerateReportWithRelativeReportDirectoryFromDirectGoal() throws Exception {
+        final Path projectDirectory = prepareProject(
+                "feature-without-version-property", rootPom("feature-without-version-property")
+        );
+        final Path reportDirectory = projectDirectory.resolve(Path.of("target", "my-report"));
+        final Path captureFile = prepareAllure3ReportRuntime(
+                projectDirectory, ".allure", "allure3 relative report args.txt", reportDirectory, true
+        );
+
+        runGoals(
+                projectDirectory, List.of(pluginGoal("report")),
+                List.of("-Dallure.report.directory=target/my-report")
+        );
+
+        TestHelper.checkReportDirectory(reportDirectory, 1);
+        assertSamePath(readJson(configPath(projectDirectory)).path("output").asText(), reportDirectory);
+        assertCommandLines(
+                readLines(captureFile), generateInvocation(
+                        projectDirectory.resolve(".allure"),
+                        projectDirectory.resolve(Path.of("target", "allure-results")), configPath(projectDirectory)
+                )
+        );
+        final Path reportPage = reportDirectory.resolve("allure-maven.html");
+        attachIfPresent(reportPage, "Maven report page", "text/html", ".html");
+        assertThat(Files.readString(reportPage, StandardCharsets.UTF_8))
+                .contains("content=\"0;url=" + Path.of("..", "my-report", "index.html") + "\"");
     }
 
     /**

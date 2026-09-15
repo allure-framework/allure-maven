@@ -138,6 +138,35 @@ class VerifierAllure2IT extends VerifierTestSupport {
     }
 
     /**
+     * Project structure: a single-module Maven project with Allure 2 results and a relative
+     * report directory supplied through the command line.
+     * <p>
+     * Verifies that a direct report goal succeeds after generation and renders the redirect to
+     * the custom report, without mixing relative and absolute paths (issue 459).
+     */
+    @Test
+    @Description
+    void shouldGenerateReportWithRelativeReportDirectoryFromDirectGoal() throws Exception {
+        final Path projectDirectory = prepareAllure2Project("allure-2-results");
+        installAllure2Commandline(
+                projectDirectory, "allure2-relative-report-args.txt",
+                Allure2SetupHelper.Mode.FULL, 1
+        );
+
+        runGoals(
+                projectDirectory, List.of(pluginGoal("report")),
+                List.of("-Dreport.version=" + ALLURE2_VERSION, "-Dallure.report.directory=target/my-report")
+        );
+
+        final Path reportDirectory = projectDirectory.resolve(Path.of("target", "my-report"));
+        TestHelper.checkReportDirectory(reportDirectory, 1);
+        final Path reportPage = reportDirectory.resolve("allure-maven.html");
+        attachIfPresent(reportPage, "Maven report page", "text/html", ".html");
+        assertThat(Files.readString(reportPage, StandardCharsets.UTF_8))
+                .contains("content=\"0;url=" + Path.of("..", "my-report", "index.html") + "\"");
+    }
+
+    /**
      * Project structure: a single-module Maven project with Allure 2 results stored under a custom
      * {@code target/my-results} directory.
      * <p>
