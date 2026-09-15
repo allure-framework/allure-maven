@@ -633,8 +633,9 @@ public abstract class AllureGenerateMojo extends AllureBaseMojo {
 
         sink.lineBreak();
 
-        final Path indexHtmlFile = Paths.get(getReportDirectory(), "index.html");
-        final String relativePath = Paths.get(reportingOutputDirectory).relativize(indexHtmlFile).toString();
+        final Path indexHtmlFile = Paths.get(getReportDirectory(), "index.html").toAbsolutePath();
+        final Path reportingOutputPath = Paths.get(reportingOutputDirectory).toAbsolutePath();
+        final String relativePath = reportingOutputPath.relativize(indexHtmlFile).toString();
 
         sink.rawText(
                 String.format(
