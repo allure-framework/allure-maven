@@ -49,7 +49,7 @@ By default, the plugin uses Allure 3.
 
 `reportVersion` selects the runtime family:
 
-- blank or unset: Allure 3 `3.4.1`
+- blank or unset: Allure 3 `3.17.0`
 - `3.x`: Allure 3
 - `2.x`: Allure 2 commandline
 
@@ -61,7 +61,7 @@ You can configure the version in the plugin configuration:
 	<artifactId>allure-maven</artifactId>
 	<version>2.12.0</version>
 	<configuration>
-		<reportVersion>3.4.1</reportVersion>
+		<reportVersion>3.17.0</reportVersion>
 	</configuration>
 </plugin>
 ```
@@ -80,7 +80,7 @@ into the plugin cache. It does not require a system-wide Node.js installation.
 Default cache layout under `${project.basedir}/.allure`:
 
 - `node-v24.14.1-<os>-<arch>`: private Node.js runtime
-- `allure-3.4.1`: installed Allure 3 package
+- `allure-3.17.0`: installed Allure 3 package
 - `bin/allure` or `bin/allure.bat`: generated launcher used by the plugin
 
 Relevant Allure 3 parameters:
