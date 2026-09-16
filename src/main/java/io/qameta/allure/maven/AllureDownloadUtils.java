@@ -72,7 +72,7 @@ final class AllureDownloadUtils {
                     final String proxyPassword = mavenProxy.getPassword();
                     Authenticator.setDefault(new Authenticator() {
                         @Override
-                        public PasswordAuthentication getPasswordAuthentication() {
+                        protected PasswordAuthentication getPasswordAuthentication() {
                             return new PasswordAuthentication(
                                     proxyUser,
                                     proxyPassword.toCharArray()
