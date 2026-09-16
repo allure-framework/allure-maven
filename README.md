@@ -69,7 +69,7 @@ You can configure the version in the plugin configuration:
 Or from the command line:
 
 ```bash
-mvn -Dreport.version=2.39.0 allure:report
+mvn -Dreport.version=2.46.1 allure:report
 ```
 
 ### Allure 3 runtime provisioning

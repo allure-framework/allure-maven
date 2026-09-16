@@ -48,7 +48,7 @@ import static io.qameta.allure.maven.VersionUtils.versionCompare;
 @SuppressWarnings({"PMD.GodClass", "MultipleStringLiterals"})
 public class AllureCommandline {
 
-    public static final String ALLURE_DEFAULT_VERSION = "2.36.0";
+    public static final String ALLURE_DEFAULT_VERSION = "2.46.1";
 
     private static final int DEFAULT_TIMEOUT = 3600;
 
