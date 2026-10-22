@@ -19,7 +19,7 @@ jobs:
           java-version: '17'
 
       - name: Set up Maven
-        uses: s4u/maven-settings-action@v4.0.0
+        uses: s4u/maven-settings-action@v4.1.0
         with:
           servers: '[{"id": "ossrh", "username": "${{secrets.OSSRH_USERNAME}}", "password": "${{secrets.OSSRH_PASSWORD}}"}]'
 
