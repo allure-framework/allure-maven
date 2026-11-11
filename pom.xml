@@ -22,7 +22,7 @@
 
         <pmd.version>7.27.0</pmd.version>
         <allure.version>2.35.5</allure.version>
-        <aspectj.version>1.9.26</aspectj.version>
+        <aspectj.version>1.9.27</aspectj.version>
         <aspectj.weaver.argLine>
             -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
         </aspectj.weaver.argLine>
