@@ -46,7 +46,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
-import static io.qameta.allure.Allure.addAttachment;
+import static io.qameta.allure.Allure.attachment;
 import static io.qameta.allure.Allure.step;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -101,7 +101,7 @@ class Allure3NodeDownloadTest {
         if (mirror != null) {
             mirror.stop(0);
         }
-        addAttachment("Node mirror requests", String.join(System.lineSeparator(), requests));
+        attachment("Node mirror requests", String.join(System.lineSeparator(), requests));
     }
 
     @Test
@@ -188,7 +188,7 @@ class Allure3NodeDownloadTest {
     private void publishChecksum(final String checksum) {
         final String content = checksum + "  " + platform.getArchiveFileName(NODE_VERSION) + "\n";
         responses.put(checksumUrl(), content.getBytes(StandardCharsets.UTF_8));
-        addAttachment("SHASUMS256.txt", content);
+        attachment("SHASUMS256.txt", content);
     }
 
     private Allure3Commandline newCommandline(final String downloadUrl) {
