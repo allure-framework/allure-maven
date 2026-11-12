@@ -4,7 +4,7 @@ Use Allure agent-mode to design, review, validate, debug, and enrich tests in th
 
 ## Project Bootstrap
 
-- The root test suite already includes `io.qameta.allure:allure-junit5` in `test` scope.
+- The root test suite already includes `io.qameta.allure:allure-jupiter` in `test` scope.
 - Test-side Allure results are configured through `src/test/resources/allure.properties`.
 - The default results directory for local test runs is `target/allure-results`.
 - For fast feedback on the unit suite, prefer `./mvnw -q test`.

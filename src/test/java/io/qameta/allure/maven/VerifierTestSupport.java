@@ -18,6 +18,7 @@ package io.qameta.allure.maven;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Allure;
+import io.qameta.allure.AttachmentOptions;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.junit.jupiter.api.io.TempDir;
@@ -217,9 +218,9 @@ abstract class VerifierTestSupport {
                                          final String extension)
             throws IOException {
         if (Files.exists(file)) {
-            Allure.addAttachment(
+            Allure.attachment(
                     name, type, Files.readString(file, StandardCharsets.UTF_8),
-                    extension
+                    AttachmentOptions.withFileExtension(extension)
             );
         }
     }
@@ -253,14 +254,14 @@ abstract class VerifierTestSupport {
     private void attachPreparedProject(final Path projectDirectory) throws IOException {
         try (Stream<Path> paths = Files.walk(projectDirectory)) {
             final List<Path> files = paths.filter(Files::isRegularFile).sorted().toList();
-            Allure.addAttachment(
+            Allure.attachment(
                     "Prepared project files", "text/plain",
                     String.join(
                             System.lineSeparator(),
                             files.stream().map(projectDirectory::relativize).map(Path::toString)
                                     .map(this::normalizeSeparators).toList()
                     ),
-                    ".txt"
+                    AttachmentOptions.withFileExtension(".txt")
             );
             for (Path file : files) {
                 attachPreparedProjectFile(projectDirectory, file);
@@ -308,17 +309,18 @@ abstract class VerifierTestSupport {
     private void attachPreparedProjectFile(final Path projectDirectory, final Path file)
             throws IOException {
         final String relativePath = normalizeSeparators(projectDirectory.relativize(file).toString());
-        Allure.addAttachment(
+        Allure.attachment(
                 "Project file: " + relativePath, mediaType(file),
-                Files.readString(file, StandardCharsets.UTF_8), fileExtension(relativePath)
+                Files.readString(file, StandardCharsets.UTF_8),
+                AttachmentOptions.withFileExtension(fileExtension(relativePath))
         );
     }
 
     private void attachCliOptions(final List<String> cliOptions) {
         if (!cliOptions.isEmpty()) {
-            Allure.addAttachment(
+            Allure.attachment(
                     "Verifier CLI options", "text/plain",
-                    String.join(System.lineSeparator(), cliOptions), ".txt"
+                    String.join(System.lineSeparator(), cliOptions), AttachmentOptions.withFileExtension(".txt")
             );
         }
     }
