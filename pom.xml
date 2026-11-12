@@ -18,7 +18,7 @@
 
         <maven.version>3.10.0</maven.version>
         <maven-plugin.version>3.16.0</maven-plugin.version>
-        <maven-verifier.version>1.8.0</maven-verifier.version>
+        <maven-verifier.version>2.0.0</maven-verifier.version>
 
         <pmd.version>7.27.0</pmd.version>
         <allure.version>2.35.5</allure.version>
