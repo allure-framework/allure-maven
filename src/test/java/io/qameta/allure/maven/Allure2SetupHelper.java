@@ -24,7 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Shared setup helpers for hermetic Allure 2 verifier tests.
+ * Shared setup helpers for hermetic Allure 2 integration tests.
  */
 final class Allure2SetupHelper {
 
