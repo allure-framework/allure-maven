@@ -79,7 +79,7 @@ into the plugin cache. It does not require a system-wide Node.js installation.
 
 Default cache layout under `${project.basedir}/.allure`:
 
-- `node-v24.14.1-<os>-<arch>`: private Node.js runtime
+- `node-v26.13.1-<os>-<arch>`: private Node.js runtime
 - `allure-3.17.0`: installed Allure 3 package
 - `bin/allure` or `bin/allure.bat`: generated launcher used by the plugin
 
