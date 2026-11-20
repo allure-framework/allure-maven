@@ -8,5 +8,6 @@
 *.txt text eol=lf
 *.sh text eol=lf
 
-*.cmd text eol=crlf
-*.bat text eol=crlf
+# Preserve existing CRLF blobs and check out Windows scripts with CRLF.
+*.cmd text=auto eol=crlf
+*.bat text=auto eol=crlf

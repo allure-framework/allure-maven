@@ -58,7 +58,7 @@ import java.util.stream.Collectors;
 )
 public class Allure3Commandline {
 
-    public static final String NODE_DEFAULT_VERSION = "24.14.1";
+    public static final String NODE_DEFAULT_VERSION = "26.13.1";
 
     public static final String NODE_DEFAULT_DOWNLOAD_URL = "https://nodejs.org/dist/v%s/node-v%s-%s.%s";
 
