@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static io.qameta.allure.Allure.addAttachment;
+import static io.qameta.allure.Allure.attachment;
 import static io.qameta.allure.Allure.step;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -57,7 +57,7 @@ class Allure3CommandlineTest {
 
             step("Prepare fake install runtime", () -> {
                 Allure3SetupHelper.prepareFakeInstallRuntime(installDirectory, capturedArgs);
-                addAttachment(
+                attachment(
                         "Install runtime setup", "installDirectory=" + installDirectory
                                 + System.lineSeparator() + "capturedArgs=" + capturedArgs
                 );
@@ -67,7 +67,7 @@ class Allure3CommandlineTest {
 
             step("Verify npm arguments and installed binaries", () -> {
                 final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
-                addAttachment("Captured npm arguments", String.join(System.lineSeparator(), args));
+                attachment("Captured npm arguments", String.join(System.lineSeparator(), args));
                 assertThat(args).isEqualTo(
                         Arrays.asList(
                                 "cli=" + commandline.getNpmCliPath().toAbsolutePath(), "arg=--prefix",
@@ -98,7 +98,7 @@ class Allure3CommandlineTest {
             step("Prepare fake install runtime and local package archive", () -> {
                 Allure3SetupHelper.prepareFakeInstallRuntime(installDirectory, capturedArgs);
                 Allure3SetupHelper.prepareFakePackageArchive(packageArchive);
-                addAttachment(
+                attachment(
                         "Local package install setup",
                         "installDirectory=" + installDirectory + System.lineSeparator()
                                 + "packageArchive=" + packageArchive + System.lineSeparator()
@@ -110,7 +110,7 @@ class Allure3CommandlineTest {
 
             step("Verify archive install arguments and installed binaries", () -> {
                 final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
-                addAttachment(
+                attachment(
                         "Captured archive install arguments",
                         String.join(System.lineSeparator(), args)
                 );
@@ -154,7 +154,7 @@ class Allure3CommandlineTest {
                         installDirectory, capturedArgs,
                         reportDirectory, true
                 );
-                addAttachment(
+                attachment(
                         "Report generation inputs",
                         "resultsDirectory=" + resultsDirectory + System.lineSeparator()
                                 + "secondResultsDirectory=" + secondResultsDirectory
@@ -181,7 +181,7 @@ class Allure3CommandlineTest {
                 final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
                         .resolve("allurerc.json");
                 final JsonNode configJson = new ObjectMapper().readTree(config.toFile());
-                addAttachment("Generated Allure 3 config", Files.readString(config));
+                attachment("Generated Allure 3 config", Files.readString(config));
                 assertThat(configJson.get("name").asText()).isEqualTo("Allure");
                 assertThat(configJson.get("output").asText())
                         .isEqualTo(reportDirectory.toAbsolutePath().toString());
@@ -198,7 +198,7 @@ class Allure3CommandlineTest {
                 )
                         .exists();
                 final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
-                addAttachment(
+                attachment(
                         "Generated report CLI arguments",
                         String.join(System.lineSeparator(), args)
                 );
@@ -241,7 +241,7 @@ class Allure3CommandlineTest {
                         installDirectory, capturedArgs,
                         reportDirectory, false
                 );
-                addAttachment(
+                attachment(
                         "Debug report inputs", "resultsDirectory=" + resultsDirectory
                                 + System.lineSeparator() + "reportDirectory=" + reportDirectory
                 );
@@ -258,8 +258,8 @@ class Allure3CommandlineTest {
             step("Verify generated debug command log", () -> {
                 final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
                         .resolve("allurerc.json");
-                addAttachment("Generated debug config", Files.readString(config));
-                addAttachment(
+                attachment("Generated debug config", Files.readString(config));
+                attachment(
                         "Debug log messages",
                         String.join(System.lineSeparator(), log.debugMessages)
                 );
@@ -310,7 +310,7 @@ class Allure3CommandlineTest {
                         installDirectory,
                         testDirectory.resolve("node-args.txt"), reportDirectory, false
                 );
-                addAttachment("User YAML config", Files.readString(userConfig));
+                attachment("User YAML config", Files.readString(userConfig));
             });
 
             final Map<String, Object> defaultConfig = new LinkedHashMap<>();
@@ -333,7 +333,7 @@ class Allure3CommandlineTest {
                 final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
                         .resolve("allurerc.json");
                 final JsonNode configJson = new ObjectMapper().readTree(config.toFile());
-                addAttachment("Merged Allure 3 config", Files.readString(config));
+                attachment("Merged Allure 3 config", Files.readString(config));
                 assertThat(configJson.get("name").asText()).isEqualTo("Allure");
                 assertThat(configJson.get("output").asText())
                         .isEqualTo(reportDirectory.toAbsolutePath().toString());
@@ -392,7 +392,7 @@ class Allure3CommandlineTest {
                         installDirectory,
                         testDirectory.resolve("node-args.txt"), reportDirectory, false
                 );
-                addAttachment("User JavaScript config", Files.readString(userConfig));
+                attachment("User JavaScript config", Files.readString(userConfig));
             });
 
             final Map<String, Object> defaultConfig = new LinkedHashMap<>();
@@ -415,7 +415,7 @@ class Allure3CommandlineTest {
                 final Path generatedConfig = buildDirectory.resolve("allure-maven")
                         .resolve("allure3").resolve("allurerc.mjs");
                 final List<String> generatedConfigLines = Files.readAllLines(generatedConfig, StandardCharsets.UTF_8);
-                addAttachment(
+                attachment(
                         "Generated JavaScript wrapper config",
                         String.join(System.lineSeparator(), generatedConfigLines)
                 );
@@ -466,7 +466,7 @@ class Allure3CommandlineTest {
                         installDirectory, capturedArgs,
                         reportDirectory, false
                 );
-                addAttachment(
+                attachment(
                         "Serve flow inputs", "resultsDirectory=" + resultsDirectory
                                 + System.lineSeparator() + "reportDirectory=" + reportDirectory
                 );
@@ -483,10 +483,10 @@ class Allure3CommandlineTest {
             step("Verify generated report and open command arguments", () -> {
                 final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
                         .resolve("allurerc.json");
-                addAttachment("Serve flow config", Files.readString(config));
+                attachment("Serve flow config", Files.readString(config));
                 assertThat(reportDirectory.resolve("index.html")).exists();
                 final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
-                addAttachment(
+                attachment(
                         "Serve flow CLI arguments",
                         String.join(System.lineSeparator(), args)
                 );
@@ -531,7 +531,7 @@ class Allure3CommandlineTest {
                         installDirectory, capturedArgs,
                         reportDirectory, false
                 );
-                addAttachment(
+                attachment(
                         "Debug serve flow inputs", "resultsDirectory=" + resultsDirectory
                                 + System.lineSeparator() + "reportDirectory=" + reportDirectory
                 );
@@ -548,8 +548,8 @@ class Allure3CommandlineTest {
             step("Verify logged generate and open commands", () -> {
                 final Path config = buildDirectory.resolve("allure-maven").resolve("allure3")
                         .resolve("allurerc.json");
-                addAttachment("Debug serve flow config", Files.readString(config));
-                addAttachment(
+                attachment("Debug serve flow config", Files.readString(config));
+                attachment(
                         "Generate and open debug log messages",
                         String.join(System.lineSeparator(), log.debugMessages)
                 );

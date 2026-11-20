@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Method;
 import java.time.Duration;
 
-import static io.qameta.allure.Allure.addAttachment;
+import static io.qameta.allure.Allure.attachment;
 import static io.qameta.allure.Allure.step;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,7 +40,7 @@ class CommandLineExecutorFactoryTest {
         );
 
         step("Verify shutdown hook process destroyer", () -> {
-            addAttachment(
+            attachment(
                     "Executor destroyer",
                     executor.getProcessDestroyer().getClass().getName()
             );
@@ -59,7 +59,7 @@ class CommandLineExecutorFactoryTest {
         final Duration timeout = step("Inspect watchdog timeout via reflection", () -> getTimeout(watchdog));
 
         step("Verify watchdog timeout", () -> {
-            addAttachment(
+            attachment(
                     "Watchdog timeout", String.join(
                             System.lineSeparator(),
                             "timeout=" + timeout, "watchdogClass=" + watchdog.getClass().getName()
@@ -80,7 +80,7 @@ class CommandLineExecutorFactoryTest {
         step("Verify exit-code failure mapping", () -> {
             final boolean zeroExitFailure = executor.isFailure(0);
             final boolean oneExitFailure = executor.isFailure(1);
-            addAttachment(
+            attachment(
                     "Failure decisions", String.join(
                             System.lineSeparator(),
                             "exitCode=0 -> " + zeroExitFailure, "exitCode=1 -> " + oneExitFailure

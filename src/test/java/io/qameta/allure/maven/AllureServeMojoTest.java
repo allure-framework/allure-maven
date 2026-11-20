@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static io.qameta.allure.Allure.addAttachment;
+import static io.qameta.allure.Allure.attachment;
 import static io.qameta.allure.Allure.step;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -42,7 +42,7 @@ class AllureServeMojoTest {
     void shouldRejectServeHostForAllure3() throws Exception {
         final AllureServeMojo mojo = new AllureServeMojo();
         setField(mojo, "serveHost", "127.0.0.1");
-        addAttachment(
+        attachment(
                 "Serve host override",
                 String.join(System.lineSeparator(), "serveHost=127.0.0.1", "allureVersion=3.4.1")
         );
@@ -52,7 +52,7 @@ class AllureServeMojoTest {
                     MavenReportException.class, () -> mojo
                             .generateReport(Collections.emptyList(), AllureVersion.resolve("3.4.1"))
             );
-            addAttachment("Serve host rejection", String.valueOf(error.getMessage()));
+            attachment("Serve host rejection", String.valueOf(error.getMessage()));
             assertThat(error).hasMessageContaining("does not support allure.serve.host");
         });
     }
@@ -72,7 +72,7 @@ class AllureServeMojoTest {
                 mojo.reportDirectory = projectDirectory.resolve("report").toString();
                 mojo.projectDirectory = projectDirectory.toString();
                 mojo.setLog(log);
-                addAttachment(
+                attachment(
                         "Serve mojo inputs",
                         String.join(
                                 System.lineSeparator(), "projectDirectory=" + projectDirectory,
@@ -92,7 +92,7 @@ class AllureServeMojoTest {
             );
 
             step("Verify single-file flag is ignored and warning is logged", () -> {
-                addAttachment(
+                attachment(
                         "Serve warning log",
                         String.join(System.lineSeparator(), log.warnMessages)
                 );

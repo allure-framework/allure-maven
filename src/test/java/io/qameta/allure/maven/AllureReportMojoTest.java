@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static io.qameta.allure.Allure.addAttachment;
+import static io.qameta.allure.Allure.attachment;
 import static io.qameta.allure.Allure.step;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -78,7 +78,7 @@ class AllureReportMojoTest {
             final Path historyInputDirectory = workspace
                     .resolve(Paths.get("build", "allure-maven", "history-input", "allure-results"));
             step("Verify cached history is restored into a dedicated input directory", () -> {
-                addAttachment(
+                attachment(
                         "Prepared input directories", String.join(
                                 System.lineSeparator(),
                                 preparedInputDirectories.stream().map(Path::toString).toList()
@@ -137,7 +137,7 @@ class AllureReportMojoTest {
             );
 
             step("Verify history input directory is not created", () -> {
-                addAttachment(
+                attachment(
                         "Prepared input directories", String.join(
                                 System.lineSeparator(),
                                 preparedInputDirectories.stream().map(Path::toString).toList()
@@ -198,7 +198,7 @@ class AllureReportMojoTest {
             );
 
             step("Verify stale cache is replaced with generated history", () -> {
-                addAttachment(
+                attachment(
                         "Refreshed cached history",
                         Files.readString(
                                 cachedHistoryDirectory.resolve("history-trend.json"),
@@ -236,7 +236,7 @@ class AllureReportMojoTest {
 
             step("Verify Allure 3 history defaults and log message", () -> {
                 attachValues("Allure 3 history defaults", defaults);
-                addAttachment(
+                attachment(
                         "History log messages",
                         String.join(System.lineSeparator(), log.infoMessages)
                 );
@@ -252,7 +252,7 @@ class AllureReportMojoTest {
     }
 
     private static void attachValues(final String name, final Map<String, ?> values) {
-        addAttachment(
+        attachment(
                 name, String.join(
                         System.lineSeparator(), values.entrySet().stream()
                                 .map(entry -> entry.getKey() + "=" + entry.getValue()).toList()

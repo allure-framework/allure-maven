@@ -18,7 +18,7 @@ package io.qameta.allure.maven;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static io.qameta.allure.Allure.addAttachment;
+import static io.qameta.allure.Allure.attachment;
 import static io.qameta.allure.Allure.step;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -54,7 +54,7 @@ class AllureVersionTest {
                     IllegalArgumentException.class,
                     () -> AllureVersion.resolve("1.5.4")
             );
-            addAttachment("Unsupported version error", String.valueOf(error.getMessage()));
+            attachment("Unsupported version error", String.valueOf(error.getMessage()));
         });
     }
 
@@ -67,7 +67,7 @@ class AllureVersionTest {
         );
 
         step("Verify selected runtime and normalized version", () -> {
-            addAttachment(
+            attachment(
                     "Version resolution",
                     String.join(
                             System.lineSeparator(), "requested=" + requested,

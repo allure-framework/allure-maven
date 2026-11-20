@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static io.qameta.allure.Allure.addAttachment;
+import static io.qameta.allure.Allure.attachment;
 import static io.qameta.allure.Allure.step;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -88,7 +88,7 @@ class AllureCommandlineTest {
             final Path launcher = installDirectory.resolve("allure-" + version).resolve("bin").resolve("allure");
 
             step("Prepare fake HTTPS archive and Maven wagon SSL overrides", () -> {
-                addAttachment(
+                attachment(
                         "HTTPS download inputs",
                         String.join(
                                 System.lineSeparator(), "url=" + url,
@@ -106,7 +106,7 @@ class AllureCommandlineTest {
             );
 
             step("Verify SSL overrides and extracted launcher", () -> {
-                addAttachment(
+                attachment(
                         "Captured SSL overrides",
                         String.join(
                                 System.lineSeparator(),
@@ -139,7 +139,7 @@ class AllureCommandlineTest {
                             new X509Certificate[]{new TestCertificate(true)}, "RSA"
                     )
             );
-            addAttachment("Strict trust manager error", String.valueOf(error.getMessage()));
+            attachment("Strict trust manager error", String.valueOf(error.getMessage()));
         });
     }
 
@@ -155,7 +155,7 @@ class AllureCommandlineTest {
                     new X509Certificate[]{new TestCertificate(true)},
                     "RSA"
             );
-            addAttachment("Relaxed trust manager result", "acceptedExpiredCertificate=true");
+            attachment("Relaxed trust manager result", "acceptedExpiredCertificate=true");
         });
     }
 
@@ -176,7 +176,7 @@ class AllureCommandlineTest {
                         installDirectory, version, "#!/bin/sh",
                         "printf '%s\\n' \"$@\" > '" + capturedArgs + "'", "exit 0"
                 );
-                addAttachment(
+                attachment(
                         "Unix generate inputs", "resultsDirectory=" + resultsDirectory
                                 + System.lineSeparator() + "reportDirectory=" + reportDirectory
                 );
@@ -193,7 +193,7 @@ class AllureCommandlineTest {
 
             step("Verify generated command arguments", () -> {
                 final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
-                addAttachment(
+                attachment(
                         "Generate command arguments",
                         String.join(System.lineSeparator(), args)
                 );
@@ -229,7 +229,7 @@ class AllureCommandlineTest {
                         installDirectory, version, "#!/bin/sh",
                         "printf '%s\\n' \"$@\" > '" + capturedArgs + "'", "exit 0"
                 );
-                addAttachment(
+                attachment(
                         "Debug generate inputs", "resultsDirectory=" + resultsDirectory
                                 + System.lineSeparator() + "reportDirectory=" + reportDirectory
                 );
@@ -246,11 +246,11 @@ class AllureCommandlineTest {
 
             step("Verify debug command arguments and logged command", () -> {
                 final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
-                addAttachment(
+                attachment(
                         "Debug generate command arguments",
                         String.join(System.lineSeparator(), args)
                 );
-                addAttachment(
+                attachment(
                         "Debug generate log messages",
                         String.join(System.lineSeparator(), log.debugMessages)
                 );
@@ -301,7 +301,7 @@ class AllureCommandlineTest {
 
             final AllureCommandline commandline = new AllureCommandline(installDirectory, version);
             step("Prepare Windows runtime and results directory", () -> {
-                addAttachment(
+                attachment(
                         "Windows serve inputs",
                         String.join(
                                 System.lineSeparator(), "installDirectory=" + installDirectory,
@@ -317,7 +317,7 @@ class AllureCommandlineTest {
 
             step("Verify captured serve arguments preserve spaces", () -> {
                 final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
-                addAttachment(
+                attachment(
                         "Windows serve command arguments",
                         String.join(System.lineSeparator(), args)
                 );
@@ -348,7 +348,7 @@ class AllureCommandlineTest {
                         installDirectory, version, "#!/bin/sh",
                         "printf '%s\\n' \"$@\" > '" + capturedArgs + "'", "exit 0"
                 );
-                addAttachment("Debug serve inputs", "resultsDirectory=" + resultsDirectory);
+                attachment("Debug serve inputs", "resultsDirectory=" + resultsDirectory);
             });
 
             final AllureCommandline commandline = new AllureCommandline(installDirectory, version, 10, log);
@@ -359,8 +359,8 @@ class AllureCommandlineTest {
 
             step("Verify serve command arguments and logged command", () -> {
                 final List<String> args = Files.readAllLines(capturedArgs, StandardCharsets.UTF_8);
-                addAttachment("Serve command arguments", String.join(System.lineSeparator(), args));
-                addAttachment(
+                attachment("Serve command arguments", String.join(System.lineSeparator(), args));
+                attachment(
                         "Debug serve log messages",
                         String.join(System.lineSeparator(), log.debugMessages)
                 );
