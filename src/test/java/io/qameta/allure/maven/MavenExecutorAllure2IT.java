@@ -26,9 +26,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("verifier")
+@Tag("maven-executor")
 @Tag("allure2")
-class VerifierAllure2IT extends VerifierTestSupport {
+class MavenExecutorAllure2IT extends MavenTestSupport {
 
     private static final String ALLURE2_VERSION = "2.30.0";
 
@@ -42,7 +42,11 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGenerateReportFromAllure2JsonResults() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("allure-2-results");
+        final Path projectDirectory = prepareProject(
+                "allure-2-results",
+                resource("/maven-executor/allure-2-results-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.json", "target/allure-results/sample-testsuite.json")
+        );
         installAllure2Commandline(
                 projectDirectory, "allure2-report-args.txt",
                 Allure2SetupHelper.Mode.FULL, 1
@@ -63,7 +67,11 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGenerateReportWhenAllure2VersionIsConfigured() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("allure2-feature-without-version-property");
+        final Path projectDirectory = prepareProject(
+                "allure2-feature-without-version-property",
+                resource("/maven-executor/allure2-feature-without-version-property-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
+        );
         installAllure2Commandline(
                 projectDirectory, "allure2-version-args.txt",
                 Allure2SetupHelper.Mode.FULL, 1
@@ -84,7 +92,11 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldSupportConfiguredAllurePluginsForAllure2Report() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("feature-plugins-support");
+        final Path projectDirectory = prepareProject(
+                "feature-plugins-support",
+                resource("/maven-executor/feature-plugins-support-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
+        );
         installAllure2Commandline(
                 projectDirectory, "allure2-plugins-args.txt",
                 Allure2SetupHelper.Mode.FULL, 1
@@ -105,7 +117,12 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldMergeMultipleInputDirectoriesIntoOneReport() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("input-directory-sample");
+        final Path projectDirectory = prepareProject(
+                "input-directory-sample",
+                resource("/maven-executor/input-directory-sample-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-first-result.xml", "first/first-testsuite.xml"),
+                resource("/maven-executor-data/allure2-second-result.xml", "second/second-testsuite.xml")
+        );
         installAllure2Commandline(
                 projectDirectory, "allure2-input-directory-args.txt",
                 Allure2SetupHelper.Mode.FULL, 2
@@ -126,7 +143,11 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldRespectConfiguredReportDirectory() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("report-change-report-directory");
+        final Path projectDirectory = prepareProject(
+                "report-change-report-directory",
+                resource("/maven-executor/report-change-report-directory-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
+        );
         installAllure2Commandline(
                 projectDirectory, "allure2-report-dir-args.txt",
                 Allure2SetupHelper.Mode.FULL, 1
@@ -147,7 +168,11 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGenerateReportWithRelativeReportDirectoryFromDirectGoal() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("allure-2-results");
+        final Path projectDirectory = prepareProject(
+                "allure-2-results",
+                resource("/maven-executor/allure-2-results-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.json", "target/allure-results/sample-testsuite.json")
+        );
         installAllure2Commandline(
                 projectDirectory, "allure2-relative-report-args.txt",
                 Allure2SetupHelper.Mode.FULL, 1
@@ -176,7 +201,11 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldRespectConfiguredResultsDirectory() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("report-change-results-directory");
+        final Path projectDirectory = prepareProject(
+                "report-change-results-directory",
+                resource("/maven-executor/report-change-results-directory-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/my-results/sample-testsuite.xml")
+        );
         installAllure2Commandline(
                 projectDirectory, "allure2-results-dir-args.txt",
                 Allure2SetupHelper.Mode.FULL, 1
@@ -197,9 +226,10 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGenerateReportWhenProjectPathContainsSpaces() throws Exception {
-        final Path projectDirectory = prepareAllure2Project(
-                "report-paths-with-spaces",
-                "allure2 report paths with spaces"
+        final Path projectDirectory = prepareProject(
+                "allure2 report paths with spaces",
+                resource("/maven-executor/report-paths-with-spaces-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/my results/sample-testsuite.xml")
         );
         installAllure2Commandline(
                 projectDirectory, "allure2-paths-with-spaces-args.txt",
@@ -223,7 +253,11 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGenerateReportFromBuildPluginAndReportingPlugin() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("report-as-build-plugin");
+        final Path projectDirectory = prepareProject(
+                "report-as-build-plugin",
+                resource("/maven-executor/report-as-build-plugin-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
+        );
         installAllure2Commandline(
                 projectDirectory, "allure2-build-plugin-args.txt",
                 Allure2SetupHelper.Mode.FULL, 1
@@ -248,10 +282,10 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Description
     void shouldGenerateReportFromHermeticCustomDownloadUrl() throws Exception {
         final Path projectDirectory = prepareProject(
-                "custom-url-report",
                 "custom-url-report project",
                 downloadUrlReplacement("custom-url-report", "allure2-custom-url-args.txt", 1),
-                rootPom("custom-url-report")
+                resource("/maven-executor/custom-url-report-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
         );
 
         runGoals(projectDirectory, List.of("site"));
@@ -269,7 +303,11 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGenerateBundledAndReportingReportsTogether() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("report-with-bundled-version");
+        final Path projectDirectory = prepareProject(
+                "report-with-bundled-version",
+                resource("/maven-executor/report-with-bundled-version-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
+        );
         installAllure2Commandline(
                 projectDirectory, "allure2-bundled-version-args.txt",
                 Allure2SetupHelper.Mode.FULL, 1
@@ -294,7 +332,11 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGenerateSingleFileReportForAllure2() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("allure2-report-single-file");
+        final Path projectDirectory = prepareProject(
+                "allure2-report-single-file",
+                resource("/maven-executor/allure2-report-single-file-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
+        );
         installAllure2Commandline(
                 projectDirectory, "allure2-single-file-args.txt",
                 Allure2SetupHelper.Mode.SINGLE_FILE, 1
@@ -315,7 +357,11 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldPreserveConfiguredReportDirectoryWhenServingAfterReport() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("allure2-report-then-serve-preserves-report-directory");
+        final Path projectDirectory = prepareProject(
+                "allure2-report-then-serve-preserves-report-directory",
+                resource("/maven-executor/allure2-report-then-serve-preserves-report-directory-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
+        );
         final Path captureFile = installAllure2Commandline(
                 projectDirectory,
                 "captured commands.txt", Allure2SetupHelper.Mode.COMMANDS, 1
@@ -346,9 +392,10 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldPassResultsDirectoryWithSpacesToServe() throws Exception {
-        final Path projectDirectory = prepareAllure2Project(
-                "allure2-serve-paths-with-spaces",
-                "allure2 serve paths with spaces"
+        final Path projectDirectory = prepareProject(
+                "allure2 serve paths with spaces",
+                resource("/maven-executor/allure2-serve-paths-with-spaces-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/my results/sample-testsuite.xml")
         );
         final Path captureFile = installAllure2Commandline(
                 projectDirectory, "captured args.txt",
@@ -374,21 +421,16 @@ class VerifierAllure2IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldSkipAllureReportGracefullyWhenResultsAreEmpty() throws Exception {
-        final Path projectDirectory = prepareAllure2Project("feature-should-fail-if-empty-report");
+        final Path projectDirectory = prepareProject(
+                "feature-should-fail-if-empty-report",
+                resource("/maven-executor/feature-should-fail-if-empty-report-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/empty-results.keep", "target/allure-results/.gitkeep")
+        );
 
         runGoals(projectDirectory, List.of("site"));
 
         assertThat(Files.readString(projectDirectory.resolve("build.log"), StandardCharsets.UTF_8))
                 .contains("BUILD SUCCESS");
-    }
-
-    private Path prepareAllure2Project(final String scenario) throws Exception {
-        return prepareProject(scenario, rootPom(scenario));
-    }
-
-    private Path prepareAllure2Project(final String scenario, final String directoryName)
-            throws Exception {
-        return prepareProject(scenario, directoryName, rootPom(scenario));
     }
 
     private Path installAllure2Commandline(final Path projectDirectory,

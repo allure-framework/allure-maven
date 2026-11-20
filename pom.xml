@@ -18,7 +18,7 @@
 
         <maven.version>3.10.1</maven.version>
         <maven-plugin.version>3.16.0</maven-plugin.version>
-        <maven-verifier.version>1.8.0</maven-verifier.version>
+        <maven-executor.version>1.0.0</maven-executor.version>
 
         <pmd.version>7.29.0</pmd.version>
         <allure.version>3.1.1</allure.version>
@@ -287,7 +287,7 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>verifier-integration-tests</id>
+                        <id>maven-integration-tests</id>
                         <goals>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
@@ -308,7 +308,7 @@
                 <version>3.2.0</version>
                 <executions>
                     <execution>
-                        <id>install-plugin-for-verifier-it</id>
+                        <id>install-plugin-for-it</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>install</goal>
@@ -526,20 +526,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.maven.shared</groupId>
-            <artifactId>maven-verifier</artifactId>
-            <version>${maven-verifier.version}</version>
+            <groupId>org.apache.maven.executor</groupId>
+            <artifactId>maven-executor</artifactId>
+            <version>${maven-executor.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.hamcrest</groupId>
-                    <artifactId>hamcrest-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>

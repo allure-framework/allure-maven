@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Small helper embedded into fake Allure 2 archives for hermetic verifier ITs.
+ * Small helper embedded into fake Allure 2 archives for hermetic Maven integration tests.
  */
 public final class FakeAllure2CliRunner {
 

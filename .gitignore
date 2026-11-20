@@ -12,4 +12,3 @@
 *.pydevproject
 
 target
-!*/it/**/target

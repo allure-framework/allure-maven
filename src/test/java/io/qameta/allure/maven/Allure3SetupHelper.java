@@ -29,11 +29,11 @@ import java.util.Map;
 @SuppressWarnings("MultipleStringLiterals")
 final class Allure3SetupHelper {
 
-    private static final String WINDOWS_REPORT_NODE_TEMPLATE = "/verifier-data/allure3-report-node-windows.cmd";
+    private static final String WINDOWS_REPORT_NODE_TEMPLATE = "/maven-executor-data/allure3-report-node-windows.cmd";
 
-    private static final String WINDOWS_REPORT_NODE_DATA_TEMPLATE = "/verifier-data/allure3-report-node-data-windows.cmd";
+    private static final String WINDOWS_REPORT_NODE_DATA_TEMPLATE = "/maven-executor-data/allure3-report-node-data-windows.cmd";
 
-    private static final String WINDOWS_INSTALL_NODE_TEMPLATE = "/verifier-data/allure3-install-node-windows.cmd";
+    private static final String WINDOWS_INSTALL_NODE_TEMPLATE = "/maven-executor-data/allure3-install-node-windows.cmd";
 
     private Allure3SetupHelper() {
     }

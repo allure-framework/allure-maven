@@ -24,9 +24,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("verifier")
+@Tag("maven-executor")
 @Tag("aggregate")
-class VerifierAggregateIT extends VerifierTestSupport {
+class MavenExecutorAggregateIT extends MavenTestSupport {
 
     private static final String ALLURE2_VERSION = "2.30.0";
 
@@ -40,7 +40,14 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldAggregateMultiModuleAllure2Results() throws Exception {
-        final Path projectDirectory = prepareAllure2MultiModuleProject("aggregate-multi-module");
+        final Path projectDirectory = prepareProject(
+                "aggregate-multi-module",
+                resource("/maven-executor/aggregate-multi-module-pom.xml", "pom.xml"),
+                resource("/maven-executor/aggregate-multi-module-first-pom.xml", "first/pom.xml"),
+                resource("/maven-executor/aggregate-multi-module-second-pom.xml", "second/pom.xml"),
+                resource("/maven-executor-data/allure2-first-result.xml", "first/target/allure-results/first-testsuite.xml"),
+                resource("/maven-executor-data/allure2-second-result.xml", "second/target/allure-results/second-testsuite.xml")
+        );
         installAllure2Commandline(projectDirectory, "aggregate-allure2-args.txt", 2);
 
         runGoals(projectDirectory, List.of("site"));
@@ -59,7 +66,14 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldAggregateMultiModuleAllure2ResultsFromDirectGoal() throws Exception {
-        final Path projectDirectory = prepareAllure2MultiModuleProject("aggregate-multi-module-cli");
+        final Path projectDirectory = prepareProject(
+                "aggregate-multi-module-cli",
+                resource("/maven-executor/aggregate-multi-module-cli-pom.xml", "pom.xml"),
+                resource("/maven-executor/aggregate-multi-module-cli-first-pom.xml", "first/pom.xml"),
+                resource("/maven-executor/aggregate-multi-module-cli-second-pom.xml", "second/pom.xml"),
+                resource("/maven-executor-data/allure2-first-result.xml", "first/target/allure-results/first-testsuite.xml"),
+                resource("/maven-executor-data/allure2-second-result.xml", "second/target/allure-results/second-testsuite.xml")
+        );
         installAllure2Commandline(projectDirectory, "aggregate-cli-allure2-args.txt", 2);
 
         runGoals(
@@ -80,7 +94,14 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldSkipRegularReportWhenAggregateReportIsConfigured() throws Exception {
-        final Path projectDirectory = prepareAllure2MultiModuleProject("aggregate-multi-module-exclude-report");
+        final Path projectDirectory = prepareProject(
+                "aggregate-multi-module-exclude-report",
+                resource("/maven-executor/aggregate-multi-module-exclude-report-pom.xml", "pom.xml"),
+                resource("/maven-executor/aggregate-multi-module-exclude-report-first-pom.xml", "first/pom.xml"),
+                resource("/maven-executor/aggregate-multi-module-exclude-report-second-pom.xml", "second/pom.xml"),
+                resource("/maven-executor-data/allure2-first-result.xml", "first/target/allure-results/first-testsuite.xml"),
+                resource("/maven-executor-data/allure2-second-result.xml", "second/target/allure-results/second-testsuite.xml")
+        );
         installAllure2Commandline(projectDirectory, "aggregate-exclude-report-args.txt", 2);
 
         runGoals(projectDirectory, List.of("site"));
@@ -99,7 +120,14 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldPreserveChildExecutorFilesWhenAggregating() throws Exception {
-        final Path projectDirectory = prepareAllure2MultiModuleProject("aggregate-multi-module-preserve-child-executor");
+        final Path projectDirectory = prepareProject(
+                "aggregate-multi-module-preserve-child-executor",
+                resource("/maven-executor/aggregate-multi-module-preserve-child-executor-pom.xml", "pom.xml"),
+                resource("/maven-executor/aggregate-multi-module-preserve-child-executor-first-pom.xml", "first/pom.xml"),
+                resource("/maven-executor/aggregate-multi-module-preserve-child-executor-second-pom.xml", "second/pom.xml"),
+                resource("/maven-executor-data/allure2-first-result.xml", "first/target/allure-results/first-testsuite.xml"),
+                resource("/maven-executor-data/allure2-second-result.xml", "second/target/allure-results/second-testsuite.xml")
+        );
         installAllure2Commandline(projectDirectory, "aggregate-preserve-executor-args.txt", 2);
 
         runGoals(projectDirectory, List.of("site"));
@@ -128,7 +156,11 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldAggregateSingleModuleAllure2Results() throws Exception {
-        final Path projectDirectory = prepareProject("aggregate-sample", rootPom("aggregate-sample"));
+        final Path projectDirectory = prepareProject(
+                "aggregate-sample",
+                resource("/maven-executor/aggregate-sample-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
+        );
         installAllure2Commandline(projectDirectory, "aggregate-sample-allure2-args.txt", 1);
 
         runGoals(projectDirectory, List.of("site"));
@@ -147,7 +179,11 @@ class VerifierAggregateIT extends VerifierTestSupport {
     @Test
     @Description
     void shouldAggregateSingleModuleAllure3Results() throws Exception {
-        final Path projectDirectory = prepareProject("allure3-aggregate-sample", rootPom("allure3-aggregate-sample"));
+        final Path projectDirectory = prepareProject(
+                "allure3-aggregate-sample",
+                resource("/maven-executor/allure3-aggregate-sample-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
+        );
         final Path captureFile = prepareAllure3ReportRuntime(projectDirectory, "allure3 aggregate args.txt");
 
         runGoals(projectDirectory, List.of("site"));
@@ -177,9 +213,11 @@ class VerifierAggregateIT extends VerifierTestSupport {
     void shouldAggregateAllure3ResultsFromConfiguredModuleDirectories() throws Exception {
         final Path projectDirectory = prepareProject(
                 "allure3-aggregate-multi-module-results-directory",
-                rootPom("allure3-aggregate-multi-module-results-directory"),
-                modulePom("allure3-aggregate-multi-module-results-directory", "first"),
-                modulePom("allure3-aggregate-multi-module-results-directory", "second")
+                resource("/maven-executor/allure3-aggregate-multi-module-results-directory-pom.xml", "pom.xml"),
+                resource("/maven-executor/allure3-aggregate-multi-module-results-directory-first-pom.xml", "first/pom.xml"),
+                resource("/maven-executor/allure3-aggregate-multi-module-results-directory-second-pom.xml", "second/pom.xml"),
+                resource("/maven-executor-data/allure2-first-result.xml", "first/target/module-results/first-testsuite.xml"),
+                resource("/maven-executor-data/allure2-second-result.xml", "second/target/override-results/second-testsuite.xml")
         );
         final Path captureFile = prepareAllure3ReportRuntime(projectDirectory, "allure3 aggregate results args.txt");
 
@@ -212,8 +250,11 @@ class VerifierAggregateIT extends VerifierTestSupport {
     void shouldGeneratePerModuleReportsForRegularMultiModuleBuilds() throws Exception {
         final Path projectDirectory = prepareProject(
                 "report-multi-module",
-                rootPom("report-multi-module"), modulePom("report-multi-module", "first"),
-                modulePom("report-multi-module", "second")
+                resource("/maven-executor/report-multi-module-pom.xml", "pom.xml"),
+                resource("/maven-executor/report-multi-module-first-pom.xml", "first/pom.xml"),
+                resource("/maven-executor/report-multi-module-second-pom.xml", "second/pom.xml"),
+                resource("/maven-executor-data/allure2-first-result.xml", "first/target/allure-results/first-testsuite.xml"),
+                resource("/maven-executor-data/allure2-second-result.xml", "second/target/allure-results/second-testsuite.xml")
         );
         installAllure2Commandline(projectDirectory, "report-multi-module-allure2-args.txt", 1);
 
@@ -227,13 +268,6 @@ class VerifierAggregateIT extends VerifierTestSupport {
                 projectDirectory
                         .resolve(Path.of("second", "target", "site", "allure-maven-plugin")),
                 1
-        );
-    }
-
-    private Path prepareAllure2MultiModuleProject(final String scenario) throws Exception {
-        return prepareProject(
-                scenario, rootPom(scenario), modulePom(scenario, "first"),
-                modulePom(scenario, "second")
         );
     }
 

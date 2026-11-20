@@ -8,7 +8,8 @@ Use Allure agent-mode to design, review, validate, debug, and enrich tests in th
 - Test-side Allure results are configured through `src/test/resources/allure.properties`.
 - The default results directory for local test runs is `target/allure-results`.
 - For fast feedback on the unit suite, prefer `./mvnw -q test`.
-- For targeted verifier ITs, prefer `./mvnw -q -Dmaven.repo.local=target/local-repo -Dit.test=<VerifierIT> verify`.
+- Integration tests run fixture builds with Maven Executor in forked mode. The `MavenExecutor*IT` suites use the `maven-executor` tag.
+- For targeted Maven ITs, prefer `./mvnw -q -Dmaven.repo.local=target/local-repo -Dit.test=<ITClass> verify`.
 - For full lifecycle checks, use `./mvnw -q -Dmaven.repo.local=target/local-repo verify`.
 
 ## Review Principle
@@ -73,7 +74,7 @@ Runtime first, source second.
 
 - Full unit suite: `allure agent -- ./mvnw -q test`
 - Single test class: `allure agent -- ./mvnw -q -Dtest=AllureVersionTest test`
-- Single verifier IT class: `allure agent -- ./mvnw -q -Dmaven.repo.local=target/local-repo -Dit.test=VerifierAllure3IT verify`
+- Single Maven IT class: `allure agent -- ./mvnw -q -Dmaven.repo.local=target/local-repo -Dit.test=MavenExecutorAllure3IT verify`
 - Full build verification: `allure agent -- ./mvnw -q -Dmaven.repo.local=target/local-repo verify`
 
 ## Per-Run Artifacts
