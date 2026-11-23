@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class AllureVersion {
 
-    public static final String ALLURE3_DEFAULT_VERSION = "3.17.0";
+    public static final String ALLURE3_DEFAULT_VERSION = "3.33.0";
 
     private final String version;
 

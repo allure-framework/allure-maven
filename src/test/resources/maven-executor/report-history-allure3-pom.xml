@@ -21,7 +21,7 @@
                 <artifactId>@project.artifactId@</artifactId>
                 <version>@project.version@</version>
                 <configuration>
-                    <reportVersion>3.17.0</reportVersion>
+                    <reportVersion>3.33.0</reportVersion>
                 </configuration>
             </plugin>
         </plugins>
