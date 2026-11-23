@@ -29,12 +29,12 @@ class AllureVersionTest {
 
     @Test
     void shouldUseAllure3AsDefaultVersion() {
-        assertResolvedVersion(null, true, "3.17.0");
+        assertResolvedVersion(null, true, "3.33.0");
     }
 
     @Test
     void shouldUseAllure3ForBlankVersion() {
-        assertResolvedVersion("  ", true, "3.17.0");
+        assertResolvedVersion("  ", true, "3.33.0");
     }
 
     @Test
