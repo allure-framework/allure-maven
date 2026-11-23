@@ -27,9 +27,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("verifier")
+@Tag("maven-executor")
 @Tag("allure3")
-class VerifierAllure3IT extends VerifierTestSupport {
+class MavenExecutorAllure3IT extends MavenTestSupport {
 
     /**
      * Project structure: a single-module Maven project with an Allure 3 package archive under
@@ -41,10 +41,10 @@ class VerifierAllure3IT extends VerifierTestSupport {
      */
     @Test
     @Description
-    void shouldInstallAllure3FromPackageArchiveUsingVerifier() throws Exception {
+    void shouldInstallAllure3FromPackageArchiveUsingMavenExecutor() throws Exception {
         final Path projectDirectory = prepareProject(
                 "allure3-package-path-install",
-                rootPom("allure3-package-path-install")
+                resource("/maven-executor/allure3-package-path-install-pom.xml", "pom.xml")
         );
         final Path installDirectory = projectDirectory.resolve(".allure install");
         final Path captureFile = projectDirectory.resolve(Path.of("target", "allure3 package install args.txt"));
@@ -81,7 +81,7 @@ class VerifierAllure3IT extends VerifierTestSupport {
     void shouldInstallAllure3WithBundledPrivateNode() throws Exception {
         final Path projectDirectory = prepareProject(
                 "allure3-install-private-node",
-                rootPom("allure3-install-private-node")
+                resource("/maven-executor/allure3-install-private-node-pom.xml", "pom.xml")
         );
         final Path installDirectory = projectDirectory.resolve(".allure install");
         final Path captureFile = projectDirectory.resolve(Path.of("target", "allure3 install args.txt"));
@@ -126,7 +126,10 @@ class VerifierAllure3IT extends VerifierTestSupport {
     void shouldUsePluginConfiguredAllure3ConfigPath() throws Exception {
         final Path projectDirectory = prepareProject(
                 "allure3-config-path-plugin-property",
-                rootPom("allure3-config-path-plugin-property")
+                resource("/maven-executor/allure3-config-path-plugin-property-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml"),
+                resource("/maven-executor-data/allurerc-empty.yml", "allurerc.yml"),
+                resource("/maven-executor-data/allurerc-plugin.yml", "config/plugin-allure.yml")
         );
         prepareAllure3ReportRuntime(
                 projectDirectory, ".allure", "allure3 args.txt",
@@ -156,7 +159,10 @@ class VerifierAllure3IT extends VerifierTestSupport {
     void shouldUseSystemPropertyConfiguredAllure3ConfigPath() throws Exception {
         final Path projectDirectory = prepareProject(
                 "allure3-config-path-system-property",
-                rootPom("allure3-config-path-system-property")
+                resource("/maven-executor/allure3-config-path-system-property-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml"),
+                resource("/maven-executor-data/allurerc-empty.yml", "allurerc.yml"),
+                resource("/maven-executor-data/allurerc-system.yml", "config/system-allure.yml")
         );
         prepareAllure3ReportRuntime(
                 projectDirectory, ".allure", "allure3 args.txt",
@@ -189,7 +195,9 @@ class VerifierAllure3IT extends VerifierTestSupport {
     void shouldUseRootAllureYamlConfigForAllure3Report() throws Exception {
         final Path projectDirectory = prepareProject(
                 "feature-root-allure-yaml-config",
-                rootPom("feature-root-allure-yaml-config")
+                resource("/maven-executor/feature-root-allure-yaml-config-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml"),
+                resource("/maven-executor-data/allurerc-custom.yml", "allurerc.yml")
         );
         final Path captureFile = prepareAllure3ReportRuntime(
                 projectDirectory, ".allure",
@@ -229,7 +237,8 @@ class VerifierAllure3IT extends VerifierTestSupport {
     void shouldUseDefaultAllure3VersionWhenReportVersionIsOmitted() throws Exception {
         final Path projectDirectory = prepareProject(
                 "feature-without-version-property",
-                rootPom("feature-without-version-property")
+                resource("/maven-executor/feature-without-version-property-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
         );
         final Path captureFile = prepareAllure3ReportRuntime(
                 projectDirectory, ".allure",
@@ -258,7 +267,9 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Description
     void shouldGenerateReportWithRelativeReportDirectoryFromDirectGoal() throws Exception {
         final Path projectDirectory = prepareProject(
-                "feature-without-version-property", rootPom("feature-without-version-property")
+                "feature-without-version-property",
+                resource("/maven-executor/feature-without-version-property-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
         );
         final Path reportDirectory = projectDirectory.resolve(Path.of("target", "my-report"));
         final Path captureFile = prepareAllure3ReportRuntime(
@@ -294,7 +305,11 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldWriteHistoryConfigForAllure3Reports() throws Exception {
-        final Path projectDirectory = prepareProject("report-history-allure3", rootPom("report-history-allure3"));
+        final Path projectDirectory = prepareProject(
+                "report-history-allure3",
+                resource("/maven-executor/report-history-allure3-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
+        );
         final Path captureFile = prepareAllure3ReportRuntime(
                 projectDirectory, ".allure",
                 "allure3 history args.txt", outputDirectory(projectDirectory), true
@@ -329,7 +344,11 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Test
     @Description
     void shouldGenerateSingleFileAllure3Reports() throws Exception {
-        final Path projectDirectory = prepareProject("report-single-file", rootPom("report-single-file"));
+        final Path projectDirectory = prepareProject(
+                "report-single-file",
+                resource("/maven-executor/report-single-file-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/allure-results/sample-testsuite.xml")
+        );
         final Path captureFile = prepareAllure3ReportRuntime(
                 projectDirectory, ".allure",
                 "allure3 args.txt", outputDirectory(projectDirectory), false
@@ -365,8 +384,9 @@ class VerifierAllure3IT extends VerifierTestSupport {
     @Description
     void shouldServeAllure3ReportWhenPathsContainSpaces() throws Exception {
         final Path projectDirectory = prepareProject(
-                "allure3-serve-paths-with-spaces",
-                "allure3 serve paths with spaces", rootPom("allure3-serve-paths-with-spaces")
+                "allure3 serve paths with spaces",
+                resource("/maven-executor/allure3-serve-paths-with-spaces-pom.xml", "pom.xml"),
+                resource("/maven-executor-data/allure2-result.xml", "target/my results/sample-testsuite.xml")
         );
         final Path captureFile = prepareAllure3ReportRuntime(
                 projectDirectory, ".allure install",

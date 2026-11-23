@@ -19,10 +19,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Allure;
 import io.qameta.allure.AttachmentOptions;
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
+import org.apache.maven.executor.ExecutorRequest;
+import org.apache.maven.executor.ExecutorResult;
+import org.apache.maven.executor.forked.ForkedMavenExecutor;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -30,72 +32,47 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-abstract class VerifierTestSupport {
+abstract class MavenTestSupport {
 
     private static final String BUILD_LOG = "build.log";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String TEMPLATE_ROOT = "/verifier/";
-    private static final String TESTDATA_ROOT = "/verifier-data/";
-    private static final String DEFAULT_RESULTS_FILE = "target/allure-results/sample-testsuite.xml";
-    private static final String FIRST_RESULTS_FILE = "first/target/allure-results/first-testsuite.xml";
-    private static final String SECOND_RESULTS_FILE = "second/target/allure-results/second-testsuite.xml";
+    private static final Pattern ANSI_ESCAPE_PATTERN = Pattern.compile("\u001B\\[[;\\d]*[ -/]*[@-~]");
 
     @TempDir
     Path tempDir;
 
-    record TemplateFile(String resourceName, String relativePath) {
+    record ProjectFile(String resourceName, String targetPath) {
     }
 
-    record TestDataFile(String resourceName, String relativePath) {
+    protected final ProjectFile resource(final String resourceName, final String targetPath) {
+        return new ProjectFile(resourceName, targetPath);
     }
 
-    protected final TemplateFile rootPom(final String scenario) {
-        return new TemplateFile(scenario + "-pom.xml", "pom.xml");
-    }
-
-    protected final TemplateFile modulePom(final String scenario, final String module) {
-        return new TemplateFile(
-                scenario + "-" + module + "-pom.xml",
-                Path.of(module, "pom.xml").toString()
-        );
-    }
-
-    protected final Path prepareProject(final String scenario, final TemplateFile... templates)
+    protected final Path prepareProject(final String directoryName, final ProjectFile... files)
             throws IOException {
-        return prepareProject(scenario, Map.of(), templates);
+        return prepareProject(directoryName, Map.of(), files);
     }
 
-    protected final Path prepareProject(final String scenario, final String directoryName,
-                                        final TemplateFile... templates)
+    protected final Path prepareProject(final String directoryName,
+                                        final Map<String, String> replacements, final ProjectFile... files)
             throws IOException {
-        return prepareProject(scenario, directoryName, Map.of(), templates);
-    }
-
-    protected final Path prepareProject(final String scenario,
-                                        final Map<String, String> replacements, final TemplateFile... templates)
-            throws IOException {
-        return prepareProject(scenario, scenario, replacements, templates);
-    }
-
-    protected final Path prepareProject(final String scenario, final String directoryName,
-                                        final Map<String, String> replacements, final TemplateFile... templates)
-            throws IOException {
-        return Allure.step("Prepare verifier project " + scenario, () -> {
+        return Allure.step("Prepare Maven project " + directoryName, () -> {
             final Path projectDirectory = tempDir.resolve(directoryName);
             Files.createDirectories(projectDirectory);
-            copyScenarioDataFiles(scenario, projectDirectory);
 
-            for (TemplateFile template : templates) {
+            for (ProjectFile file : files) {
                 copyResourceFile(
-                        TEMPLATE_ROOT + template.resourceName(),
-                        projectDirectory.resolve(template.relativePath())
+                        file.resourceName(),
+                        projectDirectory.resolve(file.targetPath())
                 );
             }
 
@@ -105,57 +82,32 @@ abstract class VerifierTestSupport {
         });
     }
 
-    protected final Verifier runGoals(final Path projectDirectory, final List<String> goals)
+    protected final ExecutorResult runGoals(final Path projectDirectory, final List<String> goals)
             throws Exception {
         return runGoals(projectDirectory, goals, List.of());
     }
 
-    protected final Verifier runGoals(final Path projectDirectory, final List<String> goals,
-                                      final List<String> cliOptions)
+    protected final ExecutorResult runGoals(final Path projectDirectory, final List<String> goals,
+                                            final List<String> cliOptions)
             throws Exception {
-        return Allure.step("Run verifier goals " + goals, () -> {
-            final Verifier verifier = createVerifier(projectDirectory, cliOptions);
-            attachCliOptions(cliOptions);
-            try {
-                verifier.executeGoals(goals);
-                verifier.verifyErrorFreeLog();
-            } catch (VerificationException error) {
-                attachIfPresent(
-                        projectDirectory.resolve(verifier.getLogFileName()),
-                        "Verifier build log", "text/plain", ".txt"
-                );
-                throw error;
-            }
-
-            attachIfPresent(
-                    projectDirectory.resolve(verifier.getLogFileName()),
-                    "Verifier build log", "text/plain", ".txt"
-            );
-            return verifier;
+        return Allure.step("Run Maven goals " + goals, () -> {
+            final ExecutorResult result = executeMaven(projectDirectory, goals, cliOptions);
+            assertThat(result.exitCode()).as("Maven goals %s should succeed; see %s", goals, BUILD_LOG)
+                    .contains(0);
+            assertThat(readLines(projectDirectory.resolve(BUILD_LOG)))
+                    .as("Maven build log should be free of errors")
+                    .noneMatch(line -> ANSI_ESCAPE_PATTERN.matcher(line).replaceAll("").contains("[ERROR]"));
+            return result;
         });
     }
 
-    protected final VerificationException expectFailure(final Path projectDirectory,
-                                                        final List<String> goals, final List<String> cliOptions)
+    protected final ExecutorResult expectFailure(final Path projectDirectory,
+                                                 final List<String> goals, final List<String> cliOptions)
             throws Exception {
-        return Allure.step("Expect verifier goals " + goals + " to fail", () -> {
-            final Verifier verifier = createVerifier(projectDirectory, cliOptions);
-            attachCliOptions(cliOptions);
-            try {
-                verifier.executeGoals(goals);
-            } catch (VerificationException error) {
-                attachIfPresent(
-                        projectDirectory.resolve(verifier.getLogFileName()),
-                        "Verifier build log", "text/plain", ".txt"
-                );
-                return error;
-            }
-
-            attachIfPresent(
-                    projectDirectory.resolve(verifier.getLogFileName()),
-                    "Verifier build log", "text/plain", ".txt"
-            );
-            throw new AssertionError("Expected verifier goals to fail: " + goals);
+        return Allure.step("Expect Maven goals " + goals + " to fail", () -> {
+            final ExecutorResult result = executeMaven(projectDirectory, goals, cliOptions);
+            assertThat(result.success()).as("Expected Maven goals to fail: %s", goals).isFalse();
+            return result;
         });
     }
 
@@ -319,30 +271,46 @@ abstract class VerifierTestSupport {
     private void attachCliOptions(final List<String> cliOptions) {
         if (!cliOptions.isEmpty()) {
             Allure.attachment(
-                    "Verifier CLI options", "text/plain",
+                    "Maven CLI options", "text/plain",
                     String.join(System.lineSeparator(), cliOptions), AttachmentOptions.withFileExtension(".txt")
             );
         }
     }
 
-    private Verifier createVerifier(final Path projectDirectory, final List<String> cliOptions)
-            throws VerificationException {
-        final Verifier verifier = new Verifier(projectDirectory.toString());
-        verifier.setAutoclean(false);
-        verifier.setForkJvm(true);
-        verifier.setLogFileName(BUILD_LOG);
-        verifier.setLocalRepo(absoluteLocalRepository().toString());
-        cliOptions.forEach(verifier::addCliOption);
-        return verifier;
-    }
-
-    private void copyScenarioDataFiles(final String scenario, final Path projectDirectory)
+    private ExecutorResult executeMaven(final Path projectDirectory, final List<String> goals,
+                                        final List<String> cliOptions)
             throws IOException {
-        for (TestDataFile file : scenarioDataFiles(scenario)) {
-            copyResourceFile(
-                    TESTDATA_ROOT + file.resourceName(),
-                    projectDirectory.resolve(file.relativePath())
+        final List<String> arguments = new ArrayList<>(
+                List.of(
+                        "--batch-mode", "--errors", "-Dstyle.color=never",
+                        "-Dmaven.repo.local=" + absoluteLocalRepository()
+                )
+        );
+        arguments.addAll(cliOptions);
+        arguments.addAll(goals);
+        attachCliOptions(arguments);
+
+        // Keep partial output available even when execution throws before returning a result.
+        final ByteArrayOutputStream stdOut = new ByteArrayOutputStream();
+        final ByteArrayOutputStream stdErr = new ByteArrayOutputStream();
+        final ExecutorRequest request = ExecutorRequest.mavenBuilder()
+                .cwd(projectDirectory)
+                .arguments(arguments)
+                .stdOut(stdOut)
+                .stdErr(stdErr)
+                .build();
+        try (ForkedMavenExecutor executor = new ForkedMavenExecutor(Path.of(requiredProperty("maven.home")))) {
+            return executor.execute(request);
+        } finally {
+            final Path buildLog = projectDirectory.resolve(BUILD_LOG);
+            Files.writeString(
+                    buildLog, String.join(
+                            System.lineSeparator(),
+                            stdOut.toString(StandardCharsets.UTF_8), stdErr.toString(StandardCharsets.UTF_8)
+                    ),
+                    StandardCharsets.UTF_8
             );
+            attachIfPresent(buildLog, "Maven build log", "text/plain", ".txt");
         }
     }
 
@@ -352,116 +320,14 @@ abstract class VerifierTestSupport {
             Files.createDirectories(targetFile.getParent());
         }
 
-        try (InputStream stream = VerifierTestSupport.class.getResourceAsStream(resourcePath)) {
+        try (InputStream stream = MavenTestSupport.class.getResourceAsStream(resourcePath)) {
             if (stream == null) {
                 throw new IllegalStateException(
-                        "Missing verifier template resource: " + resourcePath
+                        "Missing project resource: " + resourcePath
                 );
             }
             Files.copy(stream, targetFile, StandardCopyOption.REPLACE_EXISTING);
         }
-    }
-
-    private List<TestDataFile> scenarioDataFiles(final String scenario) {
-        return switch (scenario) {
-            case "allure-2-results" -> List.of(
-                    dataFile("allure2-result.json", "target/allure-results/sample-testsuite.json")
-            );
-            case "input-directory-sample" ->
-                List.of(
-                        dataFile("allure2-first-result.xml", "first/first-testsuite.xml"),
-                        dataFile("allure2-second-result.xml", "second/second-testsuite.xml")
-                );
-            case "report-change-results-directory" ->
-                List.of(dataFile("allure2-result.xml", "target/my-results/sample-testsuite.xml"));
-            case "report-paths-with-spaces", "allure2-serve-paths-with-spaces",
-                    "allure3-serve-paths-with-spaces" ->
-                List.of(dataFile("allure2-result.xml", "target/my results/sample-testsuite.xml"));
-            case "feature-should-fail-if-empty-report" ->
-                List.of(dataFile("empty-results.keep", "target/allure-results/.gitkeep"));
-            case "properties-file-support" ->
-                List.of(
-                        dataFile("allure2-properties-result.xml", DEFAULT_RESULTS_FILE),
-                        dataFile("report.properties", "allure.properties")
-                );
-            case "properties-file-support-compile-classpath" ->
-                List.of(
-                        dataFile("allure2-properties-result.xml", DEFAULT_RESULTS_FILE),
-                        dataFile("report.properties", "target/classes/allure.properties")
-                );
-            case "properties-file-support-configuration" ->
-                List.of(dataFile("allure2-properties-result.xml", DEFAULT_RESULTS_FILE));
-            case "properties-file-support-default-location" ->
-                List.of(
-                        dataFile("allure2-properties-result.xml", DEFAULT_RESULTS_FILE),
-                        dataFile("report.properties", "report.properties")
-                );
-            case "properties-file-support-placeholder" ->
-                List.of(
-                        dataFile("allure2-properties-result.xml", DEFAULT_RESULTS_FILE),
-                        dataFile("report-placeholder.properties", "allure.properties")
-                );
-            case "properties-file-support-test-classpath" ->
-                List.of(
-                        dataFile("allure2-properties-result.xml", DEFAULT_RESULTS_FILE),
-                        dataFile("report.properties", "target/test-classes/report.properties")
-                );
-            case "categories-file-support-test-classpath" ->
-                List.of(
-                        dataFile("allure2-categories-result.xml", DEFAULT_RESULTS_FILE),
-                        dataFile("categories.json", "target/test-classes/categories.json")
-                );
-            case "allure3-config-path-plugin-property" ->
-                List.of(
-                        dataFile("allure2-result.xml", DEFAULT_RESULTS_FILE),
-                        dataFile("allurerc-empty.yml", "allurerc.yml"),
-                        dataFile("allurerc-plugin.yml", "config/plugin-allure.yml")
-                );
-            case "allure3-config-path-system-property" ->
-                List.of(
-                        dataFile("allure2-result.xml", DEFAULT_RESULTS_FILE),
-                        dataFile("allurerc-empty.yml", "allurerc.yml"),
-                        dataFile("allurerc-system.yml", "config/system-allure.yml")
-                );
-            case "feature-root-allure-yaml-config" ->
-                List.of(
-                        dataFile("allure2-result.xml", DEFAULT_RESULTS_FILE),
-                        dataFile("allurerc-custom.yml", "allurerc.yml")
-                );
-            case "aggregate-multi-module", "aggregate-multi-module-cli",
-                    "aggregate-multi-module-exclude-report",
-                    "aggregate-multi-module-preserve-child-executor", "report-multi-module" ->
-                firstAndSecondModuleResults();
-            case "allure3-aggregate-multi-module-results-directory" -> List.of(
-                    dataFile(
-                            "allure2-first-result.xml",
-                            "first/target/module-results/first-testsuite.xml"
-                    ),
-                    dataFile(
-                            "allure2-second-result.xml",
-                            "second/target/override-results/second-testsuite.xml"
-                    )
-            );
-            case "allure2-feature-without-version-property", "feature-plugins-support",
-                    "report-change-report-directory", "report-as-build-plugin", "custom-url-report",
-                    "report-with-bundled-version", "allure2-report-single-file",
-                    "allure2-report-then-serve-preserves-report-directory", "aggregate-sample",
-                    "allure3-aggregate-sample", "feature-without-version-property",
-                    "report-history-allure3", "report-single-file" ->
-                List.of(dataFile("allure2-result.xml", DEFAULT_RESULTS_FILE));
-            default -> List.of();
-        };
-    }
-
-    private List<TestDataFile> firstAndSecondModuleResults() {
-        return List.of(
-                dataFile("allure2-first-result.xml", FIRST_RESULTS_FILE),
-                dataFile("allure2-second-result.xml", SECOND_RESULTS_FILE)
-        );
-    }
-
-    private TestDataFile dataFile(final String resourceName, final String relativePath) {
-        return new TestDataFile(resourceName, relativePath);
     }
 
     private void filterPomFiles(final Path projectDirectory, final Map<String, String> replacements)
